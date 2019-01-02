@@ -407,11 +407,13 @@ let rsChangeTenantActivationStatus = result {
                 let toBisonId (aTenantId : TenantId) = 
                         new BsonObjectId(new ObjectId((TenantId.value aTenantId))) 
 
-                let! tenant = Tenant.create "507f1f77bcf86cd799439010" "Mobile Biller new" "Money Tranfer Solutions new"
+                let! tenant = Tenant.create "b6a0d78a41ef4d8ea1c51772" "Mobile Biller new" "Money Tranfer Solutions new"
                 
                 
                
                 let saveRoleDependencyFunction = RoleDb.saveOneRole
+                let updateRoleDependencyFunction = RoleDb.updateOneRole
+                let loadRoleByIdDependencyFunction = RoleDb.loadOneRoleById
               
 
                 let toBisonId (aTenantId : TenantId) = 
@@ -441,11 +443,12 @@ let rsChangeTenantActivationStatus = result {
 
                 //saveGroupDependencyFunction (group |> DbHelpers.fromGroupDomainToDto)
 
-                let! role = Tenant.provisionRole tenant roleName roleDescription
+                let role = loadRoleByIdDependencyFunction ( tenant.TenantId |> toBisonId)
 
-                
+                printfn "HERE THE LOADED ROLE : %A" role
 
-                saveRoleDependencyFunction (role |> DbHelpers.fromDtoToRoleDomain)
+
+                //saveRoleDependencyFunction (role |> DbHelpers.fromDtoToRoleDomain)
 
                 return role 
 
@@ -454,7 +457,7 @@ let rsChangeTenantActivationStatus = result {
 
 match rsChangeTenantActivationStatus with 
 | Ok role
-        -> printfn "The role that was provisioned  = %A" role.Name
+        -> printfn "The role that was loaded  = %A" role.Name
            printfn "The full role = %A" role
 | Error error 
         -> printfn "Error = %A" error
