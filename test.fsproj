@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Domain.Common.Types.fs" />
+    <Compile Include="Domain.Common.Functions.fs" />
+    <Compile Include="Domain.IdentityAndAccess.Types.fs" />
+    <Compile Include="Domain.IdentityAndAccess.Functions.fs" />
+    <Compile Include="DataAccess.Types.fs" />
+    <Compile Include="DataAccess.Functions.fs" />
+    <Compile Include="RestFull.fs" />
+    <Compile Include="Test.fsx" />
+    <Compile Include="App.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.7.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="SQLProvider" Version="1.1.55" />
+    <PackageReference Include="Suave" Version="2.5.3" />
+  </ItemGroup>
+</Project>

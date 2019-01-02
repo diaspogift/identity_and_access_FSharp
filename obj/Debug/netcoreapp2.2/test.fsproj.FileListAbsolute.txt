@@ -1,0 +1,10 @@
+/home/el/Documents/app-code/training/felicien-test/test/bin/Debug/netcoreapp2.2/test.deps.json
+/home/el/Documents/app-code/training/felicien-test/test/bin/Debug/netcoreapp2.2/test.runtimeconfig.json
+/home/el/Documents/app-code/training/felicien-test/test/bin/Debug/netcoreapp2.2/test.runtimeconfig.dev.json
+/home/el/Documents/app-code/training/felicien-test/test/bin/Debug/netcoreapp2.2/test.dll
+/home/el/Documents/app-code/training/felicien-test/test/bin/Debug/netcoreapp2.2/test.pdb
+/home/el/Documents/app-code/training/felicien-test/test/obj/Debug/netcoreapp2.2/test.fsprojAssemblyReference.cache
+/home/el/Documents/app-code/training/felicien-test/test/obj/Debug/netcoreapp2.2/test.AssemblyInfoInputs.cache
+/home/el/Documents/app-code/training/felicien-test/test/obj/Debug/netcoreapp2.2/test.AssemblyInfo.fs
+/home/el/Documents/app-code/training/felicien-test/test/obj/Debug/netcoreapp2.2/test.dll
+/home/el/Documents/app-code/training/felicien-test/test/obj/Debug/netcoreapp2.2/test.pdb
