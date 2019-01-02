@@ -15,6 +15,9 @@ open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAccess.DatabaseTypes.Functions
 open IdentityAndAccess.DatabaseTypes.Functions
+open IdentityAndAccess.DatabaseTypes
+open IdentityAndAccess.DatabaseTypes.Functions
+open IdentityAndAccess.DatabaseTypes.Functions
 
 
 
@@ -404,9 +407,7 @@ match rsChangeTenantActivationStatus with
 
 let rsChangeTenantActivationStatus = result {
 
-                let toBisonId (aTenantId : TenantId) = 
-                        new BsonObjectId(new ObjectId((TenantId.value aTenantId))) 
-
+            
                 let! tenant = Tenant.create "b6a0d78a41ef4d8ea1c51772" "Mobile Biller new" "Money Tranfer Solutions new"
                 
                 
@@ -417,35 +418,28 @@ let rsChangeTenantActivationStatus = result {
               
 
                 let toBisonId (aTenantId : TenantId) = 
-
                         new BsonObjectId(new ObjectId((TenantId.value aTenantId))) 
-                
-
-                //let tenantDto = DbHelpers.fromTenantDomainToDto deactivatedTenant
-
-                printfn "----------------------------"
-                //printfn "Converted TENANT TO TENANTDTO : %A" tenantDto
-                printfn "----------------------------"
+        
+                let! roleName = RoleName.create  "role name" "UpdatedAdministrateurPrincipaux"
+                let! roleDescription = RoleDescription.create "role description" "Updated Administrateur principaux de diaspogift"
 
 
-                //updateTenantDependencyFunction (activatedTenant |> DbHelpers.fromTenantDomainToDto)
+                let roleDto : RoleDto = loadRoleByIdDependencyFunction ( tenant.TenantId |> toBisonId)
 
 
-                //printfn "JUST AFTER THE CALL 22222222222222222222222222 THE LOADED TENANT FROM DB : %A" deactivatedTenant
-                let! roleName = RoleName.create "role name" "AdministrateurPrincipaux"
-                let! roleDescription = RoleDescription.create "role description" "Administrateur principaux de diaspogift"
+                printfn "HERE THE LOADED ROLE : %A" roleDto
 
-                //let! group = Tenant.provisionGroup tenant groupName groupDescription
+                let! role = roleDto |> DbHelpers.fromDtoToRoleDomain
+
+                let updatedRole = { role with Name = roleName; Description = roleDescription}
+
+                printfn "HERE THE LOADED ROLE UPDATED : %A" updatedRole
 
 
-                //printfn "HERE THE PROVISIONED GROUP : %A" group
+                updatedRole
+                |> DbHelpers.fromRoleDomainToDto
+                |> updateRoleDependencyFunction  
 
-
-                //saveGroupDependencyFunction (group |> DbHelpers.fromGroupDomainToDto)
-
-                let role = loadRoleByIdDependencyFunction ( tenant.TenantId |> toBisonId)
-
-                printfn "HERE THE LOADED ROLE : %A" role
 
 
                 //saveRoleDependencyFunction (role |> DbHelpers.fromDtoToRoleDomain)

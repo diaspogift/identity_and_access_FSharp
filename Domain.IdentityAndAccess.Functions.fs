@@ -8,6 +8,7 @@ open IdentityAndAcccess.DomainTypes
 
 
 
+
 let generateNoEscapeId () = Guid.NewGuid().ToString().Replace("-", "")
 
 
@@ -16,11 +17,9 @@ let generateNoEscapeId () = Guid.NewGuid().ToString().Replace("-", "")
 
 
 module RegistrationInvitations =
-    let create fieldName (invitationsDto:RegistrationInvitationDtoTemp list) =  
-        invitationsDto
-        |> List.map (fun aInvitationDto -> 
 
-                                       result{
+    let fromRegistrationInvitationDtoTempToDomain = 
+        fun aInvitationDto -> result{
                                                   let! invitationId = RegistrationInvitationId.create "invitation id: " aInvitationDto.RegistrationInvitationId
                                                   let! tenantId = TenantId.create "tenantId" aInvitationDto.TenantId
                                                   let! desciption = RegistrationInvitationDescription.create "tenant description" aInvitationDto.Description
@@ -39,7 +38,10 @@ module RegistrationInvitations =
                                                   return p
                                        }
                                       
-                    )
+                    
+    let create fieldName (invitationsDto:RegistrationInvitationDtoTemp list) =  
+        invitationsDto
+        |> List.map fromRegistrationInvitationDtoTempToDomain
 
     (*let fromRegInvToRegInvTemp fieldName (invitations:RegistrationInvitation list) =  
         invitations
@@ -80,8 +82,17 @@ module RegistrationInvitations =
         |> List.filter (fun nextRegistrationInvitation -> isIdentifiedBy aRegistrationInvitationId nextRegistrationInvitation)
         |> List.tryHead
 
+    let isAvailable (aRegistrationInvitation : RegistrationInvitation) : Boolean =
 
-
+        let now = DateTime.Now
+        let resultCompareNowAndSartDate = DateTime.Compare (now, aRegistrationInvitation.StartingOn)
+        let resultCompareUntilAndEnd = DateTime.Compare (now, aRegistrationInvitation.Until)
+        
+        if (resultCompareNowAndSartDate < 0 || resultCompareUntilAndEnd < 0)  then 
+            false
+        else 
+            true
+          
 
 
 
@@ -260,9 +271,48 @@ module Tenant =
 
 module Role = 
 
-    let create ()  = ()
 
-    
+
+    let create (id:string) (tenantId:string) (name:string) (description:string) : Result<Role,string> =
+        
+        let roleConstruct = result {
+
+
+                    let internalGroupId = generateNoEscapeId ()
+
+                    let! ids = RoleId.create "role id: " id
+                    let! tenantIds = TenantId.create "tenant id: " tenantId
+                    let! names = RoleName.create "role name: " name
+                    let! descriptions = RoleDescription.create "role description: " description
+
+
+
+                    let! groupId = GroupId.create "group id" internalGroupId
+                    let! groupName = GroupName.create "group name" "INTERNAL_GROUP"
+                    let! groupDescription = GroupDescription.create "group name" "INTERNAL_GROUP_DESCRIPTION"
+
+
+                    let group = {
+                        GroupId = groupId 
+                        TenantId = tenantIds
+                        Name = groupName
+                        Description = groupDescription
+                        Members = []
+                    }
+                    
+                    let role:Role = {
+                            
+                            RoleId = ids
+                            TenantId = tenantIds
+                            Name = names
+                            Description = descriptions
+                            SupportNesting = SupportNestingStatus.Support
+                            Group = group
+                    }
+
+                    return role
+                }
+        roleConstruct
 
 
 

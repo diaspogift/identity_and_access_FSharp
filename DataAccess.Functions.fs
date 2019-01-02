@@ -9,7 +9,6 @@ open MongoDB.Driver
 open  MongoDB.Bson
 open IdentityAndAcccess.CommonDomainTypes
 open Suave.Sockets
-open System.Text.RegularExpressions
 
 
 
@@ -40,7 +39,6 @@ module DbConfig =
     let identityAndAccessDb = client.GetDatabase("IdentityAndAccessDb")
 
     let roleCollection = identityAndAccessDb.GetCollection<RoleDto> "roles"
-
     let userCollection = identityAndAccessDb.GetCollection<UserDto> "users"
     let groupCollection = identityAndAccessDb.GetCollection<GroupDto> "groups"
     let tenantCollection = identityAndAccessDb.GetCollection<TenantDto> "tenants"
@@ -191,7 +189,7 @@ module DbHelpers =
         }
 
         res
-    let fromDtoToRoleDomain (aRole : Role) : RoleDto = 
+    let fromRoleDomainToDto (aRole : Role) : RoleDto = 
 
         let id = new BsonObjectId(new ObjectId((RoleId.value aRole.RoleId)))
 
@@ -210,6 +208,20 @@ module DbHelpers =
             SupportNesting = supportNestingStatus
             Group = groupDto 
         }
+
+    let fromDtoToRoleDomain (aRoleDto : RoleDto) : Result<Role,string> = 
+
+        let id = aRoleDto.RoleId.ToString()
+
+        let role = result {
+
+            let! role = Role.create id aRoleDto.TenantId aRoleDto.Name aRoleDto.Description
+
+            return role
+        }
+
+        role
+
 
     let fromDbDtoToGroup (aDtoGroup : GroupDto) = 
 
@@ -232,6 +244,7 @@ module RoleDb =
         result
 
     let private updateRole (aRoleCollection : IMongoCollection<RoleDto>)  ( aRoleDto : RoleDto ) = 
+
         let filter = Builders<RoleDto>.Filter.Eq((fun x -> x.RoleId), aRoleDto.RoleId)
         let updateDefinition = Builders<RoleDto>.Update.Set((fun x -> x.Description), aRoleDto.Description).Set((fun x -> x.Name), aRoleDto.Name).Set((fun x -> x.SupportNesting), aRoleDto.SupportNesting).Set((fun x -> x.Group), aRoleDto.Group)
         let result = aRoleCollection.UpdateOne(filter, updateDefinition)
