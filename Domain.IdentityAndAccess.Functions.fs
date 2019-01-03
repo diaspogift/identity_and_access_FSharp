@@ -509,24 +509,55 @@ module User =
         userWithNewEnablement
 
     let isEnabled aUser  = 
-        aUser.Enablement.EnablementStatus = Enabled
+        match aUser.Enablement.EnablementStatus with  
+        | Enabled -> true
+        | Disabled -> false
 
     let isDisabled aUser  = 
-        aUser.Enablement.EnablementStatus = Disabled
-
+        match aUser.Enablement.EnablementStatus with  
+        | Enabled -> false
+        | Disabled -> true
     let toGroupMember memberType aUser =
 
         result {
+
                 let enablement = aUser.Enablement 
                 
                 let! memberId = GroupMemberId.create "memberId" (UserId.value aUser.UserId)
                 let! tenantId = TenantId.create "tenantId" (TenantId.value aUser.TenantId)
                 let! name = GroupMemberName.create "groupName" (Username.value aUser.Username)
         
-                let p:GroupMember = {MemberId = memberId; TenantId = tenantId; Name = name; Type = memberType }
+                let groupMember:GroupMember = 
+                    {
+                        MemberId = memberId
+                        TenantId = tenantId
+                        Name = name
+                        Type = memberType
+                    }
 
-                return p
+                return groupMember
         }
+
+    let toUserDesriptor 
+        (aUser:User)
+        : Result<UserDescriptor, string> =
+
+        let rs = result {
+
+                let! userDescriptorId = UserDescriptorId.create "user descriptor id : " (UserId.value aUser.UserId)
+
+                return {
+                    UserDescriptorId = userDescriptorId
+                    TenantId = aUser.TenantId
+                    Username = aUser.Username
+                    Email = aUser.Person.Contact.Email
+                }
+        }
+
+        rs
+
+            
+        
     
 module GroupMembers = 
 

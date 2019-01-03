@@ -6315,11 +6315,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/el/Documents/app-code/training/felicien-test/test/test.fsproj",
-      "projectName": "test",
-      "projectPath": "/home/el/Documents/app-code/training/felicien-test/test/test.fsproj",
+      "projectUniqueName": "/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/IdentityAndAcces.fsproj",
+      "projectName": "IdentityAndAcces",
+      "projectPath": "/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/IdentityAndAcces.fsproj",
       "packagesPath": "/home/el/.nuget/packages/",
-      "outputPath": "/home/el/Documents/app-code/training/felicien-test/test/obj/",
+      "outputPath": "/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "/usr/share/dotnet/sdk/NuGetFallbackFolder"
