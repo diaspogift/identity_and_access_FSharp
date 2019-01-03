@@ -1,7 +1,6 @@
 namespace IdentityAndAcccess.DomainTypes
 
 open IdentityAndAcccess.CommonDomainTypes
-open MongoDB.Bson
 open System
 
 
@@ -108,6 +107,12 @@ type Tenant = {
     RegistrationInvitations: RegistrationInvitation list
     ActivationStatus : ActivationStatus
 }
+
+type MyTimeSpan = {
+    Start: DateTime
+    End: DateTime 
+}
+
 
 type GroupMemberDtoTemp = {
     MemberId : string

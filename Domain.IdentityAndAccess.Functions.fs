@@ -5,6 +5,8 @@ open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open FSharp.Data.Sql
 open IdentityAndAcccess.DomainTypes
+open Suave.Sockets
+
 
 
 
@@ -92,6 +94,17 @@ module RegistrationInvitations =
             false
         else 
             true
+
+    let isNotvailable (aRegistrationInvitation : RegistrationInvitation) : Boolean =
+
+        let now = DateTime.Now
+        let resultCompareNowAndSartDate = DateTime.Compare (now, aRegistrationInvitation.StartingOn)
+        let resultCompareUntilAndEnd = DateTime.Compare (now, aRegistrationInvitation.Until)
+        
+        if (resultCompareNowAndSartDate < 0 || resultCompareUntilAndEnd < 0)  then 
+            false
+        else 
+            true
           
 
 
@@ -120,7 +133,6 @@ module Tenant =
             }
         }
 
-
     let fullCreate id name description activationStatus = 
         
         result {
@@ -137,8 +149,6 @@ module Tenant =
                     ActivationStatus = activationStatus
             }
         }
-
-
 
 
     let isRegistrationInvitationAvailableThrough (aTenant : Tenant) (aRegistrationInvitationId : RegistrationInvitationId) : Boolean =
@@ -160,8 +170,8 @@ module Tenant =
             result {
 
                     let id = Guid.NewGuid().ToString().Replace("-", "")
-
                     let! registrationInvitationId = RegistrationInvitationId.create "registration invitation id" id
+
                     let registrationInvitation : RegistrationInvitation = {
                             Description = aDescription
                             RegistrationInvitationId = registrationInvitationId
@@ -170,7 +180,7 @@ module Tenant =
                             Until = DateTime.Now
                             }
 
-                    let newTenant = { aTenant with RegistrationInvitations = [registrationInvitation]@ aTenant.RegistrationInvitations}
+                    let newTenant = { aTenant with RegistrationInvitations = [registrationInvitation]@aTenant.RegistrationInvitations}
 
                     return newTenant 
                 }
@@ -268,6 +278,123 @@ module Tenant =
             else
                 let msg = "Cannot provision role"
                 Error msg 
+
+
+
+    let getAllAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
+
+        match aTenant.ActivationStatus with 
+        | ActivationStatus.Activated 
+            -> aTenant.RegistrationInvitations
+               |> List.filter RegistrationInvitations.isAvailable
+        | ActivationStatus.Disactivated 
+            -> []
+
+
+    let getAllUnAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
+
+        match aTenant.ActivationStatus with 
+        | ActivationStatus.Activated 
+            -> aTenant.RegistrationInvitations
+               |> List.filter RegistrationInvitations.isNotvailable
+        | ActivationStatus.Disactivated 
+            -> []
+    let redfineRegistrationInvintationTimeSpan 
+        (aTenant:Tenant)
+        (aRegistrationInvitationId:RegistrationInvitationId)
+        (aStartDate:DateTime)
+        (anEndDate:DateTime)
+        :Result<Tenant, string> =
+        
+         match aTenant.ActivationStatus with 
+
+          | ActivationStatus.Activated ->
+
+                let concernedRegistrationInvitation = 
+                        aTenant.RegistrationInvitations
+                        |> List.filter (fun nextRegistrationInvitation -> nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId)
+                        |> List.first
+
+                match concernedRegistrationInvitation with 
+                | Some invitation -> 
+
+                    let remainingRegistrationInvitations = aTenant.RegistrationInvitations 
+                                                           |> List.filter (fun nextRegistrationInvitation -> nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId) 
+                    let newInvitation = {invitation with StartingOn = aStartDate; Until = anEndDate}
+                        
+                    Ok {aTenant with RegistrationInvitations = remainingRegistrationInvitations@[newInvitation]}
+                | None   
+                    -> let msg = sprintf "Registration invitation with id %A not found" aRegistrationInvitationId
+                       Error msg
+
+
+          | ActivationStatus.Disactivated -> 
+               let error = sprintf "Tenant is deactivated"
+               Error error
+
+
+    let registerUserForTenant
+        (anInvitationId:RegistrationInvitationId)
+        (aUSerName:Username)
+        (aPassword:Password)
+        (anEnablement:Enablement)
+        (aPerson:Person)
+        (aTenant:Tenant)
+        : Result<User,string> =
+
+        match aTenant.ActivationStatus with 
+        | Activated ->
+            
+            match (isRegistrationInvitationAvailableThrough aTenant anInvitationId) with 
+            | true ->
+
+                    let rsCreateUser = result{
+
+                        let strId = generateNoEscapeId()
+                        let! userId = UserId.create "user id" strId 
+
+                        let user = {UserId = userId; TenantId = aTenant.TenantId; Username = aUSerName; Password = aPassword; Enablement = anEnablement; Person = aPerson}
+
+                        return user
+                    }
+
+                    match rsCreateUser with 
+                    | Ok user -> 
+                        Ok user
+                    | Error error -> 
+                        let msg = sprintf "Error occurred"
+                        Error error
+            | false ->
+                let msg = sprintf "Registration expired/not available "
+                Error msg
+            
+        | Disactivated ->
+            let msg = sprintf "Tenant deactivated"
+            Error msg
+    let withdrawInvitation 
+        (aTenant:Tenant)
+        (aRegistrationInvitationId:RegistrationInvitationId)
+        :Result<Tenant, string> =
+
+        let optionalInvitationToWithdraw = 
+                                    aTenant.RegistrationInvitations 
+                                    |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId = aRegistrationInvitationId )
+                                    |> List.first
+
+        match optionalInvitationToWithdraw with 
+         | Some _ -> 
+
+            let otherInvitations = aTenant.RegistrationInvitations 
+                                    |> List.filter (fun nextInvitation -> not (nextInvitation.RegistrationInvitationId = aRegistrationInvitationId) )
+            
+            Ok {aTenant with RegistrationInvitations = otherInvitations }
+
+         | None ->
+            let msg = sprintf "No registration invitation found for identifier: %A" aRegistrationInvitationId
+            Error msg
+
+         
+
 
 module Role = 
 
@@ -488,6 +615,9 @@ module Group =
 module Services =
 
 
+    let fromGroupMemberIdToDto (aGroupMemberId : GroupMemberId) : unit = ()
+
+
     type GetUserById = UserId -> Result<User, string>
     type GetGroupById = GroupId -> Result<Group, string>
     type GetGroupMemberById = GroupMemberId -> Result<Group, string>
@@ -533,7 +663,7 @@ module Services =
     let isGroupMember :IsGroupMember = 
         fun aGroup aMember getGroupMemberById ->
         
-            let rec recIGroupMember  
+            let rec recIsGroupMember  
                 (aMember : GroupMember) 
                 (getGroupMemberById : GetGroupMemberById)
                 (aGroupMemberList : GroupMember list) =
@@ -544,20 +674,28 @@ module Services =
                     if (head.Type = GroupMemberType.Group) && (head = aMember) then
                         true
                     else 
+                        let oneElementListOfAdditionalMembersToCompare (aGroup:Group) : Group list = 
+                            List.init 1 (fun x -> aGroup)
                     ///IO operation here. looking for a group member by its group member identifier 
                         let additionalGroupToSearch = getGroupMemberById head.MemberId
+
+                        
+
+                        //init : int -> (int -> 'T) -> 'T list
                     ///IO operation here.
                         match additionalGroupToSearch with
                         | Ok anAdditionalGroupToSearch ->
 
                             let newMembersToAppend =  anAdditionalGroupToSearch.Members
-                            let allMembers = tail@newMembersToAppend
-                            let result = recIGroupMember aMember getGroupMemberById allMembers
+                            //let newMembertoToAppendList = oneElementListOfAdditionalMembersToCompare newMembersToAppend
+                            let allMembers = tail @ newMembersToAppend
+                            let result = recIsGroupMember aMember getGroupMemberById allMembers
+
                             result
 
                         | Error _ -> false
 
-            recIGroupMember  aMember  getGroupMemberById   aGroup.Members    
+            recIsGroupMember  aMember  getGroupMemberById   aGroup.Members    
                          
 
  
