@@ -22,6 +22,7 @@ open IdentityAndAccess.DatabaseTypes.Functions
 open IdentityAndAcccess.DomainTypes.Functions
 open System
 open IdentityAndAcccess.DomainServices.Group
+open IdentityAndAccess.DatabaseTypes.Functions
 
 
 
@@ -283,45 +284,50 @@ match rsChangeTenantActivationStatus with
 let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
 
-                let! groupToAddTo = Group.create "507f1f77bcf86cd799439051" "507f1f77bcf86cd799439010" "EmployesStageres" "A group containing interns employees like the ones in Internship programs ...etc ..." []
-                let! groupToAdd = Group.create "24e7538d90ad4bd7a448d158" "507f1f77bcf86cd799439010" "EmployesStageres" "A group containing interns employees like the ones in Internship programs ...etc ..." []
+                let! groupToAdd1 = Group.create "507f1f77bcf86cd799439051" "507f1f77bcf86cd799439010" "Distributeur" "Distributeur" []
+                let! groupToAdd2 = Group.create "24e7538d90ad4bd7a448d152" "507f1f77bcf86cd799439010" "Registarts" "Registarts" []
+                let! groupToAdd3 = Group.create "24e7538d90ad4bd7a448d153" "507f1f77bcf86cd799439010" "Cleaners" "Cleaners" []
+                let! groupToAdd4 = Group.create "24e7538d90ad4bd7a448d154" "507f1f77bcf86cd799439010" "Formateurs" "Formateurs" []
+                let! groupToAdd5 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Urgenciers" "Urgenciers" []
                 
-                
-                
+                let groupToSave1 = DbHelpers.fromGroupDomainToDto groupToAdd1
+                let groupToSave2 = DbHelpers.fromGroupDomainToDto groupToAdd2
+                let groupToSave3 = DbHelpers.fromGroupDomainToDto groupToAdd3
+                let groupToSave4 = DbHelpers.fromGroupDomainToDto groupToAdd4
+                let groupToSave5 = DbHelpers.fromGroupDomainToDto groupToAdd5
+              
 
                 let saveGroupDependencyFunction = GroupDb.saveOneGroup
                 let updateGroupDependencyFunction = GroupDb.updateOneGroup
                 let loadGroupByIdDependancyFunction = GroupDb.loadOneGroupById
 
+                //saveGroupDependencyFunction groupToSave1
+                //saveGroupDependencyFunction groupToSave2
+                //saveGroupDependencyFunction groupToSave3
+                //saveGroupDependencyFunction groupToSave4
+                //saveGroupDependencyFunction groupToSave5
+
+                let id = (new BsonObjectId(new ObjectId(GroupId.value groupToAdd1.GroupId)))
+                let groupToAddToDto = loadGroupByIdDependancyFunction id
+                let! groupToAddTo = groupToAddToDto |> DbHelpers.fromDbDtoToGroup 
 
 
 
-               // printfn "JUST BEFORE THE CALL 22222222222222222222222222"
+                printfn "GROUP LOADED = %A" groupToAddToDto
+                printfn "GROUP TO SAVE = %A" groupToAddTo
 
-                //saveGroupDependencyFunction groupToSave
+           
+                let! groupWithMember = Group.addGroupToGroup groupToAddTo groupToAdd5 DomainServices.IsMemberGroupMember
 
-               // printfn "JUST AFTER THE CALL 22222222222222222222222222 THE PARAM TO SAVEONEGOUP INTO GROUP DB : %A" groupToSave
-
-                //printfn "JUST AFTER THE CALL 22222222222222222222222222"
-
-                let! groupWithMember = Group.addGroupToGroup groupToAddTo groupToAdd DomainServices.IsMemberGroupMember
-
+                printfn "HERE THE TIME THE isMemberGroupMember was called at : %A " DomainServices.TimeServiceWasCalled
                 
 
-                let toBisonId (aGroupId : GroupId) = 
-                        new BsonObjectId(new ObjectId((GroupId.value aGroupId))) 
-                        
-
-               
                 let groupToSave  = DbHelpers.fromGroupDomainToDto groupWithMember
                 updateGroupDependencyFunction groupToSave
 
-                //printfn "JUST AFTER THE CALL 33333333333333333333333333 THE UPDATED UPDATEGROUP INTO GROUP DB : %A" groupToUpdate
+                
 
-                //let loadedGroupFromDb = loadGroupByIdDependancyFunction (toBisonId group.GroupId)
-
-
-                return groupWithMember 
+                return groupToAdd1 
 
 
 }

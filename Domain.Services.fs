@@ -65,10 +65,12 @@ module Group =
                     (aMember : GroupMember) 
                     (getGroupMemberById : GetGroupMemberById)
                     (aGroupMemberList : GroupMember list) =
+
                         match aGroupMemberList with
                         | [] -> 
                             false
                         | head::tail ->
+                            printfn "THE HEAD IS: %A" head
                             if (head.Type = GroupMemberType.Group) && (head = aMember) then
                                 true
                             else 
@@ -92,6 +94,9 @@ module Group =
                                     result
 
                                 | Error _ -> false
+
+                         
+
 
                 recIsGroupMember  aMember  getGroupMemberById   aGroup.Members  
 

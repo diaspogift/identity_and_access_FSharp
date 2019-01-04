@@ -7,6 +7,13 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
  
 open MongoDB.Driver
 open  MongoDB.Bson
+ open System.Collections.Generic
+ open IdentityAndAcccess.CommonDomainTypes
+ open FSharp.Data.Sql
+ open System
+ open Suave.Sockets
+ open System.Collections.Generic
+ open System.Collections.Generic
 
 
 
@@ -222,16 +229,70 @@ module DbHelpers =
         role
 
 
+    let preppend  firstR restR = 
+        match firstR, restR with
+        | Ok first, Ok rest -> Ok (first::rest)  
+        | Error error1, Ok _ -> Error error1
+        | Ok _, Error error2 -> Error error2  
+        | Error error1, Error _ -> Error error1
+
+    let ResultOfSequenceTemp aListOfResults =
+        let initialValue = Ok List.empty
+        List.foldBack preppend aListOfResults initialValue
+
     let fromDbDtoToGroup
      (aDtoGroup : GroupDto) 
      :Result<Group,string> = 
 
         let id = aDtoGroup.GroupId.ToString()
 
-        result {
-            let! group = Group.create id aDtoGroup.TenantId aDtoGroup.Name aDtoGroup.Description []
+        let membersList = aDtoGroup.Members
+        let membersList2 = membersList 
+                           |> Array.map (fun (groupMemberDto:GroupMemberDto) ->  
+
+                               let rsGroupMember = result {
+                                    
+                                    let iddd = groupMemberDto.MemberId.ToString()
+                                    let! id =  GroupMemberId.create "" iddd
+                                    let! tenantId = TenantId.create "" groupMemberDto.TenantId 
+                                    let! name = GroupMemberName.create "" groupMemberDto.Name 
+
+                                    let! membertype = match  groupMemberDto.Type with  
+                                                      | GroupMemberTypeDto.Group -> Ok GroupMemberType.Group
+                                                      | GroupMemberTypeDto.User -> Ok GroupMemberType.User
+                                                      | _ -> Error "Unvalid case" 
+
+                                    let grouMember:GroupMemberDtoTemp = {
+                                        MemberId = GroupMemberId.value id
+                                        TenantId = TenantId.value tenantId
+                                        Name = GroupMemberName.value name
+                                        Type =  groupMemberDto.ToString() 
+                                    }
+
+                                   return grouMember
+
+                               } 
+
+                               rsGroupMember
+
+                                
+                                )
+                           |> Array.toList
+                           |> ResultOfSequenceTemp
+
+        match membersList2 with
+        | Ok aList -> 
+
+            result {
+            let! group = Group.create id aDtoGroup.TenantId aDtoGroup.Name aDtoGroup.Description aList
             return group
-        }
+            }
+
+        |  Error error ->
+            Error error                              
+                           
+
+        
     
     
     
@@ -336,7 +397,12 @@ module GroupDb =
         aGroupCollection.InsertOne aGroupDto
 
     let private loadGroupById (aGroupCollection : IMongoCollection<GroupDto>)  ( id : BsonObjectId ) = 
-        let result = aGroupCollection.Find(fun x -> x.GroupId = id).Single()        
+        printfn "==================================START===================================== BSOOBJECTID ===== : %A " id
+        printfn "==================================START====================================="
+        let result = aGroupCollection.Find(fun x -> x.GroupId = id).Single()  
+        printfn "==================================END====================================="
+        printfn "==================================END====================================="
+      
         result
 
     let private updateGroup (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroupDto : GroupDto ) = 

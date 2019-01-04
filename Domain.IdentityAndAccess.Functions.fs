@@ -590,6 +590,25 @@ module User =
     
 module GroupMembers = 
 
+
+
+
+
+
+
+    let preppend  firstR restR = 
+        match firstR, restR with
+        | Ok first, Ok rest -> Ok (first::rest)  
+        | Error error1, Ok _ -> Error error1
+        | Ok _, Error error2 -> Error error2  
+        | Error error1, Error _ -> Error error1
+
+    let ResultOfSequenceTemp aListOfResults =
+        let initialValue = Ok List.empty
+        List.foldBack preppend aListOfResults initialValue
+
+
+
     let create fieldName (membersDto:GroupMemberDtoTemp list) =  
         membersDto
         |> List.map (fun aMemberDto -> 
@@ -612,9 +631,13 @@ module GroupMembers =
                                        }
                                       
                     )
+        |> ResultOfSequenceTemp
 
 [<RequireQualifiedAccess>]
 module Group = 
+
+
+
 
 
  
@@ -640,7 +663,7 @@ module Group =
             let! tenantIds = TenantId.create "tenantId: " tenantId
             let! names = GroupName.create "groupName" name
             let! descriptions = GroupDescription.create "groupDescription" description
-            let members = GroupMembers.create "groupMembers" members
+            let! members = GroupMembers.create "groupMembers" members
           
 
             return {
@@ -648,7 +671,7 @@ module Group =
                        TenantId = tenantIds
                        Name = names
                        Description = descriptions
-                       Members = []
+                       Members = members
             }
         }
 
@@ -666,8 +689,9 @@ module Group =
 
             ///Verify that both groups have same tenants
             let doBothGroupsHaveSameTenant  = aGroupToAddTo.TenantId = aGroupToAdd.TenantId
+            let isNotTheSameGroup  = not (aGroupToAddTo.GroupId = aGroupToAdd.GroupId)
 
-            match doBothGroupsHaveSameTenant with 
+            match doBothGroupsHaveSameTenant && isNotTheSameGroup with 
             | true -> 
 
 
@@ -676,40 +700,47 @@ module Group =
                 /// Now that both groups have same tenants, let's use the groupMembersevice to verify
                 /// wether the group to add is already a member/sub-member? 
 
-                    let rsIsGrouMember = result {
+                    let rsGrouMember = result {
           
                         let! aMemberToAdd = aGroupToAdd |> toGroupMember GroupMemberType.Group
 
                         let isTheGroupMemberToAddAlreadyAMember =  aMemberToAdd |> isGroupMemberService aGroupToAddTo  
 
+                        printfn "VALUE OF isTheGroupMemberToAddAlreadyAMember = %A" isTheGroupMemberToAddAlreadyAMember
+
                         //let! aResultMember = match isTheGroupMemberToAddAlreadyAMember with
                                              //| true -> Ok aMemberToAdd
                                              //| false -> Error "Already a member"
+
+                    
                             
-                        return isTheGroupMemberToAddAlreadyAMember
+                        return   isTheGroupMemberToAddAlreadyAMember
                          
                     }
 
-                    match rsIsGrouMember with 
-                    | Ok _ -> 
-                        let newMembers =  aGroupToAddTo.Members
-                                
-                        let rsIsGrouMemberToAdd = result {
-                                let! aMemberToAdd = aGroupToAdd |> toGroupMember GroupMemberType.Group
-                                return aMemberToAdd
-                            }
+                    match rsGrouMember with 
+                    | Ok isAlreadyGroupMember -> 
 
-                        match rsIsGrouMemberToAdd with 
-                        | Ok groupMember -> 
-                            let group = {aGroupToAddTo with Members = [groupMember]@newMembers}
-                            
-                            Ok group
-                        | Error error ->
-                            Error error
-                        
+                        if not isAlreadyGroupMember then
+                            let newMembers =  aGroupToAddTo.Members
+                                    
+                            let rsIsGrouMemberToAdd = result {
+                                    let! aMemberToAdd = aGroupToAdd |> toGroupMember GroupMemberType.Group
+                                    return aMemberToAdd
+                                }
 
-                    | Error msg  -> 
-                        Error msg
+                            match rsIsGrouMemberToAdd with 
+                            | Ok groupMember -> 
+                                let group = {aGroupToAddTo with Members = [groupMember]@newMembers}
+
+                                Ok group
+                            | Error error ->
+                                Error error
+                        else
+                             Error "Group already a member"
+
+                    | Error isNotGoupMemberYet  -> 
+                         Error isNotGoupMemberYet
                
 
             | false -> 
