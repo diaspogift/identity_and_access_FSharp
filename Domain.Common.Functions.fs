@@ -1,4 +1,4 @@
-module IdentityAndAcccess.CommonDomainTypes.Functions
+module public IdentityAndAcccess.CommonDomainTypes.Functions
 
 open System
 open IdentityAndAcccess.CommonDomainTypes

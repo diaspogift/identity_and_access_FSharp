@@ -10,6 +10,7 @@ open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAccess.DatabaseTypes.Functions
 open MongoDB.Bson
+open IdentityAndAcccess.DomainServices
 open IdentityAndAccess.DatabaseTypes.Functions
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions
@@ -18,7 +19,13 @@ open IdentityAndAccess.DatabaseTypes.Functions
 open IdentityAndAccess.DatabaseTypes
 open IdentityAndAccess.DatabaseTypes.Functions
 open IdentityAndAccess.DatabaseTypes.Functions
+open IdentityAndAcccess.DomainTypes.Functions
+open System
+open IdentityAndAcccess.DomainServices.Group
 
+
+
+let DomainServices:GroupMemberService = {TimeServiceWasCalled = DateTime.Now; CallerCredentials = (CallerCredential "Felicien")}
 
 
 (*
@@ -273,16 +280,20 @@ match rsChangeTenantActivationStatus with
         -> printfn "Error = %A" error*)
 
 
-(*let rsCreateGroupSaveAndTryToReloadItFormDb = result {
+let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
 
-                let! group = Group.create "507f1f77bcf86cd799439051" "507f1f77bcf86cd799439010" "EmployesStageres" "A group containing interns employees like the ones in Internship programs ...etc ..." []
+                let! groupToAddTo = Group.create "507f1f77bcf86cd799439051" "507f1f77bcf86cd799439010" "EmployesStageres" "A group containing interns employees like the ones in Internship programs ...etc ..." []
+                let! groupToAdd = Group.create "24e7538d90ad4bd7a448d158" "507f1f77bcf86cd799439010" "EmployesStageres" "A group containing interns employees like the ones in Internship programs ...etc ..." []
                 
                 
-                let groupToSave  = DbHelpers.fromGroupDomainToDto group
+                
+
                 let saveGroupDependencyFunction = GroupDb.saveOneGroup
                 let updateGroupDependencyFunction = GroupDb.updateOneGroup
                 let loadGroupByIdDependancyFunction = GroupDb.loadOneGroupById
+
+
 
 
                // printfn "JUST BEFORE THE CALL 22222222222222222222222222"
@@ -293,31 +304,33 @@ match rsChangeTenantActivationStatus with
 
                 //printfn "JUST AFTER THE CALL 22222222222222222222222222"
 
+                let! groupWithMember = Group.addGroupToGroup groupToAddTo groupToAdd DomainServices.IsMemberGroupMember
 
-                let groupToUpdate = groupToSave
+                
 
                 let toBisonId (aGroupId : GroupId) = 
                         new BsonObjectId(new ObjectId((GroupId.value aGroupId))) 
                         
 
-                updateGroupDependencyFunction groupToUpdate
-
+               
+                let groupToSave  = DbHelpers.fromGroupDomainToDto groupWithMember
+                updateGroupDependencyFunction groupToSave
 
                 //printfn "JUST AFTER THE CALL 33333333333333333333333333 THE UPDATED UPDATEGROUP INTO GROUP DB : %A" groupToUpdate
 
                 //let loadedGroupFromDb = loadGroupByIdDependancyFunction (toBisonId group.GroupId)
 
 
-                return groupToUpdate 
+                return groupWithMember 
 
 
 }
 
 match rsCreateGroupSaveAndTryToReloadItFormDb with 
 | Ok aGroup
-        -> printfn "The result is here  = %A" aGroup
+        -> printfn "The adapted result is here  = %A" aGroup
 | Error error 
-        -> printfn "Error = %A" error*)
+        -> printfn "Error = %A" error
 
 
 
@@ -405,7 +418,7 @@ match rsChangeTenantActivationStatus with
 
 
 
-let rsChangeTenantActivationStatus = result {
+(*let rsChangeTenantActivationStatus = result {
 
             
                 let! tenant = Tenant.create "b6a0d78a41ef4d8ea1c51772" "Mobile Biller new" "Money Tranfer Solutions new"
@@ -454,7 +467,7 @@ match rsChangeTenantActivationStatus with
         -> printfn "The role that was loaded  = %A" role.Name
            printfn "The full role = %A" role
 | Error error 
-        -> printfn "Error = %A" error
+        -> printfn "Error = %A" error*)
 
 
 

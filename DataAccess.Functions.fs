@@ -7,8 +7,7 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
  
 open MongoDB.Driver
 open  MongoDB.Bson
-open IdentityAndAcccess.CommonDomainTypes
-open Suave.Sockets
+
 
 
 
@@ -223,7 +222,9 @@ module DbHelpers =
         role
 
 
-    let fromDbDtoToGroup (aDtoGroup : GroupDto) = 
+    let fromDbDtoToGroup
+     (aDtoGroup : GroupDto) 
+     :Result<Group,string> = 
 
         let id = aDtoGroup.GroupId.ToString()
 

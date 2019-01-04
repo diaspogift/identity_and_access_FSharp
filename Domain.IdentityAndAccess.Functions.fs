@@ -3,9 +3,11 @@ module IdentityAndAcccess.DomainTypes.Functions
 open System
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open FSharp.Data.Sql
 open IdentityAndAcccess.DomainTypes
+open FSharp.Data.Sql
 open Suave.Sockets
+
+
 
 
 
@@ -14,99 +16,125 @@ open Suave.Sockets
 let generateNoEscapeId () = Guid.NewGuid().ToString().Replace("-", "")
 
 
+type IsGroupMemberWithBakedGetGroupMemberById =  Group -> GroupMember  -> Boolean
 
 
+//Services that act on domain types
+
+module Services =
+
+
+    type GetUserById = UserId -> Result<User, string>
+    type GetGroupById = GroupId -> Result<Group, string>
+    type GetGroupMemberById = GroupMemberId -> Result<Group, string>
+    type IsGroupMember = GetGroupMemberById -> Group -> GroupMember   -> Boolean
+    type IsUserInNestedGroup = Group -> User -> GetGroupMemberById -> Boolean
+    type CallerCredential = CallerCredential of string
+
+
+     //Tenant type related services 
+    let activateTenant (aTenant : Tenant) : Result<Tenant, string> =
+        
+        match aTenant.ActivationStatus with  
+        | Disactivated ->
+            Ok { aTenant with ActivationStatus = ActivationStatus.Activated }  
+        | Activated -> 
+            Error "Tenant already has its activation status set to Activated" 
+
+
+
+    let deactivateTenant (aTenant : Tenant) : Result<Tenant, string> =
+        
+        match aTenant.ActivationStatus with  
+        | Disactivated ->
+            Error "Tenant already has its activation status set to Deactivated"
+        | Activated -> 
+            Ok { aTenant with ActivationStatus = ActivationStatus.Disactivated } 
+             
+
+    //User type related services 
+    (*let confirmUser (aGroup:Group) (aUser:User) (getUserById:GetUserById)  =      
+
+            let user = getUserById aUser.UserId
+
+            match user with 
+            | Ok user ->
+                 user |> User.isEnabled 
+            | Error error -> 
+                false*)
+
+
+
+
+
+
+
+
+
+///Function that act on Domain types
 
 
 module RegistrationInvitations =
 
     let fromRegistrationInvitationDtoTempToDomain = 
-        fun aInvitationDto -> result{
-                                                  let! invitationId = RegistrationInvitationId.create "invitation id: " aInvitationDto.RegistrationInvitationId
-                                                  let! tenantId = TenantId.create "tenantId" aInvitationDto.TenantId
-                                                  let! desciption = RegistrationInvitationDescription.create "tenant description" aInvitationDto.Description
-                                                  let startingOn =  aInvitationDto.StartingOn
-                                                  let until = aInvitationDto.Until
+        fun aInvitationDto -> result {
+                                    
+                                    let! invitationId = RegistrationInvitationId.create "invitation id: " aInvitationDto.RegistrationInvitationId
+                                    let! tenantId = TenantId.create "tenantId" aInvitationDto.TenantId
+                                    let! desciption = RegistrationInvitationDescription.create "tenant description" aInvitationDto.Description
+                                    let startingOn =  aInvitationDto.StartingOn
+                                    let until = aInvitationDto.Until
 
+                                    let registrationInvitation:RegistrationInvitation = {
+                                            RegistrationInvitationId = invitationId
+                                            TenantId = tenantId
+                                            Description = desciption
+                                            StartingOn = startingOn
+                                            Until = until
+                                        }  
 
-                                                  let p:RegistrationInvitation = {
-                                                      RegistrationInvitationId = invitationId
-                                                      TenantId = tenantId
-                                                      Description = desciption
-                                                      StartingOn = startingOn
-                                                      Until = until
-                                                  }  
-
-                                                  return p
-                                       }
+                                    return registrationInvitation
+                                }
                                       
                     
     let create fieldName (invitationsDto:RegistrationInvitationDtoTemp list) =  
         invitationsDto
         |> List.map fromRegistrationInvitationDtoTempToDomain
 
-    (*let fromRegInvToRegInvTemp fieldName (invitations:RegistrationInvitation list) =  
-        invitations
-        |> List.map (fun anInvitation -> 
-
-                                       result{
-                                                  let invitationId = RegistrationInvitationId.value anInvitation.RegistrationInvitationId
-                                                  let tenantId = TenantId.value anInvitation.TenantId
-                                                  let desciption = RegistrationInvitationDescription.value anInvitation.Description
-                                                  let startingOn =  anInvitation.StartingOn
-                                                  let until = anInvitation.Until
-
-
-                                                  let p:RegistrationInvitationDto = {
-                                                      RegistrationInvitationId = invitationId
-                                                      TenantId = tenantId
-                                                      Description = desciption
-                                                      StartingOn = startingOn
-                                                      Until = until
-                                                  }  
-
-                                                  return p
-                                       }
-                                      
-                    )
-
-    *)
     let isIdentifiedBy (aRegistrationInvitationId : RegistrationInvitationId)(aRegistrationInvitation : RegistrationInvitation) : Boolean = 
-        let result = (aRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId)
+        match (aRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId) with 
+        | true -> true
+        | false -> false
 
-        if result then
-            result
-        else
-            (RegistrationInvitationId.value aRegistrationInvitationId  = RegistrationInvitationDescription.value aRegistrationInvitation.Description)
 
     let invitation  (aRegistrationInvitationId : RegistrationInvitationId) (aRegistrationInvitationList : RegistrationInvitation list) =
         aRegistrationInvitationList 
         |> List.filter (fun nextRegistrationInvitation -> isIdentifiedBy aRegistrationInvitationId nextRegistrationInvitation)
         |> List.tryHead
 
-    let isAvailable (aRegistrationInvitation : RegistrationInvitation) : Boolean =
+    let isAvailable (aTimeNow : DateTime) (aRegistrationInvitation : RegistrationInvitation) : Boolean =
 
-        let now = DateTime.Now
-        let resultCompareNowAndSartDate = DateTime.Compare (now, aRegistrationInvitation.StartingOn)
-        let resultCompareUntilAndEnd = DateTime.Compare (now, aRegistrationInvitation.Until)
+        let resultCompareTimeNowAndSartDate = DateTime.Compare (aTimeNow, aRegistrationInvitation.StartingOn)
+        let resultCompareTimeNowAndEndDate = DateTime.Compare (aTimeNow, aRegistrationInvitation.Until)
+        let resultCombinedOfResultSartDateAndEndDate = (resultCompareTimeNowAndSartDate < 0 || resultCompareTimeNowAndEndDate < 0)
+
+        match resultCombinedOfResultSartDateAndEndDate  with  
+        | true ->  false
+        | false -> true
+    let isAvailableWithBakedDateTimeParam = isAvailable DateTime.Now
+       
+
+    let isNotAvailable (aTimeNow : DateTime) (aRegistrationInvitation : RegistrationInvitation): Boolean =
+
+        let resultCompareTimeNowAndSartDate = DateTime.Compare (aTimeNow, aRegistrationInvitation.StartingOn)
+        let resultCompareTimeNowAndEndDate = DateTime.Compare (aTimeNow, aRegistrationInvitation.Until)
+        let resultCombinedOfResultSartDateAndEndDate = (resultCompareTimeNowAndSartDate < 0 || resultCompareTimeNowAndEndDate < 0)
         
-        if (resultCompareNowAndSartDate < 0 || resultCompareUntilAndEnd < 0)  then 
-            false
-        else 
-            true
-
-    let isNotvailable (aRegistrationInvitation : RegistrationInvitation) : Boolean =
-
-        let now = DateTime.Now
-        let resultCompareNowAndSartDate = DateTime.Compare (now, aRegistrationInvitation.StartingOn)
-        let resultCompareUntilAndEnd = DateTime.Compare (now, aRegistrationInvitation.Until)
-        
-        if (resultCompareNowAndSartDate < 0 || resultCompareUntilAndEnd < 0)  then 
-            false
-        else 
-            true
+        match  resultCombinedOfResultSartDateAndEndDate with  
+        | true ->  true
+        | false -> false
           
-
+    let isNotAvailableWithBakedDateTimeParam = isNotAvailable DateTime.Now
 
 
 
@@ -180,9 +208,9 @@ module Tenant =
                             Until = DateTime.Now
                             }
 
-                    let newTenant = { aTenant with RegistrationInvitations = [registrationInvitation]@aTenant.RegistrationInvitations}
+                    let tenantWithNewRegistrationInvitation = { aTenant with RegistrationInvitations = [registrationInvitation]@aTenant.RegistrationInvitations}
 
-                    return newTenant 
+                    return tenantWithNewRegistrationInvitation 
                 }
         else 
             let msg =  "Could not offer registration invitation" 
@@ -286,7 +314,7 @@ module Tenant =
         match aTenant.ActivationStatus with 
         | ActivationStatus.Activated 
             -> aTenant.RegistrationInvitations
-               |> List.filter RegistrationInvitations.isAvailable
+               |> List.filter RegistrationInvitations.isAvailableWithBakedDateTimeParam
         | ActivationStatus.Disactivated 
             -> []
 
@@ -296,7 +324,7 @@ module Tenant =
         match aTenant.ActivationStatus with 
         | ActivationStatus.Activated 
             -> aTenant.RegistrationInvitations
-               |> List.filter RegistrationInvitations.isNotvailable
+               |> List.filter RegistrationInvitations.isNotAvailableWithBakedDateTimeParam
         | ActivationStatus.Disactivated 
             -> []
     let redfineRegistrationInvintationTimeSpan 
@@ -517,18 +545,16 @@ module User =
         match aUser.Enablement.EnablementStatus with  
         | Enabled -> false
         | Disabled -> true
-    let toGroupMember memberType aUser =
+    let toGroupMember (memberType:GroupMemberType) (aUser:User) : Result<GroupMember,string> =
 
-        result {
+        let rs = result {
 
                 let enablement = aUser.Enablement 
-                
                 let! memberId = GroupMemberId.create "memberId" (UserId.value aUser.UserId)
                 let! tenantId = TenantId.create "tenantId" (TenantId.value aUser.TenantId)
                 let! name = GroupMemberName.create "groupName" (Username.value aUser.Username)
         
-                let groupMember:GroupMember = 
-                    {
+                let groupMember:GroupMember = {
                         MemberId = memberId
                         TenantId = tenantId
                         Name = name
@@ -537,6 +563,9 @@ module User =
 
                 return groupMember
         }
+        match rs with
+        | Ok rs -> Ok rs
+        | Error error -> Error error 
 
     let toUserDesriptor 
         (aUser:User)
@@ -630,8 +659,64 @@ module Group =
             Ok {aUser with Password = aNewGivenPassword} 
 
 
-    let addGroupToGroup aGroupToAddTo aGroupToAdd groupMemberService =
-        ()
+    let addGroupToGroup 
+            (aGroupToAddTo:Group)
+            (aGroupToAdd:Group)
+            (isGroupMemberService: IsGroupMemberWithBakedGetGroupMemberById) : Result<Group, string> =
+
+            ///Verify that both groups have same tenants
+            let doBothGroupsHaveSameTenant  = aGroupToAddTo.TenantId = aGroupToAdd.TenantId
+
+            match doBothGroupsHaveSameTenant with 
+            | true -> 
+
+
+                    printfn "I am in the true branch in addGroupToGroup Function"
+
+                /// Now that both groups have same tenants, let's use the groupMembersevice to verify
+                /// wether the group to add is already a member/sub-member? 
+
+                    let rsIsGrouMember = result {
+          
+                        let! aMemberToAdd = aGroupToAdd |> toGroupMember GroupMemberType.Group
+
+                        let isTheGroupMemberToAddAlreadyAMember =  aMemberToAdd |> isGroupMemberService aGroupToAddTo  
+
+                        //let! aResultMember = match isTheGroupMemberToAddAlreadyAMember with
+                                             //| true -> Ok aMemberToAdd
+                                             //| false -> Error "Already a member"
+                            
+                        return isTheGroupMemberToAddAlreadyAMember
+                         
+                    }
+
+                    match rsIsGrouMember with 
+                    | Ok _ -> 
+                        let newMembers =  aGroupToAddTo.Members
+                                
+                        let rsIsGrouMemberToAdd = result {
+                                let! aMemberToAdd = aGroupToAdd |> toGroupMember GroupMemberType.Group
+                                return aMemberToAdd
+                            }
+
+                        match rsIsGrouMemberToAdd with 
+                        | Ok groupMember -> 
+                            let group = {aGroupToAddTo with Members = [groupMember]@newMembers}
+                            
+                            Ok group
+                        | Error error ->
+                            Error error
+                        
+
+                    | Error msg  -> 
+                        Error msg
+               
+
+            | false -> 
+                let msg = sprintf "Wrong tenant consistency"
+                Error msg
+
+        
     
     let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User) (aGroupMember:GroupMember) =
        
@@ -643,92 +728,13 @@ module Group =
                     let group = {aGroupToAddTo with Members =  aGroupMember :: aGroupToAddTo.Members}
                     Ok group
                
-module Services =
 
-
-    let fromGroupMemberIdToDto (aGroupMemberId : GroupMemberId) : unit = ()
-
-
-    type GetUserById = UserId -> Result<User, string>
-    type GetGroupById = GroupId -> Result<Group, string>
-    type GetGroupMemberById = GroupMemberId -> Result<Group, string>
-    type IsGroupMember = Group -> GroupMember -> GetGroupMemberById -> Boolean
-    type IsUserInNestedGroup = Group -> User -> GetGroupMemberById -> Boolean
-
-
-     //Tenant type related services 
-
-    let activateTenant (aTenant : Tenant) : Result<Tenant, string> =
-        
-        match aTenant.ActivationStatus with  
-        | Disactivated ->
-            Ok { aTenant with ActivationStatus = ActivationStatus.Activated }  
-        | Activated -> 
-            Error "Tenant already has its activation status set to Activated" 
-
-
-
-    let deactivateTenant (aTenant : Tenant) : Result<Tenant, string> =
-        
-        match aTenant.ActivationStatus with  
-        | Disactivated ->
-            Error "Tenant already has its activation status set to Deactivated"
-        | Activated -> 
-            Ok { aTenant with ActivationStatus = ActivationStatus.Disactivated } 
-             
-
-    //User type related services 
-    let confirmUser aGroup aUser (getUserById:GetUserById)  =      
-
-            let user = getUserById aUser.UserId
-
-            match user with 
-            | Ok user -> User.isEnabled user
-            | Error error -> false
 
  
 
 
   
-    //Group type related services
-    let isGroupMember :IsGroupMember = 
-        fun aGroup aMember getGroupMemberById ->
-        
-            let rec recIsGroupMember  
-                (aMember : GroupMember) 
-                (getGroupMemberById : GetGroupMemberById)
-                (aGroupMemberList : GroupMember list) =
-                match aGroupMemberList with
-                | [] -> 
-                    false
-                | head::tail ->
-                    if (head.Type = GroupMemberType.Group) && (head = aMember) then
-                        true
-                    else 
-                        let oneElementListOfAdditionalMembersToCompare (aGroup:Group) : Group list = 
-                            List.init 1 (fun x -> aGroup)
-                    ///IO operation here. looking for a group member by its group member identifier 
-                        let additionalGroupToSearch = getGroupMemberById head.MemberId
-
-                        
-
-                        //init : int -> (int -> 'T) -> 'T list
-                    ///IO operation here.
-                        match additionalGroupToSearch with
-                        | Ok anAdditionalGroupToSearch ->
-
-                            let newMembersToAppend =  anAdditionalGroupToSearch.Members
-                            //let newMembertoToAppendList = oneElementListOfAdditionalMembersToCompare newMembersToAppend
-                            let allMembers = tail @ newMembersToAppend
-                            let result = recIsGroupMember aMember getGroupMemberById allMembers
-
-                            result
-
-                        | Error _ -> false
-
-            recIsGroupMember  aMember  getGroupMemberById   aGroup.Members    
-                         
-
+    
  
 
 
