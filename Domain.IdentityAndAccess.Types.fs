@@ -1,43 +1,46 @@
 namespace IdentityAndAcccess.DomainTypes
 
+
+///Imported local libs
 open IdentityAndAcccess.CommonDomainTypes
 open System
 
 
 
-type SupportNestingStatus = 
-    | Support
-    | Oppose
+///Tenant related types
+/// 
+/// 
+/// 
+/// 
+/// 
+type ActivationStatus = 
+    |Activated 
+    |Disactivated
 
-type GroupMemberType = 
-    | User
-    | Group
-
-type GroupMember = {
-    MemberId: GroupMemberId
+type RegistrationInvitation = {
+    RegistrationInvitationId: RegistrationInvitationId
+    Description: RegistrationInvitationDescription
     TenantId: TenantId
-    Name: GroupMemberName
-    Type: GroupMemberType
-}
+    StartingOn: DateTime
+    Until: DateTime
+    }
 
-type Group = {
-    GroupId: GroupId
+type Tenant = {
     TenantId: TenantId
-    Name: GroupName
-    Description: GroupDescription
-    Members: GroupMember list
-}
-
-type Role = {
-    RoleId: RoleId
-    TenantId: TenantId
-    Name: RoleName
-    Description: RoleDescription
-    SupportNesting: SupportNestingStatus
-    Group: Group
-}
+    Name: TenantName
+    Description: TenantDescription 
+    RegistrationInvitations: RegistrationInvitation list
+    ActivationStatus : ActivationStatus
+    }
 
 
+
+///User related types
+/// 
+/// 
+/// 
+/// 
+/// 
 type FullName = {
     First: FirstName
     Middle: MiddleName
@@ -48,31 +51,25 @@ type EnablementStatus =
     |Enabled 
     |Disabled
 
-type ActivationStatus = 
-    |Activated 
-    |Disactivated
-
 type Enablement = {
     EnablementStatus: EnablementStatus
     StartDate: DateTime
     EndDate: DateTime
-}
+    }
 
 type ContactInformation = {
     Email : EmailAddress
     Address: PostalAddress
     PrimaryTel: Telephone
     SecondaryTel: Telephone
-}
-
+    }
 
 type Person = {
     Contact: ContactInformation
     Name: FullName 
     Tenant: TenantId
     User: UserId
-}
-
+    }
 
 type User = {
     UserId: UserId
@@ -81,59 +78,91 @@ type User = {
     Password: Password
     Enablement: Enablement
     Person: Person
-}
+    }
 
 type UserDescriptor = {
     UserDescriptorId: UserDescriptorId
     TenantId: TenantId
     Username: Username
     Email: EmailAddress
-}
+    }
 
 
-type RegistrationInvitation = {
-    RegistrationInvitationId: RegistrationInvitationId
-    Description: RegistrationInvitationDescription
+///Group related types
+/// 
+/// 
+/// 
+/// 
+/// 
+type GroupMemberType = 
+    | OfUser
+    | OfGroup
+
+type GroupMember = {
+    MemberId: GroupMemberId
     TenantId: TenantId
-    StartingOn: DateTime
-    Until: DateTime
-}
+    Name: GroupMemberName
+    Type: GroupMemberType
+    }
 
-
-type Tenant = {
+type Group = {
+    GroupId: GroupId
     TenantId: TenantId
-    Name: TenantName
-    Description: TenantDescription 
-    RegistrationInvitations: RegistrationInvitation list
-    ActivationStatus : ActivationStatus
-}
+    Name: GroupName
+    Description: GroupDescription
+    Members: GroupMember list
+    }
 
+
+
+///Role related types
+/// 
+/// 
+/// 
+/// 
+type SupportNestingStatus = 
+    | Support
+    | Oppose
+
+type Role = {
+    RoleId: RoleId
+    TenantId: TenantId
+    Name: RoleName
+    Description: RoleDescription
+    SupportNesting: SupportNestingStatus
+    InternalGroup: Group
+    }
+
+
+
+
+
+
+
+
+
+///Should be a common domain type 
 type MyTimeSpan = {
     Start: DateTime
     End: DateTime 
 }
 
 
+///Temporary types should there be here? let alone should they have been created?
 type GroupMemberDtoTemp = {
     MemberId : string
     TenantId : string
     Name : string
     Type : string
     }
-///Temp
-/// 
-/// 
-/// 
-/// 
-/// 
 
 type RegistrationInvitationDtoTemp = {
-    RegistrationInvitationId: string
-    TenantId: string
-    Description: string
+    RegistrationInvitationId : string
+    TenantId : string
+    Description : string
     StartingOn: DateTime
-    Until: DateTime
-}
+    Until : DateTime
+    }
 
             
             

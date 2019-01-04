@@ -287,7 +287,7 @@ module Tenant =
                             Name = aRoleName
                             Description = aRoleDescription
                             SupportNesting = SupportNestingStatus.Support
-                            Group = group
+                            InternalGroup = group
                     }
 
                     return role
@@ -462,7 +462,7 @@ module Role =
                             Name = names
                             Description = descriptions
                             SupportNesting = SupportNestingStatus.Support
-                            Group = group
+                            InternalGroup = group
                     }
 
                     return role
@@ -624,7 +624,7 @@ module GroupMembers =
                                                       MemberId = memberId
                                                       TenantId = tenantId
                                                       Name = name
-                                                      Type = GroupMemberType.Group
+                                                      Type = OfGroup
                                                   }  
 
                                                   return p
@@ -702,7 +702,7 @@ module Group =
 
                     let rsGrouMember = result {
           
-                        let! aMemberToAdd = aGroupToAdd |> toGroupMember GroupMemberType.Group
+                        let! aMemberToAdd = aGroupToAdd |> toGroupMember OfGroup
 
                         let isTheGroupMemberToAddAlreadyAMember =  aMemberToAdd |> isGroupMemberService aGroupToAddTo  
 
@@ -725,7 +725,7 @@ module Group =
                             let newMembers =  aGroupToAddTo.Members
                                     
                             let rsIsGrouMemberToAdd = result {
-                                    let! aMemberToAdd = aGroupToAdd |> toGroupMember GroupMemberType.Group
+                                    let! aMemberToAdd = aGroupToAdd |> toGroupMember OfGroup
                                     return aMemberToAdd
                                 }
 

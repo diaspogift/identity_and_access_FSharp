@@ -40,8 +40,8 @@ let rec traverseResultA f list =
 
 module DbConfig =
 
-    let connectionString = "mongodb://localhost"
-    let client = new MongoClient(connectionString)
+    let dbConectionString = "mongodb://localhost"
+    let client = new MongoClient(dbConectionString)
     let identityAndAccessDb = client.GetDatabase("IdentityAndAccessDb")
 
     let roleCollection = identityAndAccessDb.GetCollection<RoleDto> "roles"
@@ -167,8 +167,8 @@ module DbHelpers =
     let fromGroupMemberToGroupMemberDto (aGroupMember : GroupMember) = 
 
         let memberType = match aGroupMember.Type  with 
-                                    | Group  -> GroupMemberTypeDto.Group
-                                    | User -> GroupMemberTypeDto.User
+                                    | OfGroup  -> GroupMemberTypeDto.Group
+                                    | OfUser -> GroupMemberTypeDto.User
 
 
         let id = new BsonObjectId(new ObjectId((GroupMemberId.value aGroupMember.MemberId)))
@@ -203,7 +203,7 @@ module DbHelpers =
                                     | Support  -> SupportNestingStatusDto.Support
                                     | Oppose -> SupportNestingStatusDto.Oppose
                                     
-        let groupDto = fromGroupDomainToDto  aRole.Group
+        let groupDto = fromGroupDomainToDto  aRole.InternalGroup
 
         {
             _id = id
@@ -240,56 +240,48 @@ module DbHelpers =
         let initialValue = Ok List.empty
         List.foldBack preppend aListOfResults initialValue
 
-    let fromDbDtoToGroup
-     (aDtoGroup : GroupDto) 
-     :Result<Group,string> = 
+    let fromDbDtoToGroup (aGroupToConvertToGroup : GroupDto) :Result<Group,string> = 
 
-        let id = aDtoGroup.GroupId.ToString()
+            let convertGrouMemberDtoToGroupMemberTempDto = 
+                fun (groupMemberDto:GroupMemberDto) ->  
 
-        let membersList = aDtoGroup.Members
-        let membersList2 = membersList 
-                           |> Array.map (fun (groupMemberDto:GroupMemberDto) ->  
+                                   let rsGroupMember = result {
+                                        
+                                        let strDtoGroupMemberId = groupMemberDto.MemberId.ToString()
+                                        let! groupMemberIdFrom_strDtoGroupMemberId =  GroupMemberId.create "" strDtoGroupMemberId
+                                        let! tenantId = TenantId.create "" groupMemberDto.TenantId 
+                                        let! name = GroupMemberName.create "" groupMemberDto.Name 
 
-                               let rsGroupMember = result {
-                                    
-                                    let iddd = groupMemberDto.MemberId.ToString()
-                                    let! id =  GroupMemberId.create "" iddd
-                                    let! tenantId = TenantId.create "" groupMemberDto.TenantId 
-                                    let! name = GroupMemberName.create "" groupMemberDto.Name 
+                                        let grouMember:GroupMemberDtoTemp = {
+                                            MemberId = GroupMemberId.value groupMemberIdFrom_strDtoGroupMemberId
+                                            TenantId = TenantId.value tenantId
+                                            Name = GroupMemberName.value name
+                                            Type =  groupMemberDto.ToString() 
+                                        }
 
-                                    let! membertype = match  groupMemberDto.Type with  
-                                                      | GroupMemberTypeDto.Group -> Ok GroupMemberType.Group
-                                                      | GroupMemberTypeDto.User -> Ok GroupMemberType.User
-                                                      | _ -> Error "Unvalid case" 
+                                       return grouMember
 
-                                    let grouMember:GroupMemberDtoTemp = {
-                                        MemberId = GroupMemberId.value id
-                                        TenantId = TenantId.value tenantId
-                                        Name = GroupMemberName.value name
-                                        Type =  groupMemberDto.ToString() 
-                                    }
+                                   } 
 
-                                   return grouMember
+                                   rsGroupMember
+            
+            let id = aGroupToConvertToGroup.GroupId.ToString()
+            let groupMemberDtoListToConvertIntoGroupMemberDtoTempList = 
+                               aGroupToConvertToGroup.Members
+                               |> Array.map convertGrouMemberDtoToGroupMemberTempDto
+                               |> Array.toList
+                               |> ResultOfSequenceTemp
 
-                               } 
+            match groupMemberDtoListToConvertIntoGroupMemberDtoTempList with
+            | Ok aGroupMemberDtoTempList -> 
 
-                               rsGroupMember
+                result {
+                let! group = Group.create id aGroupToConvertToGroup.TenantId aGroupToConvertToGroup.Name aGroupToConvertToGroup.Description aGroupMemberDtoTempList
+                return group
+                }
 
-                                
-                                )
-                           |> Array.toList
-                           |> ResultOfSequenceTemp
-
-        match membersList2 with
-        | Ok aList -> 
-
-            result {
-            let! group = Group.create id aDtoGroup.TenantId aDtoGroup.Name aDtoGroup.Description aList
-            return group
-            }
-
-        |  Error error ->
-            Error error                              
+            |  Error error ->
+                Error error                              
                            
 
         
