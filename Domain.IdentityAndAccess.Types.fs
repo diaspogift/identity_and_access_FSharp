@@ -88,6 +88,10 @@ type UserDescriptor = {
     }
 
 
+
+
+
+
 ///Group related types
 /// 
 /// 
@@ -95,8 +99,8 @@ type UserDescriptor = {
 /// 
 /// 
 type GroupMemberType = 
-    | OfUser
-    | OfGroup
+    | UserGroupMember
+    | GroupGroupMember
 
 type GroupMember = {
     MemberId: GroupMemberId

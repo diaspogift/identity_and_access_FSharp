@@ -7,7 +7,35 @@ open MongoDB.Bson
 
 
 
+///Tenant related dto types
+/// 
+/// 
+type RegistrationInvitationDto = {
+    RegistrationInvitationId: BsonObjectId
+    Description: string
+    TenantId: string
+    StartingOn: DateTime
+    Until: DateTime
+}
 
+
+type ActivationStatusDto = 
+    |Activated  = 1
+    |Disactivated = 0
+
+
+type TenantDto = {
+    _id : BsonObjectId
+    TenantId : BsonObjectId
+    Name : string
+    Description : string
+    RegistrationInvitations : RegistrationInvitationDto array
+    ActivationStatus : ActivationStatusDto
+}
+
+///User related dto types
+/// 
+/// 
 type EnablementStatusDto = 
     | Enabled = 1
     | Disabled = 2
@@ -33,29 +61,11 @@ type UserDto = {
 
 
 
-type RegistrationInvitationDto = {
-    RegistrationInvitationId: BsonObjectId
-    Description: string
-    TenantId: string
-    StartingOn: DateTime
-    Until: DateTime
-}
 
 
-type ActivationStatusDto = 
-    |Activated  = 1
-    |Disactivated = 0
-
-type TenantDto = {
-    _id : BsonObjectId
-    TenantId : BsonObjectId
-    Name : string
-    Description : string
-    RegistrationInvitations : RegistrationInvitationDto array
-    ActivationStatus : ActivationStatusDto
-  
-}
-
+///Group related dto types
+/// 
+/// 
 type GroupMemberTypeDto = 
     | Group = 1
     | User = 2
@@ -78,6 +88,13 @@ type GroupDto = {
 }
 
 
+
+
+
+
+///Role related dto types
+/// 
+/// 
 type SupportNestingStatusDto = 
     | Support = 1
     | Oppose = 0

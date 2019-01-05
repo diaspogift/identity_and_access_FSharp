@@ -3,18 +3,31 @@ module public IdentityAndAcccess.CommonDomainTypes.Functions
 open System
 open IdentityAndAcccess.CommonDomainTypes
 
+
+
+
+type FieldNameCreationMessage = FieldNameCreationMessage of string 
+
+
+
+
+
+
 module ConstrainedType =
+
+
+
     let createString fieldName ctor maxLen str = 
             
-            if String.IsNullOrEmpty(str) then
-                let msg = sprintf "%s must not be null or empty" fieldName 
-                Error msg
-            elif str.Length > maxLen then
-                let msg = sprintf "%s must not be more than %i chars" fieldName maxLen 
-                Error msg 
-            else
-                let ok = Ok (ctor str)
-                ok
+        if String.IsNullOrEmpty(str) then
+            let msg = sprintf "%s must not be null or empty" fieldName 
+            Error msg
+        elif str.Length > maxLen then
+            let msg = sprintf "%s must not be more than %i chars" fieldName maxLen 
+            Error msg 
+        else
+            let ok = Ok (ctor str)
+            ok
     let createStringControlledLength fieldName ctor minLen maxLen str = 
             
             if String.IsNullOrEmpty(str) then
@@ -85,46 +98,89 @@ module String50 =
         ConstrainedType.createStringOption fieldName String50 50 str 
 
 
+
+
+
 module RoleId =
+
+
+    let ROLE_ID_CREATION_STRING =   "RoleId : "
+
     let value (RoleId str) = str
 
     let create fieldName str = 
             ConstrainedType.createString fieldName RoleId 36 str
+    let create' = create  ROLE_ID_CREATION_STRING
+
+
+
+
 
 module  RoleName =
 
+        let ROLE_NAME_CREATION_STRING =   "RoleName : "
         let value (RoleName str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName RoleName 50 str
 
+        let create' = create  ROLE_NAME_CREATION_STRING
+
+
+
+
+
+
 module RoleDescription =
+
+
+        let ROLE_DESCRIPTION_CREATION_STRING =   "RoleDescription : "
 
         let value (RoleDescription str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName RoleDescription 1000 str
 
+        let create' = create  ROLE_DESCRIPTION_CREATION_STRING
+
+
+
+
+
 module TenantId =
+
+        let TENANT_ID_CREATION_STRING =   "TenantId : "
 
         let value (TenantId str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName TenantId 36 str
 
+        let create' = create  TENANT_ID_CREATION_STRING
+
+
 module  TenantName =
+
+        let TENANT_NAME_CREATION_STRING =   "TenantName : "
 
         let value (TenantName str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName TenantName 250 str
 
+        let create' = create  TENANT_NAME_CREATION_STRING
+
+
 module TenantDescription =
+
+        let TENANT_DESCRIPTION_CREATION_STRING =   "TenantDescription : "
 
         let value (TenantDescription str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName TenantDescription 1000 str
+
+        let create' = create  TENANT_DESCRIPTION_CREATION_STRING
 
 module UserId =
 
@@ -133,12 +189,21 @@ module UserId =
         let create fieldName str = 
             ConstrainedType.createString fieldName UserId 36 str
 
+        let create' = create  "UserId :"
+
 module UserDescriptorId =
 
         let value (UserDescriptorId str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName UserDescriptorId 36 str
+
+        let create' = create  "UserId :"
+
+
+
+
+
 
 module Username =
 
@@ -147,12 +212,27 @@ module Username =
         let create fieldName str = 
             ConstrainedType.createString fieldName Username 50 str
 
+        let create' = create  "Username :"
+
+
+
+
+
+
+
 module Password =
 
         let value (Password str) = str
 
         let create fieldName str = 
             ConstrainedType.createStringControlledLength fieldName Password 6 50 str
+
+        let create' = create  "Username :"
+
+
+
+
+
 
 module FirstName =
 
@@ -161,12 +241,25 @@ module FirstName =
         let create fieldName str = 
             ConstrainedType.createString fieldName FirstName 50 str
 
+        let create' = create  "FirstName :"
+        
+
+
+
+
 module MiddleName =
 
         let value (MiddleName str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName MiddleName 50 str
+
+        let create' = create  "MiddleName :"
+
+
+
+
+
 
 module LastName =
 
@@ -175,12 +268,25 @@ module LastName =
         let create fieldName str = 
             ConstrainedType.createString fieldName LastName 100 str
 
+        let create' = create  "LastName :"
+
+
+
+
+
 module RegistrationInvitationId =
 
         let value (RegistrationInvitationId str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName RegistrationInvitationId 36 str
+
+        let create' = create  "RegistrationInvitationId :"
+
+
+
+
+
 
 module RegistrationInvitationDescription =
 
@@ -189,12 +295,25 @@ module RegistrationInvitationDescription =
         let create fieldName str = 
             ConstrainedType.createString fieldName RegistrationInvitationDescription 1000 str
 
+        let create' = create  "RegistrationInvitationDescription :"
+
+
+
+
+
+
 module GroupId =
 
         let value (GroupId str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName GroupId 36 str
+
+        let create' = create  "GroupId :"
+
+
+
+
 
 module GroupName =
 
@@ -203,12 +322,26 @@ module GroupName =
         let create fieldName str = 
             ConstrainedType.createString fieldName GroupName 250 str
 
+        let create' = create  "GroupName :"
+
+
+
+
+
+
 module GroupDescription =
 
         let value (GroupDescription str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName GroupDescription 1000 str
+
+        let create' = create  "GroupDescription : "
+
+
+
+
+
 
 module GroupMemberId =
 
@@ -217,12 +350,27 @@ module GroupMemberId =
         let create fieldName str = 
             ConstrainedType.createString fieldName GroupMemberId 36 str
 
+        let create' = create  "GroupMemberId : "
+
+
+
+
+        
+
+
 module GroupMemberName =
 
         let value (GroupMemberName str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName GroupMemberName 150 str
+        
+        let create' = create  "GroupMemberName : "
+
+
+
+
+
 
 module EmailAddress =
 
@@ -232,12 +380,26 @@ module EmailAddress =
             let pattern = ".+@.+" // anything separated by an "@"
             ConstrainedType.createLike fieldName EmailAddress pattern str
 
+        let create' = create  "EmailAddress : "
+
+
+
+
+
+
 module PostalAddress =
 
         let value (PostalAddress str) = str
 
         let create fieldName str = 
             ConstrainedType.createString fieldName PostalAddress 1000 str
+        
+        let create' = create  "PostalAddress : "
+
+
+
+
+
 
 module Telephone =
 
@@ -246,7 +408,7 @@ module Telephone =
         let create fieldName str = 
             ConstrainedType.createString fieldName Telephone 50 str
     
-    
+        let create' = create  "Telephone : "
 
 
 

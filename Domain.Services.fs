@@ -71,7 +71,7 @@ module Group =
                             false
                         | head::tail ->
                             printfn "THE HEAD IS: %A" head
-                            if (head.Type = OfGroup) && (head = aMember) then
+                            if (head.Type = GroupGroupMember) && (head = aMember) then
                                 true
                             else 
                                 let oneElementListOfAdditionalMembersToCompare (aGroup:Group) : Group list = 

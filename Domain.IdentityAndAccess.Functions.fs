@@ -77,40 +77,52 @@ module Services =
 module RegistrationInvitations =
 
     let fromRegistrationInvitationDtoTempToDomain = 
-        fun aInvitationDto -> result {
-                                    
-                                    let! invitationId = RegistrationInvitationId.create "invitation id: " aInvitationDto.RegistrationInvitationId
-                                    let! tenantId = TenantId.create "tenantId" aInvitationDto.TenantId
-                                    let! desciption = RegistrationInvitationDescription.create "tenant description" aInvitationDto.Description
-                                    let startingOn =  aInvitationDto.StartingOn
-                                    let until = aInvitationDto.Until
+        fun aInvitationDto ->                                     
+            result {
+                                
+                let! invitationId = aInvitationDto.RegistrationInvitationId |> RegistrationInvitationId.create "invitation id: " 
+                let! tenantId = aInvitationDto.TenantId |> TenantId.create "tenantId" 
+                let! registrationInvitationDescription = aInvitationDto.Description |> RegistrationInvitationDescription.create "tenant description" 
+                let startingOn =  aInvitationDto.StartingOn
+                let until = aInvitationDto.Until
 
-                                    let registrationInvitation:RegistrationInvitation = {
-                                            RegistrationInvitationId = invitationId
-                                            TenantId = tenantId
-                                            Description = desciption
-                                            StartingOn = startingOn
-                                            Until = until
-                                        }  
+                let registrationInvitation:RegistrationInvitation = {
+                        RegistrationInvitationId = invitationId
+                        TenantId = tenantId
+                        Description = registrationInvitationDescription
+                        StartingOn = startingOn
+                        Until = until
+                        }  
 
-                                    return registrationInvitation
-                                }
-                                      
-                    
+                return registrationInvitation
+            }
+
+
+
+
+
     let create fieldName (invitationsDto:RegistrationInvitationDtoTemp list) =  
         invitationsDto
         |> List.map fromRegistrationInvitationDtoTempToDomain
 
-    let isIdentifiedBy (aRegistrationInvitationId : RegistrationInvitationId)(aRegistrationInvitation : RegistrationInvitation) : Boolean = 
+
+
+
+    let isIdentifiedById (aRegistrationInvitationId : RegistrationInvitationId)(aRegistrationInvitation : RegistrationInvitation) : Boolean = 
         match (aRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId) with 
         | true -> true
         | false -> false
 
 
+
     let invitation  (aRegistrationInvitationId : RegistrationInvitationId) (aRegistrationInvitationList : RegistrationInvitation list) =
         aRegistrationInvitationList 
-        |> List.filter (fun nextRegistrationInvitation -> isIdentifiedBy aRegistrationInvitationId nextRegistrationInvitation)
+        |> List.filter (fun nextRegistrationInvitation -> isIdentifiedById aRegistrationInvitationId nextRegistrationInvitation)
         |> List.tryHead
+
+
+
+
 
     let isAvailable (aTimeNow : DateTime) (aRegistrationInvitation : RegistrationInvitation) : Boolean =
 
@@ -121,8 +133,15 @@ module RegistrationInvitations =
         match resultCombinedOfResultSartDateAndEndDate  with  
         | true ->  false
         | false -> true
+
+
+
+
+
     let isAvailableWithBakedDateTimeParam = isAvailable DateTime.Now
        
+
+
 
     let isNotAvailable (aTimeNow : DateTime) (aRegistrationInvitation : RegistrationInvitation): Boolean =
 
@@ -134,7 +153,20 @@ module RegistrationInvitations =
         | true ->  true
         | false -> false
           
+
+
+
+
     let isNotAvailableWithBakedDateTimeParam = isNotAvailable DateTime.Now
+
+
+
+
+
+
+
+
+
 
 
 
@@ -185,7 +217,7 @@ module Tenant =
         | Activated -> 
             let result = RegistrationInvitations.invitation aRegistrationInvitationId aTenant.RegistrationInvitations
             match result with  
-            | Some r -> true
+            | Some _ -> true
             | None -> false
         | Disactivated 
             -> false
@@ -428,45 +460,40 @@ module Role =
 
 
 
-    let create (id:string) (tenantId:string) (name:string) (description:string) : Result<Role,string> =
+    let create (roleId:string) (tenantId:string) (name:string) (description:string) : Result<Role,string> =
         
         let roleConstruct = result {
 
+            let internalGroupId = generateNoEscapeId ()
 
-                    let internalGroupId = generateNoEscapeId ()
-
-                    let! ids = RoleId.create "role id: " id
-                    let! tenantIds = TenantId.create "tenant id: " tenantId
-                    let! names = RoleName.create "role name: " name
-                    let! descriptions = RoleDescription.create "role description: " description
-
-
-
-                    let! groupId = GroupId.create "group id" internalGroupId
-                    let! groupName = GroupName.create "group name" "INTERNAL_GROUP"
-                    let! groupDescription = GroupDescription.create "group name" "INTERNAL_GROUP_DESCRIPTION"
+            let! ids = roleId |> RoleId.create' 
+            let! tenantIds = tenantId |> TenantId.create' 
+            let! names = name |> RoleName.create'
+            let! descriptions = description |> RoleDescription.create' 
+            let! groupId = internalGroupId |> GroupId.create' 
+            let! groupName = "INTERNAL_GROUP" |> GroupName.create'
+            let! groupDescription = "INTERNAL_GROUP_DESCRIPTION" |> GroupDescription.create'
 
 
-                    let group = {
-                        GroupId = groupId 
-                        TenantId = tenantIds
-                        Name = groupName
-                        Description = groupDescription
-                        Members = []
-                    }
-                    
-                    let role:Role = {
-                            
-                            RoleId = ids
-                            TenantId = tenantIds
-                            Name = names
-                            Description = descriptions
-                            SupportNesting = SupportNestingStatus.Support
-                            InternalGroup = group
-                    }
-
-                    return role
+            let internalGroup = {
+                GroupId = groupId 
+                TenantId = tenantIds
+                Name = groupName
+                Description = groupDescription
+                Members = []
                 }
+            
+            let role:Role = {
+                RoleId = ids
+                TenantId = tenantIds
+                Name = names
+                Description = descriptions
+                SupportNesting = SupportNestingStatus.Support
+                InternalGroup = internalGroup
+                }
+            return role
+        }
+
         roleConstruct
 
 
@@ -487,7 +514,7 @@ module User =
 
     let create id tenantId first middle last email address primaryPhone secondaryPhone username password = 
         
-        result {
+        let tenantConstruct = result {
 
             let! ids = UserId.create "userId: " id
             let! tenantIds = TenantId.create "tenantId: " tenantId
@@ -508,14 +535,21 @@ module User =
                
  
             return {
-                       UserId = ids
-                       TenantId = tenantIds
-                       Username = username
-                       Password = password
-                       Enablement = enablement
-                       Person = person
-            }
+               UserId = ids
+               TenantId = tenantIds
+               Username = username
+               Password = password
+               Enablement = enablement
+               Person = person
+               }
         }
+
+        tenantConstruct
+
+
+
+
+
 
     let changePassWord aUser aCurrentGivenPassword aNewGivenPassword = 
         if aUser.Password <> aCurrentGivenPassword then
@@ -524,27 +558,57 @@ module User =
             Ok {aUser with Password = aNewGivenPassword} 
 
 
+
+
+
+
+
     let changePersonalContactInformation aUser aContactInformation = 
         let personWithNewContact = {aUser.Person with Contact = aContactInformation}
         {aUser with Person = personWithNewContact}
+
+
+
+
+
 
     let changePersonalName aUser aFullName = 
         let personWithNewName = {aUser.Person with Name = aFullName}
         {aUser with Person = personWithNewName}
 
+
+
+
+
+
     let defineEnablement aUser anEnablement = 
         let userWithNewEnablement = {aUser with Enablement = anEnablement}
         userWithNewEnablement
+
+
+
+
+
 
     let isEnabled aUser  = 
         match aUser.Enablement.EnablementStatus with  
         | Enabled -> true
         | Disabled -> false
 
+
+
+
+
+
     let isDisabled aUser  = 
         match aUser.Enablement.EnablementStatus with  
         | Enabled -> false
         | Disabled -> true
+
+
+
+
+
     let toGroupMember (memberType:GroupMemberType) (aUser:User) : Result<GroupMember,string> =
 
         let rs = result {
@@ -567,23 +631,26 @@ module User =
         | Ok rs -> Ok rs
         | Error error -> Error error 
 
-    let toUserDesriptor 
-        (aUser:User)
-        : Result<UserDescriptor, string> =
 
-        let rs = result {
 
-                let! userDescriptorId = UserDescriptorId.create "user descriptor id : " (UserId.value aUser.UserId)
 
-                return {
-                    UserDescriptorId = userDescriptorId
-                    TenantId = aUser.TenantId
-                    Username = aUser.Username
-                    Email = aUser.Person.Contact.Email
+
+
+    let toUserDesriptor (aUser:User): Result<UserDescriptor, string> =
+
+        let rsUserDercriptor = result {
+
+            let! userDescriptorId = UserDescriptorId.create "user descriptor id : " (UserId.value aUser.UserId)
+
+            return {
+                UserDescriptorId = userDescriptorId
+                TenantId = aUser.TenantId
+                Username = aUser.Username
+                Email = aUser.Person.Contact.Email
                 }
         }
 
-        rs
+        rsUserDercriptor
 
             
         
@@ -591,10 +658,14 @@ module User =
 module GroupMembers = 
 
 
-
-
-
-
+///Some global transformer functions
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
 
     let preppend  firstR restR = 
         match firstR, restR with
@@ -603,77 +674,117 @@ module GroupMembers =
         | Ok _, Error error2 -> Error error2  
         | Error error1, Error _ -> Error error1
 
+
+
+
+
     let ResultOfSequenceTemp aListOfResults =
         let initialValue = Ok List.empty
         List.foldBack preppend aListOfResults initialValue
 
 
 
-    let create fieldName (membersDto:GroupMemberDtoTemp list) =  
-        membersDto
-        |> List.map (fun aMemberDto -> 
-
-                                       result{
-                                                  let! memberId = GroupMemberId.create "meberId" aMemberDto.MemberId
-                                                  let! tenantId = TenantId.create "tenantId" aMemberDto.TenantId
-                                                  let! name = GroupMemberName.create "groupMemberName" aMemberDto.Name
-                                                  let! memberId = GroupMemberId.create "meberId" aMemberDto.MemberId
 
 
-                                                  let p:GroupMember = {
-                                                      MemberId = memberId
-                                                      TenantId = tenantId
-                                                      Name = name
-                                                      Type = OfGroup
-                                                  }  
 
-                                                  return p
-                                       }
-                                      
-                    )
+
+    ///Dependency function for the create one                    
+    let transformGroupMemberDtoTo (nextGroupMemberDtoTemp:GroupMemberDtoTemp):Result<GroupMember,string> =
+        
+       let rsTransfromation = result {
+
+          let! tenantId = TenantId.create' nextGroupMemberDtoTemp.TenantId
+          let! name = GroupMemberName.create' nextGroupMemberDtoTemp.Name
+          let! memberId = GroupMemberId.create' nextGroupMemberDtoTemp.MemberId
+
+          let rsGroupMember:GroupMember =  {
+              MemberId = memberId
+              TenantId = tenantId
+              Name = name
+              Type = GroupGroupMember
+              }  
+        
+        return rsGroupMember
+
+       }
+       rsTransfromation
+
+
+
+    let create fieldName (groupMemberDtoTempList:GroupMemberDtoTemp list) =  
+        groupMemberDtoTempList
+        |> List.map transformGroupMemberDtoTo
         |> ResultOfSequenceTemp
 
-[<RequireQualifiedAccess>]
+
+    let create' = create "GroupMembers : "
+
+
+
 module Group = 
 
 
 
 
 
- 
     let toGroupMember memberType aGroup =
 
-        result {
+        let resultOfGroupMember = result {
                 
-                let! memberId = GroupMemberId.create "memberId" (GroupId.value aGroup.GroupId)
-                let! tenantId = TenantId.create "tenantId" (TenantId.value aGroup.TenantId)
-                let! name = GroupMemberName.create "groupName" (GroupName.value aGroup.Name)
-        
-                let p:GroupMember = {MemberId = memberId; TenantId = tenantId; Name = name; Type = memberType }
+            let! memberId = aGroup.GroupId 
+                            |> GroupId.value  
+                            |> GroupMemberId.create' 
 
-                return p
+            let! tenantId = aGroup.TenantId 
+                            |> TenantId.value 
+                            |> TenantId.create'
+
+            let! name = aGroup.Name 
+                        |> GroupName.value 
+                        |> GroupMemberName.create'
+    
+            let rsOfGroupMember:GroupMember = {
+                    MemberId = memberId
+                    TenantId = tenantId
+                    Name = name
+                    Type = memberType 
+                    }
+
+            return rsOfGroupMember
         }
+        resultOfGroupMember
 
 
-    let create id tenantId name description (members: GroupMemberDtoTemp list) = 
+
+
+
+    let create id tenantId name description members = 
         
-        result {
+        let rsCreateGroup = result {
 
-            let! ids = GroupId.create "groupId: " id
-            let! tenantIds = TenantId.create "tenantId: " tenantId
-            let! names = GroupName.create "groupName" name
-            let! descriptions = GroupDescription.create "groupDescription" description
-            let! members = GroupMembers.create "groupMembers" members
+            let! groupId = id |> GroupId.create'  
+            let! tenantId' = tenantId |> TenantId.create'
+            let! name' = name |> GroupName.create'
+            let! description' = description |> GroupDescription.create' 
+            let! members = members |> GroupMembers.create'
           
 
             return {
-                       GroupId = ids
-                       TenantId = tenantIds
-                       Name = names
-                       Description = descriptions
-                       Members = members
+               GroupId = groupId
+               TenantId = tenantId'
+               Name = name'
+               Description = description'
+               Members = members
             }
         }
+
+        rsCreateGroup
+
+
+
+
+
+
 
     let changePassWord aUser aCurrentGivenPassword aNewGivenPassword = 
         if aUser.Password <> aCurrentGivenPassword then
@@ -682,82 +793,78 @@ module Group =
             Ok {aUser with Password = aNewGivenPassword} 
 
 
+
+
+
+
+
     let addGroupToGroup 
-            (aGroupToAddTo:Group)
-            (aGroupToAdd:Group)
-            (isGroupMemberService: IsGroupMemberWithBakedGetGroupMemberById) : Result<Group, string> =
+        (aGroupToAddTo:Group)
+        (aGroupToAdd:Group)
+        (isGroupMemberService: IsGroupMemberWithBakedGetGroupMemberById) : Result<Group, string> =
 
-            ///Verify that both groups have same tenants
-            let doBothGroupsHaveSameTenant  = aGroupToAddTo.TenantId = aGroupToAdd.TenantId
-            let isNotTheSameGroup  = not (aGroupToAddTo.GroupId = aGroupToAdd.GroupId)
+        let doBothGroupsHaveSameTenant = (aGroupToAddTo.TenantId = aGroupToAdd.TenantId)
+        let isNotTheSameGroup  = not (aGroupToAddTo.GroupId = aGroupToAdd.GroupId)
+        let toGroupMember' = toGroupMember GroupGroupMember
+        let isGroupMemberService' = isGroupMemberService aGroupToAddTo 
 
-            match doBothGroupsHaveSameTenant && isNotTheSameGroup with 
-            | true -> 
+        match doBothGroupsHaveSameTenant && isNotTheSameGroup with 
+        | true -> 
 
+            let rsGrouMember = result {
 
-                    printfn "I am in the true branch in addGroupToGroup Function"
-
-                /// Now that both groups have same tenants, let's use the groupMembersevice to verify
-                /// wether the group to add is already a member/sub-member? 
-
-                    let rsGrouMember = result {
-          
-                        let! aMemberToAdd = aGroupToAdd |> toGroupMember OfGroup
-
-                        let isTheGroupMemberToAddAlreadyAMember =  aMemberToAdd |> isGroupMemberService aGroupToAddTo  
-
-                        printfn "VALUE OF isTheGroupMemberToAddAlreadyAMember = %A" isTheGroupMemberToAddAlreadyAMember
-
-                        //let! aResultMember = match isTheGroupMemberToAddAlreadyAMember with
-                                             //| true -> Ok aMemberToAdd
-                                             //| false -> Error "Already a member"
-
-                    
-                            
-                        return   isTheGroupMemberToAddAlreadyAMember
-                         
-                    }
-
-                    match rsGrouMember with 
-                    | Ok isAlreadyGroupMember -> 
-
-                        if not isAlreadyGroupMember then
-                            let newMembers =  aGroupToAddTo.Members
+                let! aMemberToAdd = aGroupToAdd 
+                                    |> toGroupMember'
                                     
-                            let rsIsGrouMemberToAdd = result {
-                                    let! aMemberToAdd = aGroupToAdd |> toGroupMember OfGroup
-                                    return aMemberToAdd
-                                }
+                let isTheGroupMemberToAddAlreadyAMember = aMemberToAdd 
+                                                          |> isGroupMemberService' 
 
-                            match rsIsGrouMemberToAdd with 
-                            | Ok groupMember -> 
-                                let group = {aGroupToAddTo with Members = [groupMember]@newMembers}
+                return   isTheGroupMemberToAddAlreadyAMember
+            }
 
-                                Ok group
-                            | Error error ->
-                                Error error
-                        else
-                             Error "Group already a member"
+            match rsGrouMember with 
+            | Ok isAlreadyGroupMember -> 
 
-                    | Error isNotGoupMemberYet  -> 
-                         Error isNotGoupMemberYet
-               
+                if not isAlreadyGroupMember then
+                    
+                    let newMembers =  aGroupToAddTo.Members
+                    let rsIsGrouMemberToAdd = result {
+                            let! aMemberToAdd = aGroupToAdd |> toGroupMember'
+                            return aMemberToAdd
+                        }
 
-            | false -> 
-                let msg = sprintf "Wrong tenant consistency"
-                Error msg
+                    match rsIsGrouMemberToAdd with 
+                    | Ok groupMember -> 
+                        let group = {aGroupToAddTo with Members = [groupMember]@newMembers}
+                        Ok group
+                    | Error error ->
+                        Error error
+                else
+                     Error "Group already a member"
+
+            | Error isNotGoupMemberYet  -> 
+                 Error isNotGoupMemberYet
+           
+
+        | false -> 
+            let msg = sprintf "Wrong tenant consistency"
+            Error msg
 
         
+
+
+
+
     
     let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User) (aGroupMember:GroupMember) =
        
-                if not (aGroupToAddTo.TenantId = aUserToAdd.TenantId) then 
-                    Error "Tenant mismatch"
-                elif (User.isDisabled aUserToAdd) then  
-                    Error "User is disabled"
-                else 
-                    let group = {aGroupToAddTo with Members =  aGroupMember :: aGroupToAddTo.Members}
-                    Ok group
+        if not (aGroupToAddTo.TenantId = aUserToAdd.TenantId) then 
+            Error "Tenant mismatch"
+        elif (User.isDisabled aUserToAdd) then  
+            Error "User is disabled"
+        else 
+            let group = {aGroupToAddTo with Members =  aGroupMember :: aGroupToAddTo.Members}
+            Ok group
                
 
 
