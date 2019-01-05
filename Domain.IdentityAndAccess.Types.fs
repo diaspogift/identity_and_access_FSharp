@@ -12,7 +12,6 @@ open System
 /// 
 /// 
 /// 
-/// 
 type ActivationStatus = 
     |Activated 
     |Disactivated
@@ -136,6 +135,11 @@ type Role = {
     SupportNesting: SupportNestingStatus
     InternalGroup: Group
     }
+
+
+
+
+
 
 
 
