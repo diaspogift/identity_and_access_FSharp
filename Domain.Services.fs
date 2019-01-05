@@ -85,24 +85,18 @@ module Group =
                         | [] -> 
                             false
                         | head::tail ->
-                            printfn "THE HEAD IS: %A" head
-                            printfn "THE TAIL IS: %A" tail
+
                             if (head.Type = GroupGroupMember) && (head = aMember) then
                                 true
                             else 
+                            
                                 let oneElementListOfAdditionalMembersToCompare (aGroup:Group) : Group list = 
                                     List.init 1 (fun x -> aGroup)
                             
                             ///IO operation here. looking for a group member by its group member identifier - START
-                            /// 
-                            /// 
-                            ///  
                                 let additionalGroupToSearch = getGroupMemberById head.MemberId
-
                             ///IO operation here. - END
-                            /// 
-                            /// 
-                            /// 
+                           
                                 match additionalGroupToSearch with
                                 | Ok anAdditionalGroupToSearch ->
 
