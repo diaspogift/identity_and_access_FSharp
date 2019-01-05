@@ -424,7 +424,7 @@ module EmailAddress =
     let value (EmailAddress str) = str
 
     let create fieldName str = 
-        let pattern = ".+@.+" // anything separated by an "@"
+        let pattern = ".+@.+" 
         ConstrainedType.createLike fieldName EmailAddress pattern str
 
     let create' = create  "EmailAddress : "
