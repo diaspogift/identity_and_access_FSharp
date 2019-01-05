@@ -14,7 +14,14 @@ open MongoDB.Bson
 module Group =
 
 
+
+
+
+
+
     ///Types
+    /// 
+    /// 
     type GetUserById = UserId -> Result<User, string>
     type GetGroupById = GroupId -> Result<Group, string>
     type GetGroupMemberById = GroupMemberId -> Result<Group, string>
@@ -23,7 +30,14 @@ module Group =
     type IsUserInNestedGroup = Group -> User -> GetGroupMemberById -> Boolean
     type CallerCredential = CallerCredential of string
 
+
+
+
+
+
     ///Database dependecies
+    /// 
+    /// 
     let LoadGroupByIdDbDependencyFunction = GroupDb.loadOneGroupById
 
     let loadGroupByIdDbDependencyAdapted 
@@ -52,11 +66,12 @@ module Group =
     let LoadGroupByIdDbDependencyFunctionAapted = loadGroupByIdDbDependencyAdapted LoadGroupByIdDbDependencyFunction
         
                 
-    //let IsGroupMemberWithBakedGetGroupMemberById:IsGroupMemberWithBakedGetGroupMemberById =  loadGroupByIdDbDependencyAdapted loadGroupByIdDbDependency . 
 
 
 
-    //Group type related services
+    ///Group type related services
+    /// 
+    /// 
     type GroupMemberService = {TimeServiceWasCalled:DateTime; CallerCredentials:CallerCredential} with
         member this.IsGroupMember :IsGroupMember = 
             fun (getGroupMemberById:GetGroupMemberById) (aGroup:Group) (aMember:GroupMember)  ->
@@ -71,23 +86,27 @@ module Group =
                             false
                         | head::tail ->
                             printfn "THE HEAD IS: %A" head
+                            printfn "THE TAIL IS: %A" tail
                             if (head.Type = GroupGroupMember) && (head = aMember) then
                                 true
                             else 
                                 let oneElementListOfAdditionalMembersToCompare (aGroup:Group) : Group list = 
                                     List.init 1 (fun x -> aGroup)
-                            ///IO operation here. looking for a group member by its group member identifier 
+                            
+                            ///IO operation here. looking for a group member by its group member identifier - START
+                            /// 
+                            /// 
+                            ///  
                                 let additionalGroupToSearch = getGroupMemberById head.MemberId
 
-                                
-
-                                //init : int -> (int -> 'T) -> 'T list
-                            ///IO operation here.
+                            ///IO operation here. - END
+                            /// 
+                            /// 
+                            /// 
                                 match additionalGroupToSearch with
                                 | Ok anAdditionalGroupToSearch ->
 
                                     let newMembersToAppend =  anAdditionalGroupToSearch.Members
-                                    //let newMembertoToAppendList = oneElementListOfAdditionalMembersToCompare newMembersToAppend
                                     let allMembers = tail @ newMembersToAppend
                                     let result = recIsGroupMember aMember getGroupMemberById allMembers
 
@@ -95,14 +114,13 @@ module Group =
 
                                 | Error _ -> false
 
-                         
-
 
                 recIsGroupMember  aMember  getGroupMemberById   aGroup.Members  
 
                 
 
-        member this.IsMemberGroupMember :IsGroupMemberWithBakedGetGroupMemberById = this.IsGroupMember LoadGroupByIdDbDependencyFunctionAapted
+        member this.IsMemberGroupMember :IsGroupMemberWithBakedGetGroupMemberById = 
+                this.IsGroupMember LoadGroupByIdDbDependencyFunctionAapted
             
 
                                 
@@ -114,11 +132,19 @@ module Group =
 
     
 
-     //Tenant type related services 
+     ///Tenant type related services 
+     /// 
+     /// 
     
              
 
-    //User type related services 
+
+
+
+
+    ////User type related services 
+    /// 
+    /// 
     let confirmUser aGroup aUser (getUserById:GetUserById)  =      
 
             //let user = getUserById aUser.UserId
