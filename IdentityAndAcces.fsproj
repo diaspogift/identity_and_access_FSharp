@@ -10,7 +10,7 @@
     <Compile Include="Domain.IdentityAndAccess.Functions.fs" />
     <Compile Include="DataAccess.Types.fs" />
     <Compile Include="DataAccess.Functions.fs" />
-    <Compile Include="Domain.Services.fs" />
+    <Compile Include="Domain.Services.Implementation.fs" />
     <Compile Include="RestFull.fs" />
     <Compile Include="Test.fsx" />
     <Compile Include="App.fs" />

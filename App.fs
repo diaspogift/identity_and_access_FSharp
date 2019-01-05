@@ -26,7 +26,7 @@ open IdentityAndAccess.DatabaseTypes.Functions
 
 
 
-let DomainServices:GroupMemberService = {TimeServiceWasCalled = DateTime.Now; CallerCredentials = (CallerCredential "Felicien")}
+//let DomainServices:GroupMemberService = {TimeServiceWasCalled = DateTime.Now; CallerCredentials = (CallerCredential "Felicien")}
 
 
 (*
@@ -312,14 +312,16 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 let! groupToAddTo = groupToAddToDto |> DbHelpers.fromDbDtoToGroup 
 
 
+                let! user1 = User.create "507f1f77bcf86cd799439014" "507f1f77bcf86cd799439010" "Precilia" "N/A" "FOTIO MELING" "meling.hess@gmail.com" "Denver, Bonamoussadi Duoala" "669262656" "669272757" "meling" "my_current_password"
+
+
 
                 printfn "GROUP LOADED = %A" groupToAddToDto
                 printfn "GROUP TO SAVE = %A" groupToAddTo
 
            
-                let! groupWithMember = Group.addGroupToGroup groupToAddTo groupToAdd5 DomainServices.IsMemberGroupMember
+                let! groupWithMember = Group.addUserToGroup groupToAddTo user1
 
-                printfn "HERE THE TIME THE isMemberGroupMember was called at : %A " DomainServices.TimeServiceWasCalled
                 
 
                 let groupToSave  = DbHelpers.fromGroupDomainToDto groupWithMember

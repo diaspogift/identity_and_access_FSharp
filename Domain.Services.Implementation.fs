@@ -1,10 +1,10 @@
 module IdentityAndAcccess.DomainServices
 
-
+open System
 open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes
-open System
 open IdentityAndAccess.DatabaseTypes
 open IdentityAndAccess.DatabaseTypes.Functions
 open MongoDB.Bson
@@ -12,24 +12,6 @@ open MongoDB.Bson
 
 
 module Group =
-
-
-
-
-
-
-
-    ///Types
-    /// 
-    /// 
-    type GetUserById = UserId -> Result<User, string>
-    type GetGroupById = GroupId -> Result<Group, string>
-    type GetGroupMemberById = GroupMemberId -> Result<Group, string>
-    type IsGroupMember = GetGroupMemberById -> Group -> GroupMember -> Boolean
-    type IsGroupMemberWithBakedGetGroupMemberById =  Group -> GroupMember -> Boolean
-    type IsUserInNestedGroup = Group -> User -> GetGroupMemberById -> Boolean
-    type CallerCredential = CallerCredential of string
-
 
 
 
@@ -64,7 +46,9 @@ module Group =
         fToreturn
 
     let LoadGroupByIdDbDependencyFunctionAapted = loadGroupByIdDbDependencyAdapted LoadGroupByIdDbDependencyFunction
-        
+     
+
+     
                 
 
 
@@ -73,7 +57,7 @@ module Group =
     /// 
     /// 
     type GroupMemberService = {TimeServiceWasCalled:DateTime; CallerCredentials:CallerCredential} with
-        member this.IsGroupMember :IsGroupMember = 
+        member this.isGroupMember :IsGroupMember = 
             fun (getGroupMemberById:GetGroupMemberById) (aGroup:Group) (aMember:GroupMember)  ->
                 printfn "I am in the IsGroupMember Function"
                 let rec recIsGroupMember  
@@ -113,8 +97,8 @@ module Group =
 
                 
 
-        member this.IsMemberGroupMember :IsGroupMemberWithBakedGetGroupMemberById = 
-                this.IsGroupMember LoadGroupByIdDbDependencyFunctionAapted
+        member this.isMemberGroupMember :IsGroupMemberWithBakedGetGroupMemberById = 
+                this.isGroupMember LoadGroupByIdDbDependencyFunctionAapted
             
 
                                 
@@ -139,13 +123,13 @@ module Group =
     ////User type related services 
     /// 
     /// 
-    let confirmUser aGroup aUser (getUserById:GetUserById)  =      
+    (*let confirmUser aGroup aUser (getUserById:GetUserById)  =      
 
             //let user = getUserById aUser.UserId
 
             match 1 with 
             | 1 -> true
-            | _ -> false
+            | _ -> false*)
 
 
 

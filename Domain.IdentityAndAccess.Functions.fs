@@ -5,7 +5,7 @@ open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 open FSharp.Data.Sql
-open Suave.Sockets
+
 
 
 
@@ -16,52 +16,77 @@ open Suave.Sockets
 let generateNoEscapeId () = Guid.NewGuid().ToString().Replace("-", "")
 
 
-type IsGroupMemberWithBakedGetGroupMemberById =  Group -> GroupMember  -> Boolean
+type IsGroupMember' =  Group -> GroupMember  -> Boolean
 
 
 //Services that act on domain types
 
-module Services =
+module ServiceInterfaces =
 
 
-    type GetUserById = UserId -> Result<User, string>
+
+
+     
+    
+
+
+    //Others
+
+    type CallerCredential = CallerCredential of string
+        
+    //Database dependencies interfaces to be used by the domain services
+    //TO DO Should they be here ????????????
+
     type GetGroupById = GroupId -> Result<Group, string>
     type GetGroupMemberById = GroupMemberId -> Result<Group, string>
+
+    //Domaim services dependencies interfaces for domain business logic to be used by the
+    //group member services
+    
     type IsGroupMember = GetGroupMemberById -> Group -> GroupMember   -> Boolean
+    type IsGroupMemberWithBakedGetGroupMemberById = Group -> GroupMember   -> Boolean
     type IsUserInNestedGroup = Group -> User -> GetGroupMemberById -> Boolean
-    type CallerCredential = CallerCredential of string
-
-
-     //Tenant type related services 
-    let activateTenant (aTenant : Tenant) : Result<Tenant, string> =
-        
-        match aTenant.ActivationStatus with  
-        | Disactivated ->
-            Ok { aTenant with ActivationStatus = ActivationStatus.Activated }  
-        | Activated -> 
-            Error "Tenant already has its activation status set to Activated" 
+    
+    
 
 
 
-    let deactivateTenant (aTenant : Tenant) : Result<Tenant, string> =
-        
-        match aTenant.ActivationStatus with  
-        | Disactivated ->
-            Error "Tenant already has its activation status set to Deactivated"
-        | Activated -> 
-            Ok { aTenant with ActivationStatus = ActivationStatus.Disactivated } 
+    ///Databases interface dependencies for domain : inward dependecies must be followes 
+    /// 
+    /// 
+    type GroupDatabaseServices = {
+
+        getGroupById: GetGroupById
+        getGroupMemberById: GetGroupMemberById
+    }
+    
+
+    ///Domain services interfaces : Necessary for inward dependencies - implemetation in anoter layer
+    /// 
+    ///
+    type GroupMemberServices = {
+
+        //Service caractheristics
+        TimeServiceWasCalled: DateTime
+        CallerCredentials: CallerCredential
+        //Service funtions
+        isGroupMember: IsGroupMember
+        isGroupMemberWithBakedGetGroupMemberById : IsGroupMemberWithBakedGetGroupMemberById
+        isUserInNestedGroup: IsUserInNestedGroup
+
+    }
+
+  
+
+
+
+    
+
+    
+    
              
 
-    //User type related services 
-    (*let confirmUser (aGroup:Group) (aUser:User) (getUserById:GetUserById)  =      
-
-            let user = getUserById aUser.UserId
-
-            match user with 
-            | Ok user ->
-                 user |> User.isEnabled 
-            | Error error -> 
-                false*)
+ 
 
 
 
@@ -176,6 +201,11 @@ module RegistrationInvitations =
 
 module Tenant = 
 
+
+
+
+
+
     let create id name description = 
         
         result {
@@ -192,6 +222,11 @@ module Tenant =
                     ActivationStatus = ActivationStatus.Activated
             }
         }
+
+
+
+
+
 
     let fullCreate id name description activationStatus = 
         
@@ -211,6 +246,10 @@ module Tenant =
         }
 
 
+
+
+
+
     let isRegistrationInvitationAvailableThrough (aTenant : Tenant) (aRegistrationInvitationId : RegistrationInvitationId) : Boolean =
         
         match aTenant.ActivationStatus with 
@@ -222,6 +261,10 @@ module Tenant =
         | Disactivated 
             -> false
         
+
+
+
+
     let offerRegistrationInvitation (aTenant : Tenant) (aDescription : RegistrationInvitationDescription) : Result<Tenant, string> =
         
           
@@ -247,6 +290,10 @@ module Tenant =
         else 
             let msg =  "Could not offer registration invitation" 
             Error  msg
+
+
+
+
 
     let provisionGroup (aTenant : Tenant)(aGroupName :GroupName) (aGroupDescription: GroupDescription) : Result<Group, string> =
 
@@ -283,10 +330,11 @@ module Tenant =
              
        
 
+
+
     let provisionRole (aTenant : Tenant)(aRoleName :RoleName) (aRoleDescription: RoleDescription) : Result<Role, string> =
 
             let id = generateNoEscapeId();
-            let tenantId = (TenantId.value aTenant.TenantId)
 
             if aTenant.ActivationStatus = ActivationStatus.Activated then
 
@@ -341,6 +389,10 @@ module Tenant =
 
 
 
+
+
+
+
     let getAllAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
 
         match aTenant.ActivationStatus with 
@@ -351,6 +403,10 @@ module Tenant =
             -> []
 
 
+
+
+
+
     let getAllUnAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
 
         match aTenant.ActivationStatus with 
@@ -359,6 +415,12 @@ module Tenant =
                |> List.filter RegistrationInvitations.isNotAvailableWithBakedDateTimeParam
         | ActivationStatus.Disactivated 
             -> []
+
+
+
+            
+
+
     let redfineRegistrationInvintationTimeSpan 
         (aTenant:Tenant)
         (aRegistrationInvitationId:RegistrationInvitationId)
@@ -391,6 +453,10 @@ module Tenant =
           | ActivationStatus.Disactivated -> 
                let error = sprintf "Tenant is deactivated"
                Error error
+
+
+
+
 
 
     let registerUserForTenant
@@ -431,6 +497,11 @@ module Tenant =
         | Disactivated ->
             let msg = sprintf "Tenant deactivated"
             Error msg
+
+
+
+
+
     let withdrawInvitation 
         (aTenant:Tenant)
         (aRegistrationInvitationId:RegistrationInvitationId)
@@ -453,7 +524,45 @@ module Tenant =
             let msg = sprintf "No registration invitation found for identifier: %A" aRegistrationInvitationId
             Error msg
 
-         
+
+
+
+
+
+
+    let activateTenant (aTenant : Tenant) : Result<Tenant, string> =
+            
+            match aTenant.ActivationStatus with  
+            | Disactivated ->
+                Ok { aTenant with ActivationStatus = ActivationStatus.Activated }  
+            | Activated -> 
+                Error "Tenant already has its activation status set to Activated" 
+
+
+
+
+
+
+    let deactivateTenant (aTenant : Tenant) : Result<Tenant, string> =
+        
+        match aTenant.ActivationStatus with  
+        | Disactivated ->
+            Error "Tenant already has its activation status set to Deactivated"
+        | Activated -> 
+            Ok { aTenant with ActivationStatus = ActivationStatus.Disactivated } 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 module Role = 
@@ -727,7 +836,7 @@ module Group =
 
 
 
-    let toGroupMember memberType aGroup =
+    let toMemberOfTypeGroup memberType aGroup =
 
         let resultOfGroupMember = result {
                 
@@ -743,16 +852,71 @@ module Group =
                         |> GroupName.value 
                         |> GroupMemberName.create'
     
-            let rsOfGroupMember:GroupMember = {
+            let rsOfGroupGroupMember:GroupMember = {
                     MemberId = memberId
                     TenantId = tenantId
                     Name = name
                     Type = memberType 
                     }
 
-            return rsOfGroupMember
+            return rsOfGroupGroupMember
         }
+
         resultOfGroupMember
+
+
+
+
+
+
+
+
+
+
+
+    let toMemberOfTypeUser memberType aUser =
+
+        let resultOfGroupMember = result {
+                
+            let! memberId = aUser.UserId 
+                            |> UserId.value  
+                            |> GroupMemberId.create' 
+
+            let! tenantId = aUser.TenantId 
+                            |> TenantId.value 
+                            |> TenantId.create'
+
+            let! name = aUser.Username 
+                        |> Username.value 
+                        |> GroupMemberName.create'
+    
+            let rsOfUserGroupMember:GroupMember = {
+                    MemberId = memberId
+                    TenantId = tenantId
+                    Name = name
+                    Type = memberType 
+                    }
+
+            return rsOfUserGroupMember
+        }
+
+        resultOfGroupMember
+
+
+
+
+    let toMemberOfTypeGroup' =  toMemberOfTypeGroup  GroupMemberType.GroupGroupMember
+    let toMemberOfTypeUser' =  toMemberOfTypeUser  GroupMemberType.UserGroupMember
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -798,14 +962,11 @@ module Group =
 
 
 
-    let addGroupToGroup 
-        (aGroupToAddTo:Group)
-        (aGroupToAdd:Group)
-        (isGroupMemberService: IsGroupMemberWithBakedGetGroupMemberById) : Result<Group, string> =
+    let addGroupToGroup (aGroupToAddTo:Group)(aGroupToAdd:Group)(isGroupMemberService: IsGroupMember') : Result<Group, string> =
 
         let doBothGroupsHaveSameTenant = (aGroupToAddTo.TenantId = aGroupToAdd.TenantId)
         let isNotTheSameGroup  = not (aGroupToAddTo.GroupId = aGroupToAdd.GroupId)
-        let toGroupMember' = toGroupMember GroupGroupMember
+        let toGroupMember' = toMemberOfTypeGroup GroupGroupMember
         let isGroupMemberService' = isGroupMemberService aGroupToAddTo 
 
         match doBothGroupsHaveSameTenant && isNotTheSameGroup with 
@@ -856,15 +1017,77 @@ module Group =
 
 
     
-    let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User) (aGroupMember:GroupMember) =
-       
-        if not (aGroupToAddTo.TenantId = aUserToAdd.TenantId) then 
-            Error "Tenant mismatch"
-        elif (User.isDisabled aUserToAdd) then  
-            Error "User is disabled"
-        else 
-            let group = {aGroupToAddTo with Members =  aGroupMember :: aGroupToAddTo.Members}
-            Ok group
+    let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User)  =
+
+
+
+        let AreFromSameTenant = (aGroupToAddTo.TenantId = aUserToAdd.TenantId)
+        let UserIsEnabled = aUserToAdd |> User.isEnabled
+   
+        match AreFromSameTenant && UserIsEnabled with  
+        | true -> 
+
+            let isUseGroupMember = result {
+
+                let! groupMemberToAdd = aUserToAdd |> toMemberOfTypeUser'
+
+                let searchGivenMemberInGroupMembers = aGroupToAddTo.Members
+                                                      |> List.filter (
+                                                          fun next -> 
+                                                            groupMemberToAdd.MemberId = next.MemberId
+                                                      )
+
+                let isUseGroupMember = match searchGivenMemberInGroupMembers with 
+                                       | [] -> false
+                                       | [_] -> true
+                                       | head::tail -> false 
+
+                return   isUseGroupMember
+            }
+
+            
+            
+           
+            match isUseGroupMember with  
+            | Ok rs -> 
+
+                match  rs with 
+                | false ->
+                    
+                    let groupMemberToAdd = result {
+
+                        let! groupMemberToAdd = aUserToAdd |> toMemberOfTypeUser'
+
+                        return groupMemberToAdd
+                    }
+
+                    match groupMemberToAdd with  
+                    | Ok grouMember -> 
+
+                        Ok {aGroupToAddTo with Members = aGroupToAddTo.Members@[grouMember]}
+
+                    | Error error -> 
+                    
+                        Error error
+                | true ->
+
+                    let msg = sprintf "Already group member" 
+                    Error msg
+
+            | Error _ -> 
+                let msg = sprintf "Wrong tenant consistency 2" 
+                Error msg
+
+        | false ->
+            let msg = sprintf "Wrong tenant consistency or disabled user account" 
+            Error msg
+  
+
+            
+
+        
+        
+            
                
 
 

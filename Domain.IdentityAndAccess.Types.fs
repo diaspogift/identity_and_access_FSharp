@@ -4,6 +4,7 @@ namespace IdentityAndAcccess.DomainTypes
 ///Imported local libs
 open IdentityAndAcccess.CommonDomainTypes
 open System
+open System.Text.RegularExpressions
 
 
 
@@ -117,6 +118,9 @@ type Group = {
     }
 
 
+type GroupIdOrGroupMemberId = 
+    | GroupId of GroupId
+    | GroupMemberId of GroupMemberId
 
 ///Role related types
 /// 
