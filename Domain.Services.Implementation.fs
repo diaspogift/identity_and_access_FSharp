@@ -23,7 +23,7 @@ module Group =
     /// 
     /// 
     let loadGroupByIdDbDependencyFunction = GroupDb.loadOneGroupById
-    let loadGroupByGroupMemberIdDbDependencyFunctionAapted = GroupDb.loadOneGroupMemberById
+    let loadGroupByGroupMemberIdDbDependencyFunction = GroupDb.loadOneGroupMemberById
      
 
      
@@ -31,13 +31,13 @@ module Group =
 
 
 
-    ///Group type related services
+    ///Group type related domain services
     /// 
     ///
-    let isGroupMember (getGroupMemberById:LoadGroupMemberById) (aGroup:Group) (aMember:GroupMember) : bool =
+    let isGroupMember (loadGroupMemberById:LoadGroupMemberById) (aGroup:Group) (aMember:GroupMember) : bool =
                 
                 
-        let rec recIsGroupMember  (aMember : GroupMember) (getGroupMemberById : LoadGroupMemberById) (aGroupMemberList : GroupMember list) =
+        let rec recIsGroupMember  (aMember : GroupMember) (loadGroupMemberById : LoadGroupMemberById) (aGroupMemberList : GroupMember list) =
 
             match aGroupMemberList with
             | [] -> 
@@ -52,7 +52,7 @@ module Group =
                         List.init 1 (fun x -> aGroup)
                 
                 ///IO operation here. looking for a group member by its group member identifier - START
-                    let additionalGroupToSearch = getGroupMemberById head.MemberId
+                    let additionalGroupToSearch = loadGroupMemberById head.MemberId
                 ///IO operation here. - END
                
                     match additionalGroupToSearch with
@@ -60,17 +60,17 @@ module Group =
 
                         let newMembersToAppend =  anAdditionalGroupToSearch.Members
                         let allMembers = tail @ newMembersToAppend
-                        let result = recIsGroupMember aMember getGroupMemberById allMembers
+                        let result = recIsGroupMember aMember loadGroupMemberById allMembers
 
                         result
 
                     | Error _ -> false
 
 
-        recIsGroupMember  aMember  getGroupMemberById   aGroup.Members
+        recIsGroupMember  aMember  loadGroupMemberById   aGroup.Members
 
         
-        
+    let isGroupMember' = isGroupMember loadGroupByGroupMemberIdDbDependencyFunction
         
         
     let groupMemberService: GroupMemberServices = {
