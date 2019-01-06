@@ -290,7 +290,29 @@ module Password =
     let create fieldName str = 
         ConstrainedType.createStringControlledLength fieldName Password 6 50 str
 
-    let create' = create  "Username :"
+    let create' = create  "Password :"
+
+
+
+
+
+
+
+
+
+
+module EncrytedPassword = 
+
+
+    let value (Password str) = str
+
+    let create fieldName str = 
+        ConstrainedType.createStringControlledLength fieldName EncrytedPassword  6 50 str
+
+    let create' = create  "EncrytedPassword :"
+
+
+
 
 
 

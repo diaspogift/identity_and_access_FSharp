@@ -350,21 +350,67 @@ module RoleDb =
 
 
     let private saveRole (aRoleCollection : IMongoCollection<RoleDto>)(aRoleDto:RoleDto) = 
-        aRoleCollection.InsertOne aRoleDto
+
+        try
+            aRoleDto 
+            |>aRoleCollection.InsertOne 
+            |> Ok
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
 
 
 
     let private loadRoleById (aRoleCollection : IMongoCollection<RoleDto>)  ( id : BsonObjectId ) = 
-        let result = aRoleCollection.Find(fun x -> x.RoleId = id).Single()        
-        result
+
+        try
+
+            aRoleCollection.Find(fun x -> x.RoleId = id).Single()            
+            |> Ok
+            
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
+
+
+    let private loadRoleByRoleIdAndTenantId (aRoleCollection : IMongoCollection<RoleDto>)  ( roleId : BsonObjectId ) ( tenantId : BsonObjectId )  =
+
+        try
+
+            
+            aRoleCollection.Find(fun x -> (x.RoleId = roleId) && (x.TenantId = tenantId.Value.ToString()) ).Single()
+            |> Ok
+            
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
+
+
+
+
 
 
     let private updateRole (aRoleCollection : IMongoCollection<RoleDto>)  ( aRoleDto : RoleDto ) = 
 
-        let filter = Builders<RoleDto>.Filter.Eq((fun x -> x.RoleId), aRoleDto.RoleId)
-        let updateDefinition = Builders<RoleDto>.Update.Set((fun x -> x.Description), aRoleDto.Description).Set((fun x -> x.Name), aRoleDto.Name).Set((fun x -> x.SupportNesting), aRoleDto.SupportNesting).Set((fun x -> x.Group), aRoleDto.Group)
-        let result = aRoleCollection.UpdateOne(filter, updateDefinition)
-        ()
+        try
+
+            let filter = Builders<RoleDto>.Filter.Eq((fun x -> x.RoleId), aRoleDto.RoleId)
+            let updateDefinition = Builders<RoleDto>.Update.Set((fun x -> x.Description), aRoleDto.Description).Set((fun x -> x.Name), aRoleDto.Name).Set((fun x -> x.SupportNesting), aRoleDto.SupportNesting).Set((fun x -> x.Group), aRoleDto.Group)
+            
+            let r = aRoleCollection.UpdateOne(filter, updateDefinition)
+           
+            Ok ()
+
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
         
 
 
@@ -376,8 +422,22 @@ module RoleDb =
 
 
     let saveOneRole = saveRole DbConfig.roleCollection
-    let loadOneRoleById: BsonObjectId -> RoleDto = loadRoleById DbConfig.roleCollection
-    let updateOneRole: RoleDto -> unit = updateRole DbConfig.roleCollection
+    let loadOneRoleById : BsonObjectId -> Result<RoleDto,string> = loadRoleById DbConfig.roleCollection
+    let updateOneRole = updateRole DbConfig.roleCollection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -390,18 +450,37 @@ module UserDb =
 
 
 
-    let private saveUser (aUserCollection : IMongoCollection<UserDto>)(aUserDto:UserDto) = 
-        aUserCollection.InsertOne aUserDto
 
-    let private loadUserById (aUserCollection : IMongoCollection<UserDto>)  ( id : BsonObjectId ) = 
-        let result = aUserCollection.Find(fun x -> x.UserId = id).Single()        
-        result
-    let private updateUser (aUserCollection : IMongoCollection<UserDto>)  ( aUserDto : UserDto ) = 
-        let filter = Builders<UserDto>.Filter.Eq((fun x -> x.UserId), aUserDto.UserId)
-        let updateDefinition = Builders<UserDto>.Update.Set((fun x -> x.TenantId), aUserDto.TenantId).Set((fun x -> x.Username), aUserDto.Username).Set((fun x -> x.Password), aUserDto.Password)  .Set((fun x -> x.EnablementStatus), aUserDto.EnablementStatus)  .Set((fun x -> x.EmailAddress), aUserDto.EmailAddress)  .Set((fun x -> x.EnablementStartDate), aUserDto.EnablementStartDate)  .Set((fun x -> x.EnablementEndDate), aUserDto.EnablementEndDate)  .Set((fun x -> x.FirstName), aUserDto.FirstName).Set((fun x -> x.MiddleName), aUserDto.MiddleName).Set((fun x -> x.LastName), aUserDto.LastName).Set((fun x -> x.PostalAddress), aUserDto.PostalAddress).Set((fun x -> x.PrimaryTel), aUserDto.PrimaryTel).Set((fun x -> x.SecondaryTel), aUserDto.SecondaryTel)
-        let result = aUserCollection.UpdateOne(filter, updateDefinition)
-        ()
+
+
+
+    let saveUser (aUserCollection : IMongoCollection<UserDto>)(aUserDto:UserDto) = 
+    
+        try 
         
+            aUserCollection.InsertOne aUserDto
+            |> Ok
+
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
+
+
+
+
+
+    let loadUserById (aUserCollection : IMongoCollection<UserDto>)  ( id : BsonObjectId ) = 
+        
+        try
+            aUserCollection.Find(fun x -> x.UserId = id).Single()        
+            |> Ok
+
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
 
 
 
@@ -409,14 +488,56 @@ module UserDb =
 
 
 
+    let loadUserByUserIdAndTenantId (aRoleCollection : IMongoCollection<UserDto>)  ( userId : BsonObjectId ) ( tenantId : BsonObjectId )  =
+
+        try
+
+            aRoleCollection.Find(fun x -> (x.UserId = userId) && (x.TenantId = tenantId.Value.ToString()) ).Single()
+            |> Ok
+            
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
 
 
-    let saveOneUser = saveUser DbConfig.userCollection
-    let loadOneUserById: BsonObjectId -> UserDto = loadUserById DbConfig.userCollection
-    let updateOneUser: UserDto -> unit = updateUser DbConfig.userCollection
 
 
 
+
+    let updateUser (aUserCollection : IMongoCollection<UserDto>)  ( aUserDto : UserDto ) = 
+        
+            
+        try
+            let filter = Builders<UserDto>.Filter.Eq((fun x -> x.UserId), aUserDto.UserId)
+            let updateDefinition = Builders<UserDto>.Update.Set((fun x -> x.TenantId), aUserDto.TenantId).Set((fun x -> x.Username), aUserDto.Username).Set((fun x -> x.Password), aUserDto.Password)  .Set((fun x -> x.EnablementStatus), aUserDto.EnablementStatus)  .Set((fun x -> x.EmailAddress), aUserDto.EmailAddress)  .Set((fun x -> x.EnablementStartDate), aUserDto.EnablementStartDate)  .Set((fun x -> x.EnablementEndDate), aUserDto.EnablementEndDate)  .Set((fun x -> x.FirstName), aUserDto.FirstName).Set((fun x -> x.MiddleName), aUserDto.MiddleName).Set((fun x -> x.LastName), aUserDto.LastName).Set((fun x -> x.PostalAddress), aUserDto.PostalAddress).Set((fun x -> x.PrimaryTel), aUserDto.PrimaryTel).Set((fun x -> x.SecondaryTel), aUserDto.SecondaryTel)
+                
+            let r = aUserCollection.UpdateOne(filter, updateDefinition)
+            ()
+            |> Ok
+            
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
+
+
+
+    let saveOneUser: UserDto -> Result<unit,string> =
+         saveUser DbConfig.userCollection
+
+
+    let loadOneUserById: BsonObjectId -> Result<UserDto, string> = 
+        loadUserById DbConfig.userCollection
+
+
+    let loadOneUserByUserIdAndTenantId: BsonObjectId -> BsonObjectId -> Result<UserDto, string> = 
+        loadUserByUserIdAndTenantId DbConfig.userCollection
+
+
+    let updateOneUser: UserDto -> Result<unit,string> = 
+        updateUser DbConfig.userCollection
 
 
 
@@ -442,12 +563,11 @@ module TenantDb =
 
 
 
-
-
-
     let saveOneTenant = saveTenant DbConfig.tenantCollection
     let loadOneTenantById: BsonObjectId -> TenantDto = loadTenantById DbConfig.tenantCollection
     let updateOneTenant: TenantDto -> unit = updateTenant DbConfig.tenantCollection
+
+
 
 
 
@@ -462,84 +582,130 @@ module GroupDb =
 
 
 
-    let saveGroup (aGroupCollection : IMongoCollection<GroupDto>)  (aGroupDto:GroupDto) : Result<unit,string>= 
-        
+    let saveGroup (aGroupCollection : IMongoCollection<GroupDto>)  (aGroupDto:GroupDto) = 
+         
+
+
         try
-            aGroupDto 
+
+            aGroupDto
             |> aGroupCollection.InsertOne
             |> Ok
+
         with
             | Failure msg -> Error msg 
             | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
             | _ -> Error "Unmatched error occurred" 
 
     let saveGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  (aGroup:Group) = 
-        
-        try 
+           
+        try   
             aGroup 
             |> DbHelpers.fromGroupDomainToDto
             |> aGroupCollection.InsertOne 
             |> Ok
         with
             | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex ->
-                match aGroup with
-                | Standard aGroup ->
-                    let errorMessage = sprintf "Duplicate Standard GroupId : %A" aGroup.GroupId
-                    Error errorMessage
-                | Internal aGroup->
-                    let errorMessage = sprintf "Duplicate Internal GroupId : %A" aGroup.GroupId
-                    Error errorMessage
-
-                
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
             | _ -> Error "Unmatched error occurred" 
-            
-
-
-
 
 
 
 
 
     let private loadGroupById (aGroupCollection : IMongoCollection<GroupDto>)  ( id : BsonObjectId ) = 
+        
+        try
+
         let result = aGroupCollection.Find(fun x -> x.GroupId = id).Single()        
-        result
+        
+        Ok ()
+        
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
+
+
 
     let private loadGroupByIdAdaptedToGroupId (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroupId : GroupId ) = 
          
-        let bsonId = new BsonObjectId (new ObjectId(GroupId.value aGroupId))
-        let result = aGroupCollection.Find(fun x -> x.GroupId = bsonId).Single()        
-        result |> DbHelpers.fromDbDtoToGroup
+        
+
+        try
+
+            let bsonId = new BsonObjectId (new ObjectId(GroupId.value aGroupId))
+            let result = aGroupCollection.Find(fun x -> x.GroupId = bsonId).Single()        
+        
+            result 
+            |> DbHelpers.fromDbDtoToGroup
+            
+         with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
+
 
     let private loadGroupByIdAdaptedToGroupMembertId (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroupMemberId : GroupMemberId ) = 
          
-        let bsonId = new BsonObjectId (new ObjectId(GroupMemberId.value aGroupMemberId))
-        let result = aGroupCollection.Find(fun x -> x.GroupId = bsonId).Single()        
-        result |> DbHelpers.fromDbDtoToGroup
+        try
 
+            let bsonId = new BsonObjectId (new ObjectId(GroupMemberId.value aGroupMemberId))
+            let result = aGroupCollection.Find(fun x -> x.GroupId = bsonId).Single()        
+            
+            result 
+            |> DbHelpers.fromDbDtoToGroup
+
+         with
+
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
 
 
 
 
     let private updateGroup (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroupDto : GroupDto ) = 
-        let filter = Builders<GroupDto>.Filter.Eq((fun x -> x.GroupId), aGroupDto.GroupId)
-        let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  
-        let result = aGroupCollection.UpdateOne(filter, updateDefinition)
-        ()
+        
+        try
+        
+            let filter = Builders<GroupDto>.Filter.Eq((fun x -> x.GroupId), aGroupDto.GroupId)
+            let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  
+            let result = aGroupCollection.UpdateOne(filter, updateDefinition)
+            
+            Ok()
+        
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
+
 
     let private updateGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroup : Group ) = 
         
-        let unwrappedGroup = match aGroup with 
-                                   | Standard aStandarGroup ->  aStandarGroup  
-                                   | Internal anInternalGroup ->  anInternalGroup
 
-        let bsonId = new BsonObjectId (new ObjectId(GroupId.value unwrappedGroup.GroupId))
-        let filter = Builders<GroupDto>.Filter.Eq((fun x -> x.GroupId), bsonId)
-        let aGroupDto = DbHelpers.fromGroupDomainToDto aGroup
-        let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  
-        let result = aGroupCollection.UpdateOne(filter, updateDefinition)
-        ()
+        try
+            let aStandardGroup = match aGroup with
+                                       | Standard g -> g
+                                       | Internal g -> g 
+
+            let bsonId = new BsonObjectId (new ObjectId(GroupId.value aStandardGroup.GroupId))
+            let filter = Builders<GroupDto>.Filter.Eq((fun x -> x.GroupId), bsonId)
+            let aGroupDto = DbHelpers.fromGroupDomainToDto aGroup
+            let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  
+            let result = aGroupCollection.UpdateOne(filter, updateDefinition)
+          
+
+            Ok()
+        
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+
         
 
 
@@ -556,5 +722,4 @@ module GroupDb =
     let loadOneGroupMemberById : GroupDb.LoadOneGroupByGroupMemberId = loadGroupByIdAdaptedToGroupMembertId DbConfig.groupCollection
     let updateOneGroup : GroupDb.UpdateOneGroup = updateGroupAdapted DbConfig.groupCollection
 
-
-
+    

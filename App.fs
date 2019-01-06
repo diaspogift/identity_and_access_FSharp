@@ -10,14 +10,37 @@ open Suave.Successful
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServices
-open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let unwrapToStandardGroup aGroupToAddToUnwrapp = 
+        match aGroupToAddToUnwrapp with 
+            | Standard aStandardGroup -> aStandardGroup
+            | Internal anInternalGroup -> anInternalGroup
+
+
 let printSeparatorLine(count) = 
         
-        let countArray = List.init count (fun x -> x)
+        let countArray = List.init count (fun x -> x )
         countArray
         |> List.iter (fun x -> 
         
@@ -216,8 +239,8 @@ match rsCreateTenantSaveAndTryToReloadItFormDb with
 | Ok aTenant
         -> printfn "The tenant that was create is here: Name is  = %A" aTenant.Name
            printfn "The full tenant = %A" aTenant.Name
-| Error error 
-        -> printfn "Error = %A" error*)
+| Error error aStandarGroup
+        -> priaStandarGroup*)
 
 
 (*let rsChangeTenantActivationStatus = result {
@@ -293,7 +316,7 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 let! groupToAdd3 = Group.create "24e7538d90ad4bd7a448d153" "507f1f77bcf86cd799439010" "Cleaners" "Cleaners" []
                 let! groupToAdd4 = Group.create "24e7538d90ad4bd7a448d154" "507f1f77bcf86cd799439010" "Formateurs" "Formateurs" []
                 let! groupToAdd5 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Urgenciers" "Urgenciers" []
-                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d159" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
+                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d161" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
                 
                 let groupToSave1 = DbHelpers.fromGroupDomainToDto groupToAdd1
                 let groupToSave2 = DbHelpers.fromGroupDomainToDto groupToAdd2
@@ -318,7 +341,25 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
                 printSeparatorLine(1)
 
-                //let groupToAddToDto = loadGroupByIdDependancyFunction groupToAdd1.GroupId
+                let aStandarGroupToAdd1 = match groupToAdd1 with 
+                                          | Standard s ->  s
+                                          | Internal i ->  i
+
+                
+                
+
+                let gggg = loadGroupByIdDependancyFunction aStandarGroupToAdd1.GroupId
+
+
+                printSeparatorLine(1)
+
+                printfn "THE LOADED VALUE %A" gggg
+
+                printSeparatorLine(1)
+
+
+
+
                 //let! groupToAddTo = groupToAddToDto 
 
 

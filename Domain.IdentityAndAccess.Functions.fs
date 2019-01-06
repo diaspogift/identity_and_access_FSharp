@@ -50,19 +50,61 @@ module ServiceInterfaces =
 
 
 
-     
+     ///This module design the interface for the communication between the domain and the infrastructural one
+     /// 
+     /// 
+     /// 
+     /// 
     
 
 
     //Others
 
     type CallerCredential = CallerCredential of string
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ///Password type related services
+    type PasswordEncryptionService = Password -> Result<EncrytedPassword, string>
+
+
+
+    
+
+
+
+
     //Database dependencies interfaces to be used by the domain services
     //TO DO Should they be here ????????????
+    type LoadGroupById = GroupId -> Result<Group, string>
 
-    type GetGroupById = GroupId -> Result<Group, string>
     type LoadGroupMemberById = GroupMemberId -> Result<Group, string>
+
+    type LoadUserByUserIdPasswordAndTenantId = UserId -> EncrytedPassword -> TenantId -> Result<User, string>
+
+    type LoadTenantById = TenantId -> Result<Tenant, string>
+
+
+
 
     //Domaim services dependencies interfaces for domain business logic to be used by the
     //group member services
@@ -75,15 +117,7 @@ module ServiceInterfaces =
 
 
 
-    ///Databases interface dependencies for domain : inward dependecies must be followes 
-    /// 
-    /// 
-    type GroupDatabaseServices = {
 
-        getGroupById: GetGroupById
-        getGroupMemberById: LoadGroupMemberById
-    }
-    
 
     ///Domain services interfaces : Necessary for inward dependencies - implemetation in anoter layer
     /// 
@@ -93,12 +127,21 @@ module ServiceInterfaces =
         //Service caractheristics
         TimeServiceWasCalled: DateTime
         CallerCredentials: CallerCredential
+
+
         //Service funtions
         isGroupMember: IsGroupMember
         //isGroupMemberWithBakedGetGroupMemberById : IsGroupMemberWithBakedGetGroupMemberById
         //isUserInNestedGroup: IsUserInNestedGroup
 
     }
+
+
+    ///User type related services
+    type AuthenticationService = 
+            LoadUserByUserIdPasswordAndTenantId -> LoadTenantById -> UserId-> TenantId -> Password -> Result<UserDescriptor,string>
+
+
 
   
 
