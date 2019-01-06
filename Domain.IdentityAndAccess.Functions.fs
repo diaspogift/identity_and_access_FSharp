@@ -38,14 +38,14 @@ module ServiceInterfaces =
     //TO DO Should they be here ????????????
 
     type GetGroupById = GroupId -> Result<Group, string>
-    type GetGroupMemberById = GroupMemberId -> Result<Group, string>
+    type LoadGroupMemberById = GroupMemberId -> Result<Group, string>
 
     //Domaim services dependencies interfaces for domain business logic to be used by the
     //group member services
     
-    type IsGroupMember = GetGroupMemberById -> Group -> GroupMember   -> Boolean
+    type IsGroupMember = LoadGroupMemberById -> Group -> GroupMember   -> Boolean
     type IsGroupMemberWithBakedGetGroupMemberById = Group -> GroupMember   -> Boolean
-    type IsUserInNestedGroup = Group -> User -> GetGroupMemberById -> Boolean
+    type IsUserInNestedGroup = Group -> User -> LoadGroupMemberById -> Boolean
     
     
 
@@ -57,7 +57,7 @@ module ServiceInterfaces =
     type GroupDatabaseServices = {
 
         getGroupById: GetGroupById
-        getGroupMemberById: GetGroupMemberById
+        getGroupMemberById: LoadGroupMemberById
     }
     
 
@@ -71,8 +71,8 @@ module ServiceInterfaces =
         CallerCredentials: CallerCredential
         //Service funtions
         isGroupMember: IsGroupMember
-        isGroupMemberWithBakedGetGroupMemberById : IsGroupMemberWithBakedGetGroupMemberById
-        isUserInNestedGroup: IsUserInNestedGroup
+        //isGroupMemberWithBakedGetGroupMemberById : IsGroupMemberWithBakedGetGroupMemberById
+        //isUserInNestedGroup: IsUserInNestedGroup
 
     }
 
