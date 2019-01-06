@@ -2,7 +2,10 @@ namespace IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 
 
 open IdentityAndAcccess.CommonDomainTypes
-open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Role
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Tenant
 
  
 

@@ -3,7 +3,10 @@ module IdentityAndAcccess.DomainTypes.Functions
 open System
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Role
 open FSharp.Data.Sql
 
 
@@ -19,7 +22,28 @@ let generateNoEscapeId () = Guid.NewGuid().ToString().Replace("-", "")
 type IsGroupMember' =  Group -> GroupMember  -> Boolean
 
 
-//Services that act on domain types
+///Helper functionsssss
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+module DomainHelpers =
+    let unwrapToStandardGroup aGroupToAddToUnwrapp = 
+        match aGroupToAddToUnwrapp with 
+            | Standard aStandardGroup -> aStandardGroup
+            | Internal anInternalGroup -> anInternalGroup
+
+
+///Services that act on domain types
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
 
 module ServiceInterfaces =
 
@@ -298,15 +322,14 @@ module Tenant =
     let provisionGroup (aTenant : Tenant)(aGroupName :GroupName) (aGroupDescription: GroupDescription) : Result<Group, string> =
 
         let id = generateNoEscapeId();
-        let tenantId = (TenantId.value aTenant.TenantId)
 
         if aTenant.ActivationStatus = ActivationStatus.Activated then
 
             let group = result {
 
-                let! groupId = GroupId.create "group id" id
+                let! groupId = GroupId.create' id
 
-                let group = {
+                let group = Standard {
                     GroupId = groupId 
                     TenantId = aTenant.TenantId
                     Name = aGroupName
@@ -346,7 +369,7 @@ module Tenant =
                     let! groupDescription = GroupDescription.create "group name" "INTERNAL_GROUP_DESCRIPTION"
 
 
-                    let group = {
+                    let group = Internal {
                         GroupId = groupId 
                         TenantId = aTenant.TenantId
                         Name = groupName
@@ -360,14 +383,14 @@ module Tenant =
                         let id = generateNoEscapeId()
                         let! roleId = RoleId.create "role id" id
 
-
+                        ///TODO MAKE THIS CONSTRUT PRIVATE
                         let role : Role = {
                             RoleId = roleId 
                             TenantId = aTenant.TenantId
                             Name = aRoleName
                             Description = aRoleDescription
                             SupportNesting = SupportNestingStatus.Support
-                            InternalGroup = group
+                            InternalGroup =  group
                     }
 
                     return role
@@ -584,7 +607,7 @@ module Role =
             let! groupDescription = "INTERNAL_GROUP_DESCRIPTION" |> GroupDescription.create'
 
 
-            let internalGroup = {
+            let internalGroup = Internal {
                 GroupId = groupId 
                 TenantId = tenantIds
                 Name = groupName
@@ -836,19 +859,22 @@ module Group =
 
 
 
-    let toMemberOfTypeGroup memberType aGroup =
+    let toMemberOfTypeGroup (memberType:GroupMemberType) (aGroup:Group) =
 
         let resultOfGroupMember = result {
+
+            let aStandardGroup =  aGroup 
+                                  |> DomainHelpers.unwrapToStandardGroup
                 
-            let! memberId = aGroup.GroupId 
+            let! memberId = aStandardGroup.GroupId 
                             |> GroupId.value  
                             |> GroupMemberId.create' 
 
-            let! tenantId = aGroup.TenantId 
+            let! tenantId = aStandardGroup.TenantId 
                             |> TenantId.value 
                             |> TenantId.create'
 
-            let! name = aGroup.Name 
+            let! name = aStandardGroup.Name 
                         |> GroupName.value 
                         |> GroupMemberName.create'
     
@@ -874,7 +900,7 @@ module Group =
 
 
 
-    let toMemberOfTypeUser memberType aUser =
+    let toMemberOfTypeUser memberType (aUser:User) =
 
         let resultOfGroupMember = result {
                 
@@ -933,7 +959,7 @@ module Group =
             let! members = members |> GroupMembers.create'
           
 
-            return {
+            return Standard {
                GroupId = groupId
                TenantId = tenantId'
                Name = name'
@@ -964,9 +990,14 @@ module Group =
 
     let addGroupToGroup (aGroupToAddTo:Group)(aGroupToAdd:Group)(isGroupMemberService: IsGroupMember') : Result<Group, string> =
 
-        let doBothGroupsHaveSameTenant = (aGroupToAddTo.TenantId = aGroupToAdd.TenantId)
-        let isNotTheSameGroup  = not (aGroupToAddTo.GroupId = aGroupToAdd.GroupId)
-        let toGroupMember' = toMemberOfTypeGroup GroupGroupMember
+        let unwrappedGroupToAddTo = match aGroupToAddTo with 
+                                        | Standard aStandardGroup -> aStandardGroup
+                                        | Internal anInternalGroup -> anInternalGroup
+                                        
+
+        let doBothGroupsHaveSameTenant = (unwrappedGroupToAddTo.TenantId = unwrappedGroupToAddTo.TenantId)
+        let isNotTheSameGroup  = not (unwrappedGroupToAddTo.GroupId = unwrappedGroupToAddTo.GroupId)
+        let toGroupGroupMember = toMemberOfTypeGroup GroupGroupMember
         let isGroupMemberService' = isGroupMemberService aGroupToAddTo 
 
         match doBothGroupsHaveSameTenant && isNotTheSameGroup with 
@@ -975,7 +1006,7 @@ module Group =
             let rsGrouMember = result {
 
                 let! aMemberToAdd = aGroupToAdd 
-                                    |> toGroupMember'
+                                    |> toGroupGroupMember
                                     
                 let isTheGroupMemberToAddAlreadyAMember = aMemberToAdd 
                                                           |> isGroupMemberService' 
@@ -988,16 +1019,23 @@ module Group =
 
                 if not isAlreadyGroupMember then
                     
-                    let newMembers =  aGroupToAddTo.Members
+                    
+                    let aStandardGroupToAdd =  aGroupToAddTo 
+                                               |> DomainHelpers.unwrapToStandardGroup
+
+
+                    let newMembers =  aStandardGroupToAdd.Members
+
                     let rsIsGrouMemberToAdd = result {
-                            let! aMemberToAdd = aGroupToAdd |> toGroupMember'
-                            return aMemberToAdd
+                        let! aMemberToAdd = aGroupToAdd
+                                            |> toGroupGroupMember
+                        return aMemberToAdd
                         }
 
                     match rsIsGrouMemberToAdd with 
                     | Ok groupMember -> 
-                        let group = {aGroupToAddTo with Members = [groupMember]@newMembers}
-                        Ok group
+                        let group = {aStandardGroupToAdd with Members = [groupMember]@newMembers}
+                        Ok (Standard group)
                     | Error error ->
                         Error error
                 else
@@ -1020,8 +1058,10 @@ module Group =
     let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User)  =
 
 
+        let aStandardGroupToAdd =  aGroupToAddTo 
+                                               |> DomainHelpers.unwrapToStandardGroup
 
-        let AreFromSameTenant = (aGroupToAddTo.TenantId = aUserToAdd.TenantId)
+        let AreFromSameTenant = (aStandardGroupToAdd.TenantId = aUserToAdd.TenantId)
         let UserIsEnabled = aUserToAdd |> User.isEnabled
    
         match AreFromSameTenant && UserIsEnabled with  
@@ -1031,7 +1071,7 @@ module Group =
 
                 let! groupMemberToAdd = aUserToAdd |> toMemberOfTypeUser'
 
-                let searchGivenMemberInGroupMembers = aGroupToAddTo.Members
+                let searchGivenMemberInGroupMembers = aStandardGroupToAdd.Members
                                                       |> List.filter (
                                                           fun next -> 
                                                             groupMemberToAdd.MemberId = next.MemberId
@@ -1064,7 +1104,7 @@ module Group =
                     match groupMemberToAdd with  
                     | Ok grouMember -> 
 
-                        Ok {aGroupToAddTo with Members = aGroupToAddTo.Members@[grouMember]}
+                        Ok {aStandardGroupToAdd with Members = aStandardGroupToAdd.Members@[grouMember]}
 
                     | Error error -> 
                     

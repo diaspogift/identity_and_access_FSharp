@@ -1,14 +1,14 @@
 module IdentityAndAcccess.DomainServices
 
 open System
-open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Role
+open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAcccess.CommonDomainTypes
-open IdentityAndAccess.DatabaseTypes
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.RoleDb
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open MongoDB.Bson
+open IdentityAndAcccess.DomainTypes.Functions
 
 
 
@@ -34,10 +34,14 @@ module Group =
     ///Group type related domain services
     /// 
     ///
-    let isGroupMember (loadGroupMemberById:LoadGroupMemberById) (aGroup:Group) (aMember:GroupMember) : bool =
+    let isGroupMember (loadGroupMemberById:LoadGroupMemberById) 
+        (aGroup:Group) (aMember:GroupMember) : bool =
                 
+        let aStandardGroup = aGroup |> DomainHelpers.unwrapToStandardGroup
                 
-        let rec recIsGroupMember  (aMember : GroupMember) (loadGroupMemberById : LoadGroupMemberById) (aGroupMemberList : GroupMember list) =
+        let rec recIsGroupMember  
+            (aMember : GroupMember) 
+            (loadGroupMemberById : LoadGroupMemberById) (aGroupMemberList : GroupMember list) =
 
             match aGroupMemberList with
             | [] -> 
@@ -58,7 +62,10 @@ module Group =
                     match additionalGroupToSearch with
                     | Ok anAdditionalGroupToSearch ->
 
-                        let newMembersToAppend =  anAdditionalGroupToSearch.Members
+                        let aStandardAdditionalGroupToSearch = anAdditionalGroupToSearch 
+                                                               |> DomainHelpers.unwrapToStandardGroup
+                                                               
+                        let newMembersToAppend =  aStandardAdditionalGroupToSearch.Members
                         let allMembers = tail @ newMembersToAppend
                         let result = recIsGroupMember aMember loadGroupMemberById allMembers
 
@@ -67,7 +74,7 @@ module Group =
                     | Error _ -> false
 
 
-        recIsGroupMember  aMember  loadGroupMemberById   aGroup.Members
+        recIsGroupMember  aMember  loadGroupMemberById   aStandardGroup.Members
 
         
     let isGroupMember' = isGroupMember loadGroupByGroupMemberIdDbDependencyFunction

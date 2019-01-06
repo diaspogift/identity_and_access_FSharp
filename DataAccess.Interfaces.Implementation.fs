@@ -1,6 +1,9 @@
 module IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 
-open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Role
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
@@ -172,25 +175,48 @@ module DbHelpers =
 
 
 
-    let fromGroupDomainToDto (aGroup:IdentityAndAcccess.DomainTypes.Group) = 
+    let fromGroupDomainToDto (aGroup:Group) = 
 
-        let allGroupMembers = aGroup.Members 
-                              |> List.toArray 
-                              |> Array.map fromGroupMemberToGroupMemberDto
-        let groupId = aGroup.GroupId
-                      |> GroupId.value
-        let id = new BsonObjectId(new ObjectId(groupId))
+        match aGroup with
+              | Standard standardGroup -> 
 
-        let rsGroupDto:GroupDto ={
-            _id = id
-            GroupId = id
-            TenantId = TenantId.value aGroup.TenantId
-            Name = GroupName.value aGroup.Name
-            Description = GroupDescription.value aGroup.Description
-            Members = allGroupMembers
-        }
+                    let allGroupMembers = standardGroup.Members 
+                                          |> List.toArray 
+                                          |> Array.map fromGroupMemberToGroupMemberDto
+                    let groupId = standardGroup.GroupId
+                                  |> GroupId.value
+                    let id = new BsonObjectId(new ObjectId(groupId))
 
-        rsGroupDto
+                    let rsGroupDto:GroupDto ={
+                        _id = id
+                        GroupId = id
+                        TenantId = TenantId.value standardGroup.TenantId
+                        Name = GroupName.value standardGroup.Name
+                        Description = GroupDescription.value standardGroup.Description
+                        Members = allGroupMembers
+                    }
+
+                    rsGroupDto  
+
+              | Internal internalGroup ->
+                    let allGroupMembers = internalGroup.Members 
+                                          |> List.toArray 
+                                          |> Array.map fromGroupMemberToGroupMemberDto
+                    let groupId = internalGroup.GroupId
+                                  |> GroupId.value
+                    let id = new BsonObjectId(new ObjectId(groupId))
+
+                    let rsGroupDto:GroupDto ={
+                        _id = id
+                        GroupId = id
+                        TenantId = TenantId.value internalGroup.TenantId
+                        Name = GroupName.value internalGroup.Name
+                        Description = GroupDescription.value internalGroup.Description
+                        Members = allGroupMembers
+                    }
+
+                    rsGroupDto
+
 
 
 
@@ -267,7 +293,7 @@ module DbHelpers =
 
 
 
-    let fromDbDtoToGroup (aGroupToConvertToGroup : GroupDto) :Result<Group,string> = 
+    let fromDbDtoToGroup (aGroupDtoToConvertToGroup : GroupDto) :Result<Group,string> = 
 
             let convertGrouMemberDtoToGroupMemberTempDto = 
                 fun (groupMemberDto:GroupMemberDto) ->  
@@ -292,9 +318,9 @@ module DbHelpers =
 
                                    rsGroupMember
             
-            let id = aGroupToConvertToGroup.GroupId.ToString()
+            let id = aGroupDtoToConvertToGroup.GroupId.ToString()
             let groupMemberDtoListToConvertIntoGroupMemberDtoTempList = 
-                   aGroupToConvertToGroup.Members
+                   aGroupDtoToConvertToGroup.Members
                    |> Array.map convertGrouMemberDtoToGroupMemberTempDto
                    |> Array.toList
                    |> ResultOfSequenceTemp
@@ -303,7 +329,7 @@ module DbHelpers =
             | Ok aGroupMemberDtoTempList -> 
 
                 result {
-                let! group = Group.create id aGroupToConvertToGroup.TenantId aGroupToConvertToGroup.Name aGroupToConvertToGroup.Description aGroupMemberDtoTempList
+                let! group = Group.create id aGroupDtoToConvertToGroup.TenantId aGroupDtoToConvertToGroup.Name aGroupDtoToConvertToGroup.Description aGroupMemberDtoTempList
                 return group
                 }
 
@@ -457,8 +483,15 @@ module GroupDb =
         with
             | Failure msg -> Error msg 
             | :? MongoDB.Driver.MongoWriteException as ex ->
-                let errorMessage = sprintf "Duplicate GroupId : %A" aGroup.GroupId
-                Error errorMessage
+                match aGroup with
+                | Standard aGroup ->
+                    let errorMessage = sprintf "Duplicate Standard GroupId : %A" aGroup.GroupId
+                    Error errorMessage
+                | Internal aGroup->
+                    let errorMessage = sprintf "Duplicate Internal GroupId : %A" aGroup.GroupId
+                    Error errorMessage
+
+                
             | _ -> Error "Unmatched error occurred" 
             
 
@@ -497,7 +530,11 @@ module GroupDb =
 
     let private updateGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroup : Group ) = 
         
-        let bsonId = new BsonObjectId (new ObjectId(GroupId.value aGroup.GroupId))
+        let unwrappedGroup = match aGroup with 
+                                   | Standard aStandarGroup ->  aStandarGroup  
+                                   | Internal anInternalGroup ->  anInternalGroup
+
+        let bsonId = new BsonObjectId (new ObjectId(GroupId.value unwrappedGroup.GroupId))
         let filter = Builders<GroupDto>.Filter.Eq((fun x -> x.GroupId), bsonId)
         let aGroupDto = DbHelpers.fromGroupDomainToDto aGroup
         let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  

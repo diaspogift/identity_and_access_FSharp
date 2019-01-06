@@ -25,7 +25,7 @@ let printSeparatorLine(count) =
         
         let countArray = List.init count (fun x -> x)
         countArray
-        |> List.iter (fun x -> printfn "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+        |> List.iter (fun x -> printfn "-----------------------------------------------------------------------------------------")
 
 
 
@@ -292,7 +292,7 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 let! groupToAdd3 = Group.create "24e7538d90ad4bd7a448d153" "507f1f77bcf86cd799439010" "Cleaners" "Cleaners" []
                 let! groupToAdd4 = Group.create "24e7538d90ad4bd7a448d154" "507f1f77bcf86cd799439010" "Formateurs" "Formateurs" []
                 let! groupToAdd5 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Urgenciers" "Urgenciers" []
-                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
+                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d157" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
                 
                 let groupToSave1 = DbHelpers.fromGroupDomainToDto groupToAdd1
                 let groupToSave2 = DbHelpers.fromGroupDomainToDto groupToAdd2
@@ -313,11 +313,10 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 //saveGroupDependencyFunction groupToSave5
 
 
-                let b = saveGroupDependencyFunction groupToAdd6
+                //let b = saveGroupDependencyFunction groupToAdd6
 
                 printSeparatorLine(2)
                 printfn "HERE THE SAVE RESULTTTTTTTT"
-                printSeparatorLine(2)
 
                 //let groupToAddToDto = loadGroupByIdDependancyFunction groupToAdd1.GroupId
                 //let! groupToAddTo = groupToAddToDto 
@@ -343,7 +342,8 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
                 printfn "RESULT GROUP SAVE: %A" r
 
-                
+                printSeparatorLine(2)
+
 
                 return groupToAdd6 
 
@@ -352,7 +352,9 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
 match rsCreateGroupSaveAndTryToReloadItFormDb with 
 | Ok aGroup
-        -> printfn "GROUP SAVED ID = %A" aGroup.GroupId
+        -> 
+  printfn "INTERNAL GROUP SAVED ID = %A" (aGroup) 
+        
 | Error error 
         -> printfn "Error = %A" error
 
