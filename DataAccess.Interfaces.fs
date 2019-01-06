@@ -20,10 +20,11 @@ module RoleDb =
 
 
 
-///Role related types
-/// 
-/// 
-/// 
+    ///Role related types
+    /// 
+    /// 
+    /// 
+    /// 
     type SaveOneRole = Role -> Result<unit, string>
 
     type LoadOneRoleById =  RoleId -> Result<Role, string> 
@@ -34,11 +35,14 @@ module RoleDb =
 
 
 
+module UserDb =
 
 
-///User related types
-/// 
-/// 
+    ///User related types
+    /// 
+    /// 
+    /// 
+    /// 
     type SaveOneUser = User -> Result<unit, string>
 
     type LoadOneUserById = UserId -> Result<User, string> 
@@ -49,9 +53,15 @@ module RoleDb =
 
 
 
-///Tenant related types
-/// 
-/// 
+
+module TenantDb =
+
+
+    ///Tenant related types
+    /// 
+    /// 
+    /// 
+    /// 
     type SaveOneTenant = Tenant -> Result<unit, string>
 
     type LoadOneTenantById = TenantId -> Result<Tenant, string> 
@@ -62,11 +72,15 @@ module RoleDb =
 
 
 
+module GroupDb =
 
-///Group related types
-/// 
-/// 
-    type SaveOneGroup = Group -> unit
+
+    ///Group related types
+    /// 
+    /// 
+    /// 
+    ///  
+    type SaveOneGroup = Group -> Result<unit, string>
 
     type LoadOneGroupById = GroupId -> Result<Group, string> 
     

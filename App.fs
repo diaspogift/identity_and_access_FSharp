@@ -3,6 +3,8 @@
 
 
 
+
+
 open Suave.Web
 open Suave.Successful
 open IdentityAndAcccess.DomainTypes.Functions
@@ -17,6 +19,13 @@ open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.DomainTypes.Functions
 open System
 open IdentityAndAcccess.DomainServices.Group
+
+
+let printSeparatorLine(count) = 
+        
+        let countArray = List.init count (fun x -> x)
+        countArray
+        |> List.iter (fun x -> printfn "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
 
 
@@ -283,12 +292,14 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 let! groupToAdd3 = Group.create "24e7538d90ad4bd7a448d153" "507f1f77bcf86cd799439010" "Cleaners" "Cleaners" []
                 let! groupToAdd4 = Group.create "24e7538d90ad4bd7a448d154" "507f1f77bcf86cd799439010" "Formateurs" "Formateurs" []
                 let! groupToAdd5 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Urgenciers" "Urgenciers" []
+                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
                 
                 let groupToSave1 = DbHelpers.fromGroupDomainToDto groupToAdd1
                 let groupToSave2 = DbHelpers.fromGroupDomainToDto groupToAdd2
                 let groupToSave3 = DbHelpers.fromGroupDomainToDto groupToAdd3
                 let groupToSave4 = DbHelpers.fromGroupDomainToDto groupToAdd4
                 let groupToSave5 = DbHelpers.fromGroupDomainToDto groupToAdd5
+                //let groupToSave6 = DbHelpers.fromGroupDomainToDto groupToAdd6
               
 
                 let saveGroupDependencyFunction = GroupDb.saveOneGroup
@@ -301,45 +312,47 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 //saveGroupDependencyFunction groupToSave4
                 //saveGroupDependencyFunction groupToSave5
 
-                let groupToAddToDto = loadGroupByIdDependancyFunction groupToAdd1.GroupId
-                let! groupToAddTo = groupToAddToDto 
+
+                let b = saveGroupDependencyFunction groupToAdd6
+
+                printSeparatorLine(2)
+                printfn "HERE THE SAVE RESULTTTTTTTT"
+                printSeparatorLine(2)
+
+                //let groupToAddToDto = loadGroupByIdDependancyFunction groupToAdd1.GroupId
+                //let! groupToAddTo = groupToAddToDto 
 
 
-                let! user1 = User.create "507f1f77bcf86cd799439012" "507f1f77bcf86cd799439010" "Precilia" "N/A" "FOTIO MELING" "meling.hess@gmail.com" "Denver, Bonamoussadi Duoala" "669262656" "669272757" "meling" "my_current_password"
+                //let! user1 = User.create "507f1f77bcf86cd799439012" "507f1f77bcf86cd799439010" "Precilia" "N/A" "FOTIO MELING" "meling.hess@gmail.com" "Denver, Bonamoussadi Duoala" "669262656" "669272757" "meling" "my_current_password"
+
+                //printfn "GROUP LOADED = %A" groupToAddToDto
+
+            
+                //let! groupWithMember = Group.addUserToGroup groupToAddTo user1
 
 
-                printfn "=========================================================================" 
-                printfn "GROUP LOADED = %A" groupToAddToDto
+                //printfn "GROUP TO SAVE = %A" groupToAddTo
 
-                printfn "=========================================================================" 
-                printfn "=========================================================================" 
-                printfn "=========================================================================" 
-                printfn "=========================================================================" 
-                printfn "=========================================================================" 
-
-                let! groupWithMember = Group.addUserToGroup groupToAddTo user1
-
-
-                printfn "GROUP TO SAVE = %A" groupWithMember
-
-                printfn "=========================================================================" 
+                //printfn "=========================================================================" 
 
            
 
                 
 
-                updateGroupDependencyFunction groupWithMember
+                let r = saveGroupDependencyFunction groupToAdd6
+
+                printfn "RESULT GROUP SAVE: %A" r
 
                 
 
-                return groupWithMember 
+                return groupToAdd6 
 
 
 }
 
 match rsCreateGroupSaveAndTryToReloadItFormDb with 
 | Ok aGroup
-        -> printfn "The adapted result is here  = %A" aGroup
+        -> printfn "GROUP SAVED ID = %A" aGroup.GroupId
 | Error error 
         -> printfn "Error = %A" error
 

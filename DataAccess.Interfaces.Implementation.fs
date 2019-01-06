@@ -11,6 +11,7 @@ open IdentityAndAccess.DatabaseTypes
 open MongoDB.Driver
 open MongoDB.Bson
 open FSharp.Data.Sql
+open Suave.Sockets
 
 
 
@@ -430,13 +431,27 @@ module GroupDb =
 
 
 
-    let saveGroup (aGroupCollection : IMongoCollection<GroupDto>)  (aGroupDto:GroupDto) = 
-        aGroupCollection.InsertOne aGroupDto
+    let saveGroup (aGroupCollection : IMongoCollection<GroupDto>)  (aGroupDto:GroupDto) : Result<unit,string>= 
+        
+        try
+            aGroupDto 
+            |> aGroupCollection.InsertOne
+            |> Ok
+        with
+            |Failure msg -> Error msg 
 
     let saveGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  (aGroup:Group) = 
-        aGroup 
-        |> DbHelpers.fromGroupDomainToDto
-        |> aGroupCollection.InsertOne 
+        
+        try 
+            aGroup 
+            |> DbHelpers.fromGroupDomainToDto
+            |> aGroupCollection.InsertOne 
+            |> Ok
+        with
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
+            
 
 
 
@@ -490,10 +505,10 @@ module GroupDb =
 
 
 
-    let saveOneGroup : RoleDb.SaveOneGroup = saveGroupAdapted DbConfig.groupCollection
-    let loadOneGroupById : RoleDb.LoadOneGroupById = loadGroupByIdAdaptedToGroupId DbConfig.groupCollection
-    let loadOneGroupMemberById : RoleDb.LoadOneGroupByGroupMemberId = loadGroupByIdAdaptedToGroupMembertId DbConfig.groupCollection
-    let updateOneGroup : RoleDb.UpdateOneGroup = updateGroupAdapted DbConfig.groupCollection
+    let saveOneGroup : GroupDb.SaveOneGroup = saveGroupAdapted DbConfig.groupCollection
+    let loadOneGroupById : GroupDb.LoadOneGroupById = loadGroupByIdAdaptedToGroupId DbConfig.groupCollection
+    let loadOneGroupMemberById : GroupDb.LoadOneGroupByGroupMemberId = loadGroupByIdAdaptedToGroupMembertId DbConfig.groupCollection
+    let updateOneGroup : GroupDb.UpdateOneGroup = updateGroupAdapted DbConfig.groupCollection
 
 
 
