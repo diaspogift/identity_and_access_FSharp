@@ -11,7 +11,7 @@ open IdentityAndAccess.DatabaseTypes
 open MongoDB.Driver
 open MongoDB.Bson
 open FSharp.Data.Sql
-open Suave.Sockets
+
 
 
 
@@ -325,9 +325,14 @@ module RoleDb =
 
     let private saveRole (aRoleCollection : IMongoCollection<RoleDto>)(aRoleDto:RoleDto) = 
         aRoleCollection.InsertOne aRoleDto
+
+
+
     let private loadRoleById (aRoleCollection : IMongoCollection<RoleDto>)  ( id : BsonObjectId ) = 
         let result = aRoleCollection.Find(fun x -> x.RoleId = id).Single()        
         result
+
+
     let private updateRole (aRoleCollection : IMongoCollection<RoleDto>)  ( aRoleDto : RoleDto ) = 
 
         let filter = Builders<RoleDto>.Filter.Eq((fun x -> x.RoleId), aRoleDto.RoleId)
@@ -438,7 +443,9 @@ module GroupDb =
             |> aGroupCollection.InsertOne
             |> Ok
         with
-            |Failure msg -> Error msg 
+            | Failure msg -> Error msg 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | _ -> Error "Unmatched error occurred" 
 
     let saveGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  (aGroup:Group) = 
         
@@ -449,7 +456,9 @@ module GroupDb =
             |> Ok
         with
             | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | :? MongoDB.Driver.MongoWriteException as ex ->
+                let errorMessage = sprintf "Duplicate GroupId : %A" aGroup.GroupId
+                Error errorMessage
             | _ -> Error "Unmatched error occurred" 
             
 

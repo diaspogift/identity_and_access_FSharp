@@ -4,9 +4,24 @@ namespace IdentityAndAcccess.DomainTypes
 ///Imported local libs
 open IdentityAndAcccess.CommonDomainTypes
 open System
-open System.Text.RegularExpressions
-open System.Text.RegularExpressions
-open IdentityAndAcccess.CommonDomainTypes.Functions
+open Suave.Logging
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -34,6 +49,33 @@ type Tenant = {
     RegistrationInvitations: RegistrationInvitation list
     ActivationStatus : ActivationStatus
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -94,6 +136,24 @@ type UserDescriptor = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///Group related types
 /// 
 /// 
@@ -124,6 +184,26 @@ type GroupIdOrGroupMemberId =
     | GroupId of GroupId
     | GroupMemberId of GroupMemberId
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///Role related types
 /// 
 /// 
@@ -151,15 +231,19 @@ type Role = {
 
 
 
+///Miscellaniuous types
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
 
 
 
 
-///Should be a common domain type 
-type MyTimeSpan = {
-    Start: DateTime
-    End: DateTime 
-}
 
 
 ///Temporary types should there be here? let alone should they have been created?

@@ -2,6 +2,10 @@ namespace IdentityAndAcccess.CommonDomainTypes
 
 
 
+open System
+
+
+
 ///Tenant related types definition
 /// 
 /// 
@@ -45,8 +49,24 @@ type GroupMemberId = private GroupMemberId of string
 type GroupMemberName = private GroupMemberName of string
 
 
+
+///-----------------------------------------------------------------------------------------------------------------------
+
+
+
+
 ///Others
 /// 
 /// 
 type String50 = private String50 of string
     
+
+type DateTimeWrapped = private DateTimeWrapped of DateTime
+
+
+///Should be a common domain type 
+type DateTimeSpan = private {
+    Start: DateTimeWrapped
+    End: DateTimeWrapped
+} 
+

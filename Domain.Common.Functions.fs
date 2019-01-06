@@ -105,6 +105,25 @@ module ConstrainedType =
 
 
 
+    let createDatetimeSpan (fieldName:string) ctor (startDate:DateTime) (endDate:DateTime) =
+
+        if DateTime.Compare (startDate, endDate) <=  0 then
+
+            Ok { Start = ctor startDate; End = ctor endDate}
+
+        else
+
+            let msg = sprintf "%s: Start date must be inferior to end date" fieldName
+
+            Error msg  
+           
+
+        
+        
+        
+
+        
+         
 
 
 
@@ -460,6 +479,23 @@ module Telephone =
 
 
 
+
+
+module DateTimeWrapped =
+
+    let value (DateTimeWrapped dateTime) = dateTime
+
+ 
+
+
+
+
+module DateTimeSpan =
+
+    let create fieldName startDate endDate = 
+        ConstrainedType.createDatetimeSpan fieldName DateTimeWrapped startDate endDate
+
+    let create' = create  "Datetime Span : "
 
 
 
