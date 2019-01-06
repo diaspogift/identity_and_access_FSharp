@@ -9,7 +9,8 @@
     <Compile Include="Domain.IdentityAndAccess.Types.fs" />
     <Compile Include="Domain.IdentityAndAccess.Functions.fs" />
     <Compile Include="DataAccess.Types.fs" />
-    <Compile Include="DataAccess.Functions.fs" />
+    <Compile Include="DataAccess.Interfaces.fs" />
+    <Compile Include="DataAccess.Interfaces.Implementation.fs" />
     <Compile Include="Domain.Services.Implementation.fs" />
     <Compile Include="RestFull.fs" />
     <Compile Include="Test.fsx" />

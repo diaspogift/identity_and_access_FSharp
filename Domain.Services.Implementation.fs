@@ -6,7 +6,7 @@ open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAccess.DatabaseTypes
-open IdentityAndAccess.DatabaseTypes.Functions
+open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open MongoDB.Bson
 
 
@@ -20,32 +20,8 @@ module Group =
     ///Database dependecies
     /// 
     /// 
-    let LoadGroupByIdDbDependencyFunction = GroupDb.loadOneGroupById
 
-    let loadGroupByIdDbDependencyAdapted 
-        (f:BsonObjectId -> GroupDto) 
-        : (GroupMemberId -> Result<Group, string>)  =
-
-        let fToreturn 
-                (aGroupMemberId:GroupMemberId) 
-                :Result<Group, string> =
-
-                let groupResult = result {
-
-                    let bisonId = new BsonObjectId(new ObjectId((GroupMemberId.value aGroupMemberId)))
-                    let groupDto = bisonId |> GroupDb.loadOneGroupById
-                    let! group = groupDto |> DbHelpers.fromDbDtoToGroup 
-
-                    return group
-                }
-                
-                match groupResult with  
-                | Ok groupResult -> Ok groupResult
-                | Error error -> Error error
-            
-        fToreturn
-
-    let LoadGroupByIdDbDependencyFunctionAapted = loadGroupByIdDbDependencyAdapted LoadGroupByIdDbDependencyFunction
+    let loadOneGroupMemberById = GroupDb.loadOneGroupMemberById
      
 
      
@@ -57,7 +33,7 @@ module Group =
     /// 
     /// 
     type GroupMemberService = {TimeServiceWasCalled:DateTime; CallerCredentials:CallerCredential} with
-        member this.isGroupMember :IsGroupMember = 
+        member this.isGroupMember : IsGroupMember = 
             fun (getGroupMemberById:GetGroupMemberById) (aGroup:Group) (aMember:GroupMember)  ->
                 printfn "I am in the IsGroupMember Function"
                 let rec recIsGroupMember  
@@ -98,7 +74,7 @@ module Group =
                 
 
         member this.isMemberGroupMember :IsGroupMemberWithBakedGetGroupMemberById = 
-                this.isGroupMember LoadGroupByIdDbDependencyFunctionAapted
+                this.isGroupMember loadOneGroupMemberById
             
 
                                 

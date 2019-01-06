@@ -8,21 +8,15 @@ open Suave.Successful
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAccess.DatabaseTypes.Functions
 open MongoDB.Bson
 open IdentityAndAcccess.DomainServices
-open IdentityAndAccess.DatabaseTypes.Functions
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions
-open IdentityAndAccess.DatabaseTypes.Functions
-open IdentityAndAccess.DatabaseTypes.Functions
 open IdentityAndAccess.DatabaseTypes
-open IdentityAndAccess.DatabaseTypes.Functions
-open IdentityAndAccess.DatabaseTypes.Functions
+open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.DomainTypes.Functions
 open System
 open IdentityAndAcccess.DomainServices.Group
-open IdentityAndAccess.DatabaseTypes.Functions
 
 
 
@@ -307,29 +301,38 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 //saveGroupDependencyFunction groupToSave4
                 //saveGroupDependencyFunction groupToSave5
 
-                let id = (new BsonObjectId(new ObjectId(GroupId.value groupToAdd1.GroupId)))
-                let groupToAddToDto = loadGroupByIdDependancyFunction id
-                let! groupToAddTo = groupToAddToDto |> DbHelpers.fromDbDtoToGroup 
+                let groupToAddToDto = loadGroupByIdDependancyFunction groupToAdd1.GroupId
+                let! groupToAddTo = groupToAddToDto 
 
 
-                let! user1 = User.create "507f1f77bcf86cd799439014" "507f1f77bcf86cd799439010" "Precilia" "N/A" "FOTIO MELING" "meling.hess@gmail.com" "Denver, Bonamoussadi Duoala" "669262656" "669272757" "meling" "my_current_password"
+                let! user1 = User.create "507f1f77bcf86cd799439012" "507f1f77bcf86cd799439010" "Precilia" "N/A" "FOTIO MELING" "meling.hess@gmail.com" "Denver, Bonamoussadi Duoala" "669262656" "669272757" "meling" "my_current_password"
 
 
-
+                printfn "=========================================================================" 
                 printfn "GROUP LOADED = %A" groupToAddToDto
-                printfn "GROUP TO SAVE = %A" groupToAddTo
 
-           
+                printfn "=========================================================================" 
+                printfn "=========================================================================" 
+                printfn "=========================================================================" 
+                printfn "=========================================================================" 
+                printfn "=========================================================================" 
+
                 let! groupWithMember = Group.addUserToGroup groupToAddTo user1
 
+
+                printfn "GROUP TO SAVE = %A" groupWithMember
+
+                printfn "=========================================================================" 
+
+           
+
                 
 
-                let groupToSave  = DbHelpers.fromGroupDomainToDto groupWithMember
-                updateGroupDependencyFunction groupToSave
+                updateGroupDependencyFunction groupWithMember
 
                 
 
-                return groupToAdd1 
+                return groupWithMember 
 
 
 }

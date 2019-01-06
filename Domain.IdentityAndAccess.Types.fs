@@ -5,6 +5,8 @@ namespace IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.CommonDomainTypes
 open System
 open System.Text.RegularExpressions
+open System.Text.RegularExpressions
+open IdentityAndAcccess.CommonDomainTypes.Functions
 
 
 

@@ -1,36 +1,21 @@
-module IdentityAndAccess.DatabaseTypes.Functions
+module IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions
+open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
+open IdentityAndAccess.DatabaseTypes
+ 
 
  
 open MongoDB.Driver
-open  MongoDB.Bson
- open FSharp.Data.Sql
+open MongoDB.Bson
+open FSharp.Data.Sql
 
 
 
 
 
-let rec traverseResultA f list =
-
-        // define the applicative functions
-        let (<*>) = Result.apply
-        let retn = Result.Ok
-
-        // define a "cons" function
-        let cons head tail = head :: tail
-
-        // loop through the list
-        match list with
-        | [] -> 
-            // if empty, lift [] to a Result
-            retn []
-        | head::tail ->
-            // otherwise lift the head to a Result using f
-            // and cons it with the lifted version of the remaining list
-            retn cons <*> (f head) <*> (traverseResultA f tail)
 
 
 module DbConfig =
@@ -375,6 +360,7 @@ module UserDb =
 
     let private saveUser (aUserCollection : IMongoCollection<UserDto>)(aUserDto:UserDto) = 
         aUserCollection.InsertOne aUserDto
+
     let private loadUserById (aUserCollection : IMongoCollection<UserDto>)  ( id : BsonObjectId ) = 
         let result = aUserCollection.Find(fun x -> x.UserId = id).Single()        
         result
@@ -445,15 +431,51 @@ module GroupDb =
 
 
     let saveGroup (aGroupCollection : IMongoCollection<GroupDto>)  (aGroupDto:GroupDto) = 
-
         aGroupCollection.InsertOne aGroupDto
+
+    let saveGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  (aGroup:Group) = 
+        aGroup 
+        |> DbHelpers.fromGroupDomainToDto
+        |> aGroupCollection.InsertOne 
+
+
+
+
+
+
+
 
     let private loadGroupById (aGroupCollection : IMongoCollection<GroupDto>)  ( id : BsonObjectId ) = 
         let result = aGroupCollection.Find(fun x -> x.GroupId = id).Single()        
         result
 
+    let private loadGroupByIdAdaptedToGroupId (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroupId : GroupId ) = 
+         
+        let bsonId = new BsonObjectId (new ObjectId(GroupId.value aGroupId))
+        let result = aGroupCollection.Find(fun x -> x.GroupId = bsonId).Single()        
+        result |> DbHelpers.fromDbDtoToGroup
+
+    let private loadGroupByIdAdaptedToGroupMembertId (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroupMemberId : GroupMemberId ) = 
+         
+        let bsonId = new BsonObjectId (new ObjectId(GroupMemberId.value aGroupMemberId))
+        let result = aGroupCollection.Find(fun x -> x.GroupId = bsonId).Single()        
+        result |> DbHelpers.fromDbDtoToGroup
+
+
+
+
+
     let private updateGroup (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroupDto : GroupDto ) = 
         let filter = Builders<GroupDto>.Filter.Eq((fun x -> x.GroupId), aGroupDto.GroupId)
+        let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  
+        let result = aGroupCollection.UpdateOne(filter, updateDefinition)
+        ()
+
+    let private updateGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroup : Group ) = 
+        
+        let bsonId = new BsonObjectId (new ObjectId(GroupId.value aGroup.GroupId))
+        let filter = Builders<GroupDto>.Filter.Eq((fun x -> x.GroupId), bsonId)
+        let aGroupDto = DbHelpers.fromGroupDomainToDto aGroup
         let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  
         let result = aGroupCollection.UpdateOne(filter, updateDefinition)
         ()
@@ -468,7 +490,10 @@ module GroupDb =
 
 
 
-    let saveOneGroup = saveGroup DbConfig.groupCollection
-    let loadOneGroupById: BsonObjectId -> GroupDto = loadGroupById DbConfig.groupCollection
-    let updateOneGroup: GroupDto -> unit = updateGroup DbConfig.groupCollection
+    let saveOneGroup : RoleDb.SaveOneGroup = saveGroupAdapted DbConfig.groupCollection
+    let loadOneGroupById : RoleDb.LoadOneGroupById = loadGroupByIdAdaptedToGroupId DbConfig.groupCollection
+    let loadOneGroupMemberById : RoleDb.LoadOneGroupByGroupMemberId = loadGroupByIdAdaptedToGroupMembertId DbConfig.groupCollection
+    let updateOneGroup : RoleDb.UpdateOneGroup = updateGroupAdapted DbConfig.groupCollection
+
+
 
