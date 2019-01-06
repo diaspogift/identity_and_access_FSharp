@@ -293,7 +293,7 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 let! groupToAdd3 = Group.create "24e7538d90ad4bd7a448d153" "507f1f77bcf86cd799439010" "Cleaners" "Cleaners" []
                 let! groupToAdd4 = Group.create "24e7538d90ad4bd7a448d154" "507f1f77bcf86cd799439010" "Formateurs" "Formateurs" []
                 let! groupToAdd5 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Urgenciers" "Urgenciers" []
-                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d158" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
+                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d159" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
                 
                 let groupToSave1 = DbHelpers.fromGroupDomainToDto groupToAdd1
                 let groupToSave2 = DbHelpers.fromGroupDomainToDto groupToAdd2
