@@ -8,24 +8,25 @@
 open Suave.Web
 open Suave.Successful
 open IdentityAndAcccess.DomainTypes.Functions
-open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open MongoDB.Bson
 open IdentityAndAcccess.DomainServices
 open IdentityAndAcccess.DomainTypes
-open IdentityAndAcccess.DomainTypes.Functions
-open IdentityAndAccess.DatabaseTypes
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
-open IdentityAndAcccess.DomainTypes.Functions
-open System
-open IdentityAndAcccess.DomainServices.Group
+
 
 
 let printSeparatorLine(count) = 
         
         let countArray = List.init count (fun x -> x)
         countArray
-        |> List.iter (fun x -> printfn "-----------------------------------------------------------------------------------------")
+        |> List.iter (fun x -> 
+        
+                        printfn ""
+                        printfn ""
+                        printfn "------------------------------------------------------------------------------------------------------------"
+                        printfn ""
+                        printfn ""
+                     )
 
 
 
@@ -292,7 +293,7 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 let! groupToAdd3 = Group.create "24e7538d90ad4bd7a448d153" "507f1f77bcf86cd799439010" "Cleaners" "Cleaners" []
                 let! groupToAdd4 = Group.create "24e7538d90ad4bd7a448d154" "507f1f77bcf86cd799439010" "Formateurs" "Formateurs" []
                 let! groupToAdd5 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Urgenciers" "Urgenciers" []
-                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d157" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
+                let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d158" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
                 
                 let groupToSave1 = DbHelpers.fromGroupDomainToDto groupToAdd1
                 let groupToSave2 = DbHelpers.fromGroupDomainToDto groupToAdd2
@@ -315,8 +316,7 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
                 //let b = saveGroupDependencyFunction groupToAdd6
 
-                printSeparatorLine(2)
-                printfn "HERE THE SAVE RESULTTTTTTTT"
+                printSeparatorLine(1)
 
                 //let groupToAddToDto = loadGroupByIdDependancyFunction groupToAdd1.GroupId
                 //let! groupToAddTo = groupToAddToDto 
@@ -340,9 +340,11 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
                 let r = saveGroupDependencyFunction groupToAdd6
 
-                printfn "RESULT GROUP SAVE: %A" r
+                printfn "RESULT FOR GROUP SAVE:        %A" r
 
-                printSeparatorLine(2)
+       
+
+                printSeparatorLine(1)
 
 
                 return groupToAdd6 
@@ -353,8 +355,9 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 match rsCreateGroupSaveAndTryToReloadItFormDb with 
 | Ok aGroup
         -> 
-  printfn "INTERNAL GROUP SAVED ID = %A" (aGroup) 
-        
+  printfn "GROUP =     %A" aGroup
+  printSeparatorLine(1)
+
 | Error error 
         -> printfn "Error = %A" error
 

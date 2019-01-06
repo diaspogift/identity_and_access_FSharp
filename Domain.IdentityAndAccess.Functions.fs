@@ -1132,9 +1132,24 @@ module Group =
 
 
  
+module ContactInformation =
 
 
+
+
+
+    let changeEmailAddress (aContactInformation:ContactInformation) anEmailAddress =
+        {aContactInformation with Email = anEmailAddress}
   
+    let changePostalAddress (aContactInformation:ContactInformation) aPostalAddress =
+        {aContactInformation with Address = aPostalAddress}
+
+    let changePrimaryTelephone (aContactInformation:ContactInformation) aPrimaryTel =
+        {aContactInformation with PrimaryTel = aPrimaryTel}
+
+    let changeSecondaryTelephone (aContactInformation:ContactInformation) aSecondaryTel =
+        {aContactInformation with SecondaryTel = aSecondaryTel}    
+
     
  
 
