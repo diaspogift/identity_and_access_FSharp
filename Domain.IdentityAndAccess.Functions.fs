@@ -146,14 +146,11 @@ module ServiceInterfaces =
              Group -> User -> Boolean    
 
 
-
-
-
-    ///Domain services interfaces : Necessary for inward dependencies - implemetation in anoter layer
     type GroupMemberServices = {
 
         TimeServiceWasCalled: DateTime
         CallerCredentials: CallerCredential
+
         isGroupMember: IsGroupMemberService
         isUserInNestedGroup : IsUserInNestedGroupService
   
