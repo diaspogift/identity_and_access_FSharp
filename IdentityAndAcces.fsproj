@@ -13,8 +13,8 @@
     <Compile Include="DataAccess.Interfaces.Implementation.fs" />
     <Compile Include="Domain.Services.Implementation.fs" />
     <Compile Include="RestFull.fs" />
-    <Compile Include="Test.fsx" />
     <Compile Include="Infrastrure.Services.Implementation.fs" />
+    <Compile Include="Test.fsx" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
