@@ -157,43 +157,33 @@ module GroupDb =
     /// 
     ///  
     type SaveOneGroup = 
-        
         Group -> Result<unit, string>
 
 
 
-
-
     type LoadOneGroupById = 
-
         GroupId -> Result<Group, string> 
 
 
 
-
-
     type LoadOneGroupByGroupIdAndTenantId =  
-    
         GroupId -> TenantId -> Result<unit, string>
-
 
 
     
     type LoadOneGroupByGroupMemberId = 
-        
         GroupMemberId -> Result<Group, string> 
 
 
 
-
     type LoadOneGroupByGroupMemberIdAndTenantId =  
-        
-        GroupMemberId -> TenantId -> Result<unit, string>
+       GroupMemberId -> TenantId -> Result<unit, string>
 
 
 
 
-    type UpdateOneGroup = Group -> Result<unit,string>
+    type UpdateOneGroup = 
+       Group -> Result<unit,string>
 
 
 
