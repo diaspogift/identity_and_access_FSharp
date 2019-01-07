@@ -4,6 +4,7 @@ namespace IdentityAndAcccess.DomainTypes
 ///Imported local libs
 open IdentityAndAcccess.CommonDomainTypes
 open System
+open IdentityAndAcccess.CommonDomainTypes.Functions
 
 
 
@@ -25,7 +26,7 @@ module Events =
     /// 
     /// 
     type DomainEvent<'T> = {
-        
+
         EventVersion : int
         OccurredOn : DateTime
         Data : 'T
@@ -81,7 +82,7 @@ module Tenant =
         }
 
 
-    type TenantActivationStatusActivatedData = {
+    type TenantActivationStatusActivatedEventData = {
         EventVesion : int
         OccurredOn : DateTime
         TenantId : TenantId
@@ -91,10 +92,10 @@ module Tenant =
 
 
     type TenantActivationStatusActivated = 
-        DomainEvent<TenantActivationStatusActivatedData>
+        DomainEvent<TenantActivationStatusActivatedEventData>
 
 
-    type TenantActivationStatusDiactivatedData = {
+    type TenantActivationStatusDiactivatedEventData = {
         EventVesion : int
         OccurredOn : DateTime
         TenantId : TenantId
@@ -104,11 +105,11 @@ module Tenant =
 
 
     type TenantActivationStatusDiactivated = 
-        DomainEvent<TenantActivationStatusDiactivatedData>
+        DomainEvent<TenantActivationStatusDiactivatedEventData>
 
 
 
-    type TenantAdministratorRegisteredData = {
+    type TenantAdministratorRegisteredEventData = {
         EventVersion : int
         OccurredOn : DateTime
         TenantId : string
@@ -121,7 +122,7 @@ module Tenant =
 
 
     type TenantAdministratorRegistered = 
-        DomainEvent<TenantAdministratorRegisteredData>
+        DomainEvent<TenantAdministratorRegisteredEventData>
 
 
     type TenantProvisioned = {
@@ -201,7 +202,7 @@ module User =
 
 
 
-    type ContactInformationChangedData = {
+    type ContactInformationChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -212,7 +213,7 @@ module User =
         }
 
     type ContactInformationChanged = 
-        DomainEvent<ContactInformationChangedData>
+        DomainEvent<ContactInformationChangedEventData>
 
 
 
@@ -224,7 +225,7 @@ module User =
         }
 
 
-    type PersonalNameChangedData = {
+    type PersonalNameChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -236,7 +237,7 @@ module User =
 
 
     type PersonalNameChanged = 
-        DomainEvent<PersonalNameChangedData>
+        DomainEvent<PersonalNameChangedEventData>
 
 
     type User = {
@@ -256,7 +257,7 @@ module User =
         }
 
 
-    type UserEnablementChangedData = {
+    type UserEnablementChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -264,12 +265,12 @@ module User =
         }
 
     type UserEnablementChanged = 
-            DomainEvent<UserEnablementChangedData>
+            DomainEvent<UserEnablementChangedEventData>
 
 
 
 
-    type UserPasswordChangedData = {
+    type UserPasswordChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -279,10 +280,10 @@ module User =
 
 
     type UserPasswordChanged = 
-            DomainEvent<UserPasswordChangedData>
+            DomainEvent<UserPasswordChangedEventData>
 
 
-    type UserRegisteredChangedData = {
+    type UserRegisteredChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -295,7 +296,7 @@ module User =
 
 
     type UserRegisteredChanged = 
-        DomainEvent<UserRegisteredChangedData>
+        DomainEvent<UserRegisteredChangedEventData>
 
 
 
@@ -325,12 +326,14 @@ module Group =
         | UserGroupMember
         | GroupGroupMember
 
+
     type GroupMember = {
         MemberId: GroupMemberId
         TenantId: TenantId
         Name: GroupMemberName
         Type: GroupMemberType
         }
+
 
     type StandardGroup = {
         GroupId: GroupId
@@ -348,13 +351,31 @@ module Group =
 
 
 
-    type GroupAddedToGroup = {
-        GroupId: GroupId
-        TenantId: TenantId
-        Name: GroupName
-        Description: GroupDescription
-        Members: GroupMember list
-        }
+    type GroupGroupAddedEventData = {
+        GroupId: string
+        NestedGroupId: string
+        TenantId: string
+    }
+
+
+
+    type GroupGroupAdded = 
+            DomainEvent<GroupGroupAddedEventData>
+
+
+    
+    type GroupGroupRemovedEventData = {
+        GroupId: string
+        NestedGroupId: string
+        TenantId: string
+    }
+
+
+
+
+    type GroupGroupRemoved = 
+        DomainEvent<GroupGroupRemovedEventData>
+
 
 
     type GroupIdOrGroupMemberId = 

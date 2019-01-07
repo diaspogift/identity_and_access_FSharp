@@ -8,11 +8,20 @@ open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Role
 open FSharp.Data.Sql
+open System.Collections.Generic
+open Suave.Sockets
+open System.Collections.Generic
 
 
 
 
 
+
+
+let unwrapToStandardGroup aGroupToUnwrapp = 
+        match aGroupToUnwrapp with 
+            | Standard aStandardGroup -> aStandardGroup
+            | Internal anInternalGroup -> anInternalGroup
 
 
 
@@ -94,14 +103,23 @@ module ServiceInterfaces =
 
 
     //Database dependencies interfaces to be used by the domain services
-    //TO DO Should they be here ????????????
-    type LoadGroupById = GroupId -> Result<Group, string>
+    type LoadGroupById = 
+            GroupId -> Result<Group, string>
 
-    type LoadGroupMemberById = GroupMemberId -> Result<Group, string>
 
-    type LoadUserByUserIdPasswordAndTenantId = UserId -> EncrytedPassword -> TenantId -> Result<User, string>
+    type LoadGroupMemberById = 
+            GroupMemberId -> Result<Group, string>
 
-    type LoadTenantById = TenantId -> Result<Tenant, string>
+
+    type LoadUserByUserIdPasswordAndTenantId = 
+            UserId -> EncrytedPassword -> TenantId -> Result<User, string>
+
+
+    type LoadTenantById = 
+            TenantId -> Result<Tenant, string>
+
+    type LoadUserByUserIdAndTenantId = 
+            UserId -> TenantId -> Result<User,string>
 
 
 
@@ -109,30 +127,36 @@ module ServiceInterfaces =
     //Domaim services dependencies interfaces for domain business logic to be used by the
     //group member services
     
-    type IsGroupMember = LoadGroupMemberById -> Group -> GroupMember   -> Boolean
-    type IsGroupMemberWithBakedGetGroupMemberById = Group -> GroupMember   -> Boolean
-    type IsUserInNestedGroup = Group -> User -> LoadGroupMemberById -> Boolean
+    type IsGroupMemberService = 
+            LoadGroupMemberById -> Group -> GroupMember  -> Boolean
+
+    type IsGroupMemberServiceWithBakedGetGroupMemberByIdDependency = 
+            Group -> GroupMember   -> Boolean
+
+    type IsUserInNestedGroupService = 
+            LoadGroupMemberById -> Group -> User -> Boolean
+
+    type IsUserInNestedGroupService' = 
+             Group -> User -> Boolean
+
+    type ConfirmUserServive = 
+            LoadUserByUserIdAndTenantId -> Group -> User -> Boolean
     
-    
+    type ConfirmUserServive' = 
+             Group -> User -> Boolean    
 
 
 
 
 
     ///Domain services interfaces : Necessary for inward dependencies - implemetation in anoter layer
-    /// 
-    ///
     type GroupMemberServices = {
 
-        //Service caractheristics
         TimeServiceWasCalled: DateTime
         CallerCredentials: CallerCredential
-
-
-        //Service funtions
-        isGroupMember: IsGroupMember
-        //isGroupMemberWithBakedGetGroupMemberById : IsGroupMemberWithBakedGetGroupMemberById
-        //isUserInNestedGroup: IsUserInNestedGroup
+        isGroupMember: IsGroupMemberService
+        isUserInNestedGroup : IsUserInNestedGroupService
+  
 
     }
 
@@ -808,6 +832,7 @@ module User =
 
 
 
+    let toUserGroupMember = toGroupMember GroupMemberType.UserGroupMember
 
 
 
@@ -827,7 +852,49 @@ module User =
 
         rsUserDercriptor
 
-            
+
+
+
+
+
+
+
+
+
+module GroupMember = 
+
+
+
+
+
+    let isOfTypeUser (aGroupMember:GroupMember) : Boolean =
+        match aGroupMember.Type with 
+            | GroupMemberType.UserGroupMember -> true
+            | GroupMemberType.GroupGroupMember -> false
+
+
+
+
+    let isOfTypeGroup (aGroupMember:GroupMember) : Boolean =
+        match aGroupMember.Type with 
+            | GroupMemberType.GroupGroupMember -> true
+            | GroupMemberType.UserGroupMember -> false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
     
 module GroupMembers = 
@@ -896,8 +963,33 @@ module GroupMembers =
 
 
 
+
+
+
+
+
 module Group = 
 
+
+
+
+ 
+
+    open ServiceInterfaces
+
+
+
+
+    let areGroupsFromSameTenants (firstGroup:Group) (secondGroup:Group) = 
+        let uF = unwrapToStandardGroup firstGroup
+        let uS = unwrapToStandardGroup secondGroup
+
+        uF.TenantId = uS.TenantId   
+
+    
+    let areGroupAndUserFromSameTenants (aGroup:Group) (aUser:User) = 
+        let uG = unwrapToStandardGroup aGroup
+        uG.TenantId = aUser.TenantId   
 
 
 
@@ -1027,6 +1119,16 @@ module Group =
 
 
 
+    let isStandardGroup aGroup = match aGroup with 
+                                 | Standard g -> true
+                                 | Internal g -> false   
+
+
+
+    let isInternalGroup aGroup = match aGroup with 
+                                 | Standard g -> false
+                                 | Internal g -> true   
+
 
 
 
@@ -1042,8 +1144,12 @@ module Group =
         let isNotTheSameGroup  = not (unwrappedGroupToAddTo.GroupId = unwrappedGroupToAddTo.GroupId)
         let toGroupGroupMember = toMemberOfTypeGroup GroupGroupMember
         let isGroupMemberService' = isGroupMemberService aGroupToAddTo 
+        let isGroupToAddToRoleNotInterNalGroup =    aGroupToAddTo 
+                                                    |> isInternalGroup 
+                                                    |> not
 
-        match doBothGroupsHaveSameTenant && isNotTheSameGroup with 
+
+        match doBothGroupsHaveSameTenant && isNotTheSameGroup && isGroupToAddToRoleNotInterNalGroup with 
         | true -> 
 
             let rsGrouMember = result {
@@ -1106,8 +1212,11 @@ module Group =
 
         let AreFromSameTenant = (aStandardGroupToAdd.TenantId = aUserToAdd.TenantId)
         let UserIsEnabled = aUserToAdd |> User.isEnabled
+        let isGroupToAddToRoleNotInterNalGroup =    aGroupToAddTo 
+                                                    |> isInternalGroup 
+                                                    |> not        
    
-        match AreFromSameTenant && UserIsEnabled with  
+        match AreFromSameTenant && UserIsEnabled && isGroupToAddToRoleNotInterNalGroup with  
         | true -> 
 
             let isUseGroupMember = result {
@@ -1168,8 +1277,210 @@ module Group =
 
             
 
-        
-        
+    let isMember (isUserInNestedGroupService:IsUserInNestedGroupService') //Service depndency for business logic function
+                 (confirmUserServive:ConfirmUserServive') //Service depndency for business logic function
+                 (aGroup:Group) 
+                 (aUser:User)
+                 :Boolean =
+
+        let aStandardGroup = aGroup |> unwrapToStandardGroup
+        let areBothFromSameTenant = aStandardGroup.TenantId = aUser.TenantId
+        let userIsEnabled = aUser |> User.isEnabled
+
+        match areBothFromSameTenant with
+        | true -> 
+
+            match userIsEnabled with
+            | true  ->
+
+                
+
+                let groupMemberToFind = aUser |> User.toUserGroupMember
+
+                match groupMemberToFind with 
+                | Ok gMToFind ->
+
+                    let foundMembers = aStandardGroup.Members 
+                                      |> List.filter (
+                                          fun nextGM -> gMToFind.MemberId = nextGM.MemberId
+                                      )
+
+                    match foundMembers with 
+                    |[] -> false
+                    |[aGroupMember] -> 
+                        
+                        let userConfirmationResult = confirmUserServive aGroup aUser 
+
+
+                        match userConfirmationResult with 
+                        | true ->
+
+                            let IsUserInNestedGroupResult = isUserInNestedGroupService  aGroup aUser
+
+
+                            if IsUserInNestedGroupResult then 
+                                true
+                            else
+                                false
+
+                        | false -> false
+
+                    |head::tail ->
+                        false
+                
+                | Error error ->
+                    false
+
+            | false ->
+                false
+
+        | false ->
+             false
+
+
+
+    let removeGroup (aGroupToRemoveFrom:Group) (aGroupToRemove:Group) : Result<Group, string> =
+
+
+        if (areGroupsFromSameTenants aGroupToRemoveFrom aGroupToRemove) && ( aGroupToRemoveFrom |> isInternalGroup |> not ) then
+
+
+            let rsFoundGroupMemberToRemoveFromCollection = result {
+
+                let! groupMemberToRemove = aGroupToRemove |> toMemberOfTypeGroup'
+                let unwrappedStandardGroup = aGroupToRemoveFrom  |> unwrapToStandardGroup
+
+                let foundGroupMemberToRemoveFromCollection = unwrappedStandardGroup.Members
+                                                             |> List.filter (fun g -> g.MemberId = groupMemberToRemove.MemberId)
+
+
+                return foundGroupMemberToRemoveFromCollection
+               
+            }
+
+            
+            
+            match rsFoundGroupMemberToRemoveFromCollection with 
+            | Ok memberList -> 
+
+                match memberList with
+                | [] -> 
+                    Error "Given group is not a member"
+                | [l] -> 
+
+                    let rsGroupMemberToRemove = result {
+
+                        let! groupMemberToRemove = aGroupToRemove |> toMemberOfTypeGroup'
+
+                        return groupMemberToRemove                    
+                    }
+
+                    let unwrappedStandardGroup = aGroupToRemoveFrom  |> unwrapToStandardGroup
+
+
+                    match rsGroupMemberToRemove with 
+
+                    | Ok groupMemberToRemove ->
+                    
+                        let updatedMembers = unwrappedStandardGroup.Members 
+                                             |>List.filter (fun m -> m.MemberId = groupMemberToRemove.MemberId)
+
+                        let newStGroup = { unwrappedStandardGroup with Members = updatedMembers }
+
+                        Ok (Standard newStGroup)
+
+
+                    | Error error ->
+                        Error error
+
+                | head::tail -> Error "Unconsostent state"
+
+
+            | Error error 
+                -> Error error 
+
+        else
+
+            let msg = sprintf "Wrong tenant consistency"
+
+            Error msg
+
+            
+
+
+
+
+
+
+
+
+    let removeUser (aGroupToRemoveFrom:Group) (aUserToRemove:User) : Result<Group, string> =
+
+
+        if (areGroupAndUserFromSameTenants aGroupToRemoveFrom aUserToRemove) && ( aGroupToRemoveFrom |> isInternalGroup |> not ) then
+
+
+            let rsFoundGroupMemberToRemoveFromCollection = result {
+
+                let! groupMemberToRemove = aUserToRemove |> toMemberOfTypeUser'
+                let unwrappedStandardGroup = aGroupToRemoveFrom  |> unwrapToStandardGroup
+
+                let foundGroupMemberToRemoveFromCollection = unwrappedStandardGroup.Members
+                                                             |> List.filter (fun g -> g.MemberId = groupMemberToRemove.MemberId)
+
+
+                return foundGroupMemberToRemoveFromCollection
+               
+            }
+
+            
+            
+            match rsFoundGroupMemberToRemoveFromCollection with 
+            | Ok memberList -> 
+
+                match memberList with
+                | [] -> 
+                    Error "Given user is not a member"
+                | [l] -> 
+
+                    let rsGroupMemberToRemove = result {
+
+                        let! groupMemberToRemove = aUserToRemove |> toMemberOfTypeUser'
+
+                        return groupMemberToRemove                    
+                    }
+
+                    let unwrappedStandardGroup = aGroupToRemoveFrom  |> unwrapToStandardGroup
+
+
+                    match rsGroupMemberToRemove with 
+
+                    | Ok groupMemberToRemove ->
+                    
+                        let updatedMembers = unwrappedStandardGroup.Members 
+                                             |>List.filter (fun m -> m.MemberId = groupMemberToRemove.MemberId)
+
+                        let newStGroup = { unwrappedStandardGroup with Members = updatedMembers }
+
+                        Ok (Standard newStGroup)
+
+
+                    | Error error ->
+                        Error error
+
+                | head::tail -> Error "Unconsostent state"
+
+
+            | Error error 
+                -> Error error 
+
+        else
+
+            let msg = sprintf "Wrong tenant consistency"
+
+            Error msg
+
+
             
                
 

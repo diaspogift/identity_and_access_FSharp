@@ -311,14 +311,14 @@ match rsChangeTenantActivationStatus with
 let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
 
-                let! groupToAdd1 = Group.create "507f1f77bcf86cd799439051" "507f1f77bcf86cd799439010" "Distributeur" "Distributeur" []
+                let! gakegroupToAdd1 = Group.create "507f1f77bcf86cd799439051pppppppp" "507f1f77bcf86cd799439010" "Distributeur" "Distributeur" []
                 let! groupToAdd2 = Group.create "24e7538d90ad4bd7a448d152" "507f1f77bcf86cd799439010" "Registarts" "Registarts" []
                 let! groupToAdd3 = Group.create "24e7538d90ad4bd7a448d153" "507f1f77bcf86cd799439010" "Cleaners" "Cleaners" []
                 let! groupToAdd4 = Group.create "24e7538d90ad4bd7a448d154" "507f1f77bcf86cd799439010" "Formateurs" "Formateurs" []
                 let! groupToAdd5 = Group.create "24e7538d90ad4bd7a448d155" "507f1f77bcf86cd799439010" "Urgenciers" "Urgenciers" []
                 let! groupToAdd6 = Group.create "24e7538d90ad4bd7a448d161" "507f1f77bcf86cd799439010" "Enseignants" "Enseignants" []
                 
-                let groupToSave1 = DbHelpers.fromGroupDomainToDto groupToAdd1
+                let groupToSave1 = DbHelpers.fromGroupDomainToDto gakegroupToAdd1
                 let groupToSave2 = DbHelpers.fromGroupDomainToDto groupToAdd2
                 let groupToSave3 = DbHelpers.fromGroupDomainToDto groupToAdd3
                 let groupToSave4 = DbHelpers.fromGroupDomainToDto groupToAdd4
@@ -341,7 +341,7 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
                 printSeparatorLine(1)
 
-                let aStandarGroupToAdd1 = match groupToAdd1 with 
+                let aStandarGroupToAdd1 = match gakegroupToAdd1 with 
                                           | Standard s ->  s
                                           | Internal i ->  i
 

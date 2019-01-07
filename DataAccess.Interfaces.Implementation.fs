@@ -14,6 +14,7 @@ open IdentityAndAccess.DatabaseTypes
 open MongoDB.Driver
 open MongoDB.Bson
 open FSharp.Data.Sql
+open Suave.Sockets
 
 
 
@@ -185,6 +186,10 @@ module DbHelpers =
                                           |> Array.map fromGroupMemberToGroupMemberDto
                     let groupId = standardGroup.GroupId
                                   |> GroupId.value
+
+                    printfn "I AM HERRRE AND GROUPID IS : ==== %A" standardGroup
+
+                                  
                     let id = new BsonObjectId(new ObjectId(groupId))
 
                     let rsGroupDto:GroupDto ={
@@ -356,9 +361,11 @@ module RoleDb =
             |>aRoleCollection.InsertOne 
             |> Ok
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.FormatException as ex -> Error "error0"    
+            | :? System.TypeInitializationException as ex -> Error "error1"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+            | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+            | _ -> Error "Unmatched error occurred"  
 
 
 
@@ -368,11 +375,13 @@ module RoleDb =
 
             aRoleCollection.Find(fun x -> x.RoleId = id).Single()            
             |> Ok
-            
+                
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.FormatException as ex -> Error "error0"    
+            | :? System.TypeInitializationException as ex -> Error "error1"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+            | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+            | _ -> Error "Unmatched error occurred"  
 
 
 
@@ -383,11 +392,13 @@ module RoleDb =
             
             aRoleCollection.Find(fun x -> (x.RoleId = roleId) && (x.TenantId = tenantId.Value.ToString()) ).Single()
             |> Ok
-            
+                
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.FormatException as ex -> Error "error0"    
+            | :? System.TypeInitializationException as ex -> Error "error1"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+            | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+            | _ -> Error "Unmatched error occurred"  
 
 
 
@@ -407,9 +418,11 @@ module RoleDb =
             Ok ()
 
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.FormatException as ex -> Error "error0"    
+            | :? System.TypeInitializationException as ex -> Error "error1"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+            | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+            | _ -> Error "Unmatched error occurred"  
 
         
 
@@ -462,9 +475,11 @@ module UserDb =
             |> Ok
 
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.FormatException as ex -> Error "error0"    
+            | :? System.TypeInitializationException as ex -> Error "error1"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+            | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+            | _ -> Error "Unmatched error occurred"  
 
 
 
@@ -478,9 +493,11 @@ module UserDb =
             |> Ok
 
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.FormatException as ex -> Error "error0"    
+            | :? System.TypeInitializationException as ex -> Error "error1"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+            | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+            | _ -> Error "Unmatched error occurred"  
 
 
 
@@ -496,9 +513,11 @@ module UserDb =
             |> Ok
             
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.FormatException as ex -> Error "error0"    
+            | :? System.TypeInitializationException as ex -> Error "error1"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+            | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+            | _ -> Error "Unmatched error occurred"  
 
 
 
@@ -517,8 +536,10 @@ module UserDb =
             |> Ok
             
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            //| :? System.FormatDigitExection as ex -> Error "er2"    
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
             | _ -> Error "Unmatched error occurred" 
 
 
@@ -593,9 +614,10 @@ module GroupDb =
             |> Ok
 
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
+            | _ -> Error "Unmatched error occurred"
 
     let saveGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  (aGroup:Group) = 
            
@@ -605,11 +627,10 @@ module GroupDb =
             |> aGroupCollection.InsertOne 
             |> Ok
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
-
-
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
+            | _ -> Error "Unmatched error occurred"
 
 
 
@@ -622,10 +643,11 @@ module GroupDb =
         Ok ()
         
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
-
+            | :? System.FormatException as ex -> Error "error0"    
+            | :? System.TypeInitializationException as ex -> Error "error1"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+            | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+            | _ -> Error "Unmatched error occurred"  
 
 
 
@@ -642,9 +664,11 @@ module GroupDb =
             |> DbHelpers.fromDbDtoToGroup
             
          with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
+            | _ -> Error "Unmatched error occurred"
+            
 
 
 
@@ -660,9 +684,11 @@ module GroupDb =
 
          with
 
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+            | Failure msg -> Error "er0" 
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | :? System.TypeInitializationException as ex -> Error "er2"
             | _ -> Error "Unmatched error occurred" 
+
 
 
 
@@ -675,12 +701,14 @@ module GroupDb =
             let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  
             let result = aGroupCollection.UpdateOne(filter, updateDefinition)
             
+            
             Ok()
         
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
+            | _ -> Error "Unmatched error occurred"
 
 
 
@@ -702,9 +730,10 @@ module GroupDb =
             Ok()
         
         with
-            | Failure msg -> Error msg 
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
-            | _ -> Error "Unmatched error occurred" 
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
+            | _ -> Error "Unmatched error occurred"
 
         
 

@@ -29,9 +29,11 @@ let encryptPasswordService (aPleinTextPassword:Password) =
         encriptePassword
 
     with
-        | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+        | :? System.FormatException as ex -> Error "error0"    
+        | :? System.TypeInitializationException as ex -> Error "error1"    
+        | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+        | Failure msg -> Error (msg + ": By ...Faillure msg..." )
         | _ -> Error "Unmatched error occurred" 
-
 
 
 
@@ -40,13 +42,13 @@ let encryptPasswordService (aPleinTextPassword:Password) =
 
 ///User related service implementations
 
-let authenticateUser (loadUserByUserIdAndTenantId:LoadUserByUserIdPasswordAndTenantId) //Database Dependency 
-                     (loadTenantById:LoadTenantById) //Database Dependency 
-                     (passwordEncryptionService:PasswordEncryptionService) //Encription Dependency 
-                     (userId:UserId) 
-                     (tenantId:TenantId) 
-                     (aPleinTextPassword:Password) 
-                     : Result<UserDescriptor,string> = 
+let authenticateUserService  (loadUserByUserIdAndTenantId:LoadUserByUserIdPasswordAndTenantId) //Database Dependency 
+                             (loadTenantById:LoadTenantById) //Database Dependency 
+                             (passwordEncryptionService:PasswordEncryptionService) //Encription Dependency 
+                             (userId:UserId) 
+                             (tenantId:TenantId) 
+                             (aPleinTextPassword:Password) 
+                             : Result<UserDescriptor,string> = 
     
     try 
 
@@ -62,22 +64,25 @@ let authenticateUser (loadUserByUserIdAndTenantId:LoadUserByUserIdPasswordAndTen
        }
 
        match rsOfAuthenticatedUser with
-           | Ok   user ->
+       | Ok   user ->
 
-                match user.Enablement.EnablementStatus with
-                    | Enabled ->
+            match user.Enablement.EnablementStatus with
+            | Enabled ->
 
-                           user
-                           |> User.toUserDesriptor
+                   user
+                   |> User.toUserDesriptor
 
-                      | Disabled ->
-                            let msg = sprintf "User enablement status is disabled"
-                            Error msg
-                           
-           | Error error ->
+              | Disabled ->
+                    let msg = sprintf "User enablement status is disabled"
+                    Error msg
+                       
+       | Error error ->
 
-                Error error            
+            Error error            
 
     with
-        | :? MongoDB.Driver.MongoWriteException as ex -> Error ex.Message
+        | :? System.FormatException as ex -> Error "error0"    
+        | :? System.TypeInitializationException as ex -> Error "error1"    
+        | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+        | Failure msg -> Error (msg + ": By ...Faillure msg..." )
         | _ -> Error "Unmatched error occurred" 
