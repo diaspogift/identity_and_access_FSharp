@@ -617,7 +617,8 @@ module GroupDb =
             | :? System.TypeInitializationException as ex -> Error "er2"    
             | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
             | Failure msg -> Error "er0" 
-            | _ -> Error "Unmatched error occurred"
+            | e -> Error e.Message
+
 
     let saveGroupAdapted (aGroupCollection : IMongoCollection<GroupDto>)  (aGroup:Group) = 
            
@@ -630,7 +631,7 @@ module GroupDb =
             | :? System.TypeInitializationException as ex -> Error "er2"    
             | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
             | Failure msg -> Error "er0" 
-            | _ -> Error "Unmatched error occurred"
+            | e -> Error e.Message
 
 
 
@@ -647,8 +648,7 @@ module GroupDb =
             | :? System.TypeInitializationException as ex -> Error "error1"    
             | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
             | Failure msg -> Error (msg + ": By ...Faillure msg..." )
-            | _ -> Error "Unmatched error occurred"  
-
+            | e -> Error e.Message
 
 
     let private loadGroupByIdAdaptedToGroupId (aGroupCollection : IMongoCollection<GroupDto>)  ( aGroupId : GroupId ) = 
@@ -667,8 +667,7 @@ module GroupDb =
             | :? System.TypeInitializationException as ex -> Error "er2"    
             | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
             | Failure msg -> Error "er0" 
-            | _ -> Error "Unmatched error occurred"
-            
+            | e -> Error e.Source            
 
 
 

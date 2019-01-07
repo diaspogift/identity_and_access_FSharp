@@ -311,7 +311,7 @@ match rsChangeTenantActivationStatus with
 let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
 
-                let! gakegroupToAdd1 = Group.create "507f1f77bcf86cd799439051pppppppp" "507f1f77bcf86cd799439010" "Distributeur" "Distributeur" []
+                let! gakegroupToAdd1 = Group.create "507f1f77bcf86cd7994390519" "507f1f77bcf86cd799439010" "Distributeur" "Distributeur" []
                 let! groupToAdd2 = Group.create "24e7538d90ad4bd7a448d152" "507f1f77bcf86cd799439010" "Registarts" "Registarts" []
                 let! groupToAdd3 = Group.create "24e7538d90ad4bd7a448d153" "507f1f77bcf86cd799439010" "Cleaners" "Cleaners" []
                 let! groupToAdd4 = Group.create "24e7538d90ad4bd7a448d154" "507f1f77bcf86cd799439010" "Formateurs" "Formateurs" []
@@ -353,7 +353,7 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
                 printSeparatorLine(1)
 
-                printfn "THE LOADED VALUE %A" gggg
+                printfn "THE LOADED VALUE :   %A" gggg
 
                 printSeparatorLine(1)
 
