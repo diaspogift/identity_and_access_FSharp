@@ -14,7 +14,7 @@
     <Compile Include="Domain.Services.Implementation.fs" />
     <Compile Include="RestFull.fs" />
     <Compile Include="Test.fsx" />
-    <Compile Include="Domain.Services.Infrastrure.Interfaces.Implementation.fs" />
+    <Compile Include="Infrastrure.Services.Implementation.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -5,9 +5,7 @@ open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Functions
-open Suave.Sockets
 open IdentityAndAcccess.DomainTypes
 
 
