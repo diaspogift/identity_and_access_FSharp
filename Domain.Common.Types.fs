@@ -4,6 +4,18 @@ namespace IdentityAndAcccess.CommonDomainTypes
 
 open System
 
+///Time related
+/// 
+/// 
+
+///Should be a common domain type 
+type DateTimeSpan =  {
+    Start: DateTime
+    End: DateTime
+} 
+
+
+
 
 
 ///Tenant related types definition
@@ -22,6 +34,7 @@ type RegistrationInvitationDescription = private RegistrationInvitationDescripti
 type UserId = private UserId of string
 type Username = private Username of string
 type Password = private Password of string
+type StrongPassword = private StrongPassword of string
 type EncrytedPassword = private EncrytedPassword of string
 type FirstName = private FirstName of string
 type MiddleName = private MiddleName of string
@@ -64,10 +77,4 @@ type String50 = private String50 of string
 
 type DateTimeWrapped = private DateTimeWrapped of DateTime
 
-
-///Should be a common domain type 
-type DateTimeSpan = private {
-    Start: DateTimeWrapped
-    End: DateTimeWrapped
-} 
 

@@ -54,7 +54,9 @@ let authenticateUserService  (loadUserByUserIdAndTenantId:LoadUserByUserIdPasswo
        let rsOfAuthenticatedUser = result{
 
             let! tenant = loadTenantById tenantId
-            let! encrytedPassword = aPleinTextPassword |> passwordEncryptionService
+            let unwrappedPassword = aPleinTextPassword |> Password.value 
+            let! aPleinTextStrongPassword = unwrappedPassword |> StrongPassword.create'
+            let! encrytedPassword = aPleinTextStrongPassword |> passwordEncryptionService
             let! userToAuthenticate =  loadUserByUserIdAndTenantId userId encrytedPassword tenant.TenantId 
     
             return userToAuthenticate

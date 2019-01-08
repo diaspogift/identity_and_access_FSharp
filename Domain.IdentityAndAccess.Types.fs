@@ -25,11 +25,11 @@ module Events =
     /// 
     /// 
     /// 
-    type DomainEvent<'T> = {
+    type DomainEvent<'EventData> = {
 
         EventVersion : int
         OccurredOn : DateTime
-        Data : 'T
+        Data : 'EventData
 
     }
 
@@ -50,97 +50,6 @@ module Events =
 
 
 
-
-module Tenant =
-
-    open Events
-    ///Tenant related types
-    /// 
-    /// 
-    /// 
-    /// 
-    type ActivationStatus = 
-        |Activated 
-        |Disactivated
-
-
-    type RegistrationInvitation = {
-        RegistrationInvitationId: RegistrationInvitationId
-        Description: RegistrationInvitationDescription
-        TenantId: TenantId
-        StartingOn: DateTime
-        Until: DateTime
-        }
-
-
-    type Tenant = {
-        TenantId: TenantId
-        Name: TenantName
-        Description: TenantDescription 
-        RegistrationInvitations: RegistrationInvitation list
-        ActivationStatus : ActivationStatus
-        }
-
-
-    type TenantActivationStatusActivatedEventData = {
-        EventVesion : int
-        OccurredOn : DateTime
-        TenantId : TenantId
-        UserId : UserId
-        }
-
-
-
-    type TenantActivationStatusActivated = 
-        DomainEvent<TenantActivationStatusActivatedEventData>
-
-
-    type TenantActivationStatusDiactivatedEventData = {
-        EventVesion : int
-        OccurredOn : DateTime
-        TenantId : TenantId
-        UserId : UserId 
-        }
-
-
-
-    type TenantActivationStatusDiactivated = 
-        DomainEvent<TenantActivationStatusDiactivatedEventData>
-
-
-
-    type TenantAdministratorRegisteredEventData = {
-        EventVersion : int
-        OccurredOn : DateTime
-        TenantId : string
-        FullName : string
-        EmailAddress : string
-        TenantName : string
-        temporaryPassword : string
-        Username : string
-        }
-
-
-    type TenantAdministratorRegistered = 
-        DomainEvent<TenantAdministratorRegisteredEventData>
-
-
-    type TenantProvisioned = {
-        EventVersion : int
-        OccurredOn : DateTime
-        TenantId : string
-        }
-      
-
-
-
-    type RegistrationInvitationDtoTemp = {
-        RegistrationInvitationId : string
-        TenantId : string
-        Description : string
-        StartingOn: DateTime
-        Until : DateTime
-        }
 
 
 
@@ -181,9 +90,11 @@ module User =
         Last: LastName
         }
 
+
     type EnablementStatus = 
         |Enabled 
         |Disabled
+
 
     type Enablement = {
         EnablementStatus: EnablementStatus
@@ -202,7 +113,13 @@ module User =
 
 
 
-    type ContactInformationChangedEventData = {
+    
+
+    type ContactInformationChanged = 
+
+        DomainEvent<ContactInformationChangedEventData>
+
+    and ContactInformationChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -212,12 +129,8 @@ module User =
         ContactInformation : string
         }
 
-    type ContactInformationChanged = 
-        DomainEvent<ContactInformationChangedEventData>
 
-
-
-    type Person = {
+    type Person =  {
         Contact: ContactInformation
         Name: FullName 
         Tenant: TenantId
@@ -225,7 +138,15 @@ module User =
         }
 
 
-    type PersonalNameChangedEventData = {
+    
+
+
+
+    type PersonalNameChanged = 
+
+        DomainEvent<PersonalNameChangedEventData>
+
+    and PersonalNameChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -233,11 +154,6 @@ module User =
         FirstName: string
         LastName: string
         }
-
-
-
-    type PersonalNameChanged = 
-        DomainEvent<PersonalNameChangedEventData>
 
 
     type User = {
@@ -257,33 +173,48 @@ module User =
         }
 
 
-    type UserEnablementChangedEventData = {
-        EventVersion: int
-        OccurredOn : DateTime
-        TenantId: string
-        Username: string
-        }
+    
 
-    type UserEnablementChanged = 
+    type UserEnablementChanged =
+
             DomainEvent<UserEnablementChangedEventData>
 
-
-
-
-    type UserPasswordChangedEventData = {
+    and UserEnablementChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
         Username: string
         }
+
+
+
+
+    
 
 
 
     type UserPasswordChanged = 
+
             DomainEvent<UserPasswordChangedEventData>
 
+    and UserPasswordChangedEventData = {
+        EventVersion: int
+        OccurredOn : DateTime
+        TenantId: string
+        Username: string
+        }
 
-    type UserRegisteredChangedEventData = {
+
+    
+    
+ 
+
+
+    type UserRegisteredChanged = 
+
+        DomainEvent<UserRegisteredChangedEventData>
+
+    and UserRegisteredChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -291,12 +222,6 @@ module User =
         FirstName: string
         LastName: string
         }
-    
- 
-
-
-    type UserRegisteredChanged = 
-        DomainEvent<UserRegisteredChangedEventData>
 
 
 
@@ -351,30 +276,54 @@ module Group =
 
 
 
-    type GroupGroupAddedEventData = {
-        GroupId: string
-        NestedGroupId: string
-        TenantId: string
-    }
+     
 
 
 
     type GroupGroupAdded = 
+
             DomainEvent<GroupGroupAddedEventData>
 
+    and GroupGroupAddedEventData = {
 
-    
-    type GroupGroupRemovedEventData = {
         GroupId: string
         NestedGroupId: string
         TenantId: string
+
+    }
+
+    
+
+
+
+    type GroupGroupRemoved = 
+
+        DomainEvent<GroupGroupRemovedEventData>
+    
+    and GroupGroupRemovedEventData = {
+
+        GroupId: string
+        RemovedGroupId: string
+        TenantId: string
+
     }
 
 
 
 
-    type GroupGroupRemoved = 
-        DomainEvent<GroupGroupRemovedEventData>
+ 
+
+
+    type GroupProvisioned = 
+
+        DomainEvent<GroupProvisionedEventData>
+
+    and GroupProvisionedEventData = {
+        GroupId : string
+        TenantId :string
+        GroupName :string 
+        }
+
 
 
 
@@ -434,6 +383,165 @@ module Role =
         SupportNesting: SupportNestingStatus
         InternalGroup: Group
         }
+open Role
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module Tenant =
+
+    open Events
+    open Role
+    open User
+    
+
+
+
+
+
+
+
+
+
+
+    ///Tenant related types
+    /// 
+    /// 
+    /// 
+    /// 
+    type ActivationStatus = 
+        |Activated 
+        |Disactivated
+
+
+    type RegistrationInvitation = {
+        RegistrationInvitationId: RegistrationInvitationId
+        Description: RegistrationInvitationDescription
+        TenantId: TenantId
+        StartingOn: DateTime
+        Until: DateTime
+        }
+
+
+    type Tenant = {
+        TenantId: TenantId
+        Name: TenantName
+        Description: TenantDescription 
+        RegistrationInvitations: RegistrationInvitation list
+        ActivationStatus : ActivationStatus
+        }
+
+
+ 
+
+
+
+    type TenantActivationStatusActivated = 
+
+        DomainEvent<TenantActivationStatusActivatedEventData>
+
+    and TenantActivationStatusActivatedEventData = {
+        TenantId : TenantId
+        UserId : UserId
+        }
+
+
+        
+
+
+    
+
+
+
+    type TenantActivationStatusDiactivated = 
+
+        DomainEvent<TenantActivationStatusDiactivatedEventData>
+
+    and TenantActivationStatusDiactivatedEventData = {
+        TenantId : TenantId
+        UserId : UserId 
+        }    
+
+
+
+    
+
+    type TenantAdministratorRegistered = 
+
+        DomainEvent<TenantAdministratorRegisteredEventData>
+
+    and TenantAdministratorRegisteredEventData = {
+        TenantId : string
+        FullName : string
+        EmailAddress : string
+        TenantName : string
+        temporaryPassword : string
+        Username : string
+        }
+
+
+
+
+
+
+    type TenantProvisioned = 
+        
+        DomainEvent<TenantProvisionedEventData> 
+    
+    and TenantProvisionedEventData = {
+        TenantId : string
+        }
+      
+
+
+
+    type RegistrationInvitationDtoTemp = {
+        RegistrationInvitationId : string
+        TenantId : string
+        Description : string
+        StartingOn: DateTime
+        Until : DateTime
+        }
+
+
+    type Provision = (Tenant*User*Role)
+
+
+
+
+
+
+
+
+
+
+
+
+///Should be a common domain type 
+type DateTimeSpan = private {
+    Start: DateTime
+    End: DateTime
+} 
+
+
 
 
 
@@ -459,7 +567,6 @@ module Role =
 
 
 
-
             
             
 
@@ -468,4 +575,3 @@ module Role =
 
         
 
-   

@@ -93,7 +93,9 @@ module ServiceInterfaces =
 
 
     ///Password type related services
-    type PasswordEncryptionService = Password -> Result<EncrytedPassword, string>
+    type PasswordEncryptionService = StrongPassword -> Result<EncrytedPassword, string>
+
+    type GeneratePasswordService = Password -> Result<StrongPassword, string>
 
 
 
@@ -121,6 +123,14 @@ module ServiceInterfaces =
     type LoadUserByUserIdAndTenantId = 
             UserId -> TenantId -> Result<User,string>
 
+    type SaveOneTenant =          
+            Tenant -> Result<unit, string>
+
+    type SaveOneUser =          
+            User -> Result<unit, string>
+
+    type SaveOneRole =          
+            Role -> Result<unit, string>
 
 
 
@@ -128,22 +138,87 @@ module ServiceInterfaces =
     //group member services
     
     type IsGroupMemberService = 
-            LoadGroupMemberById -> Group -> GroupMember  -> Boolean
+            LoadGroupMemberById 
+                -> Group 
+                -> GroupMember  
+                -> Boolean
+
+
+
 
     type IsGroupMemberServiceWithBakedGetGroupMemberByIdDependency = 
-            Group -> GroupMember   -> Boolean
+            Group 
+                -> GroupMember   
+                -> Boolean
+
+
+
 
     type IsUserInNestedGroupService = 
-            LoadGroupMemberById -> Group -> User -> Boolean
+            LoadGroupMemberById 
+                -> Group 
+                -> User 
+                -> Boolean
+
+
+
 
     type IsUserInNestedGroupService' = 
-             Group -> User -> Boolean
+             Group 
+                -> User 
+                -> Boolean
+
+
 
     type ConfirmUserServive = 
-            LoadUserByUserIdAndTenantId -> Group -> User -> Boolean
+            LoadUserByUserIdAndTenantId 
+                -> Group 
+                -> User
+                -> Boolean
+
+
     
     type ConfirmUserServive' = 
-             Group -> User -> Boolean    
+             Group -> User -> Boolean  
+
+
+             
+
+    type StrongPasswordGeneratorService = 
+            Password -> Result<StrongPassword, string>
+
+
+
+
+    type ProvisionTenantService = 
+               StrongPasswordGeneratorService
+                -> PasswordEncryptionService
+                -> TenantName 
+                -> TenantDescription 
+                -> FirstName 
+                -> MiddleName 
+                -> LastName 
+                -> EmailAddress 
+                -> PostalAddress 
+                -> Telephone 
+                -> Telephone
+                ->  Result<Provision,string>
+
+
+
+
+    type ProvisionTenantService' = 
+            TenantName 
+                -> TenantDescription 
+                -> FullName 
+                -> EmailAddress 
+                -> PostalAddress 
+                -> Telephone 
+                -> Telephone 
+                -> Result<Tenant,string>
+
+
+
 
 
     type GroupMemberServices = {
@@ -160,7 +235,12 @@ module ServiceInterfaces =
 
     ///User type related services
     type AuthenticationService = 
-            LoadUserByUserIdPasswordAndTenantId -> LoadTenantById -> UserId-> TenantId -> Password -> Result<UserDescriptor,string>
+            LoadUserByUserIdPasswordAndTenantId 
+                -> LoadTenantById 
+                -> UserId
+                -> TenantId 
+                -> Password 
+                -> Result<UserDescriptor,string>
 
 
 
@@ -278,6 +358,27 @@ module RegistrationInvitations =
 
 
 
+module ContactInformation =
+
+
+
+    let fullCreate anEmailAddress aPostalAddress aPrimaryTel aSecondaryTel =
+        {Email = anEmailAddress; Address = aPostalAddress; PrimaryTel = aPrimaryTel; SecondaryTel = aSecondaryTel}
+
+    let changeEmailAddress (aContactInformation:ContactInformation) anEmailAddress =
+        {aContactInformation with Email = anEmailAddress}
+  
+    let changePostalAddress (aContactInformation:ContactInformation) aPostalAddress =
+        {aContactInformation with Address = aPostalAddress}
+
+    let changePrimaryTelephone (aContactInformation:ContactInformation) aPrimaryTel =
+        {aContactInformation with PrimaryTel = aPrimaryTel}
+
+    let changeSecondaryTelephone (aContactInformation:ContactInformation) aSecondaryTel =
+        {aContactInformation with SecondaryTel = aSecondaryTel}    
+
+    
+ 
 
 
 
@@ -290,6 +391,9 @@ module RegistrationInvitations =
 module Tenant = 
 
 
+
+
+    open ContactInformation
 
 
 
@@ -336,6 +440,26 @@ module Tenant =
 
 
 
+    let createFullActivatedTenant (name:TenantName) (description:TenantDescription) : Result<Tenant,string> = 
+        
+        result {
+
+            let guidTenantId = Guid.NewGuid() 
+            let strTenantId = guidTenantId.ToString()
+
+            let! tenantId = TenantId.create' strTenantId
+            
+            return {
+                    TenantId = tenantId
+                    Name = name
+                    Description = description
+                    RegistrationInvitations = []
+                    ActivationStatus = ActivationStatus.Activated
+            }
+        }
+
+
+
 
 
     let isRegistrationInvitationAvailableThrough (aTenant : Tenant) (aRegistrationInvitationId : RegistrationInvitationId) : Boolean =
@@ -353,7 +477,7 @@ module Tenant =
 
 
 
-    let offerRegistrationInvitation (aTenant : Tenant) (aDescription : RegistrationInvitationDescription) : Result<Tenant, string> =
+    let offerRegistrationInvitation (aTenant : Tenant) (aDescription : RegistrationInvitationDescription) : Result<Tenant*RegistrationInvitation, string> =
         
           
         if aTenant.ActivationStatus = ActivationStatus.Activated then 
@@ -373,7 +497,7 @@ module Tenant =
 
                     let tenantWithNewRegistrationInvitation = { aTenant with RegistrationInvitations = [registrationInvitation]@aTenant.RegistrationInvitations}
 
-                    return tenantWithNewRegistrationInvitation 
+                    return (tenantWithNewRegistrationInvitation, registrationInvitation)
                 }
         else 
             let msg =  "Could not offer registration invitation" 
@@ -547,13 +671,27 @@ module Tenant =
 
 
     let registerUserForTenant
+        (aTenant:Tenant)
         (anInvitationId:RegistrationInvitationId)
         (aUSerName:Username)
         (aPassword:Password)
         (anEnablement:Enablement)
-        (aPerson:Person)
-        (aTenant:Tenant)
+
+        (anEmailAddress:EmailAddress)
+        (aPostalAddress:PostalAddress)
+        (aPrimaryTel:Telephone)
+        (aSecondaryTel:Telephone)
+
+        (aFirstName:FirstName)
+        (aMiddleNAme:MiddleName)
+        (aLastName:LastName)
+
+
         : Result<User,string> =
+
+
+
+               
 
         match aTenant.ActivationStatus with 
         | Activated ->
@@ -563,10 +701,17 @@ module Tenant =
 
                     let rsCreateUser = result{
 
-                        let strId = generateNoEscapeId()
-                        let! userId = UserId.create "user id" strId 
 
-                        let user = {UserId = userId; TenantId = aTenant.TenantId; Username = aUSerName; Password = aPassword; Enablement = anEnablement; Person = aPerson}
+                        let contactInfo = ContactInformation.fullCreate anEmailAddress aPostalAddress aPrimaryTel aSecondaryTel
+                        let strUseId = generateNoEscapeId()
+                        let! userId = UserId.create' strUseId
+                        let fullName = {First = aFirstName; Middle = aMiddleNAme; Last = aLastName}
+
+                        let person = {Contact = contactInfo; Name = fullName; Tenant = aTenant.TenantId; User = userId}
+
+
+                        ///TODO make sure I build a constructor in the way that they will always be consistency between the userid in user and person
+                        let user = {UserId = userId; TenantId = aTenant.TenantId; Username = aUSerName; Password = aPassword; Enablement = anEnablement; Person = person}
 
                         return user
                     }
@@ -645,52 +790,6 @@ module Tenant =
 
 
 
-
-
-
-
-
-
-
-module Role = 
-
-
-
-    let create (roleId:string) (tenantId:string) (name:string) (description:string) : Result<Role,string> =
-        
-        let roleConstruct = result {
-
-            let internalGroupId = generateNoEscapeId ()
-
-            let! ids = roleId |> RoleId.create' 
-            let! tenantIds = tenantId |> TenantId.create' 
-            let! names = name |> RoleName.create'
-            let! descriptions = description |> RoleDescription.create' 
-            let! groupId = internalGroupId |> GroupId.create' 
-            let! groupName = "INTERNAL_GROUP" |> GroupName.create'
-            let! groupDescription = "INTERNAL_GROUP_DESCRIPTION" |> GroupDescription.create'
-
-
-            let internalGroup = Internal {
-                GroupId = groupId 
-                TenantId = tenantIds
-                Name = groupName
-                Description = groupDescription
-                Members = []
-                }
-            
-            let role:Role = {
-                RoleId = ids
-                TenantId = tenantIds
-                Name = names
-                Description = descriptions
-                SupportNesting = SupportNestingStatus.Support
-                InternalGroup = internalGroup
-                }
-            return role
-        }
-
-        roleConstruct
 
 
 
@@ -848,6 +947,209 @@ module User =
         }
 
         rsUserDercriptor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module Role = 
+
+
+
+
+
+
+
+
+
+
+    let create (roleId:string) (tenantId:string) (name:string) (description:string) : Result<Role,string> =
+        
+        let roleConstruct = result {
+
+            let internalGroupId = generateNoEscapeId ()
+
+            let! ids = roleId |> RoleId.create' 
+            let! tenantIds = tenantId |> TenantId.create' 
+            let! names = name |> RoleName.create'
+            let! descriptions = description |> RoleDescription.create' 
+            let! groupId = internalGroupId |> GroupId.create' 
+            let! groupName = "INTERNAL_GROUP" |> GroupName.create'
+            let! groupDescription = "INTERNAL_GROUP_DESCRIPTION" |> GroupDescription.create'
+
+
+            let internalGroup = Internal {
+                GroupId = groupId 
+                TenantId = tenantIds
+                Name = groupName
+                Description = groupDescription
+                Members = []
+                }
+            
+            let role:Role = {
+                RoleId = ids
+                TenantId = tenantIds
+                Name = names
+                Description = descriptions
+                SupportNesting = SupportNestingStatus.Support
+                InternalGroup = internalGroup
+                }
+            return role
+        }
+
+        roleConstruct
+
+
+
+
+
+
+
+    let assignUser (aRole:Role) (aUser:User) =
+
+        let areBothFromSameTenants = (aRole.TenantId = aUser.TenantId)
+
+        match areBothFromSameTenants with 
+        | true ->
+
+            let rsGroupMember = result {
+                
+
+                
+                let! userToGroupMember = aUser |> User.toUserGroupMember
+
+                let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup  
+                 
+                let foundGrouMember = roleInternalGroup.Members
+                                      |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
+
+    
+
+                return foundGrouMember, userToGroupMember
+            }
+
+
+            match rsGroupMember with 
+            
+            | Ok optionGmAndUser->
+
+
+                match optionGmAndUser with
+                | (Some fm, gmToAdd) -> 
+                
+                    Error "User already playing the role"
+
+                | (None, gmToAdd) ->
+
+
+
+
+                    let roleInternalStandardGroup = aRole.InternalGroup |> unwrapToStandardGroup  
+                    let newStandarGroup = {roleInternalStandardGroup with Members = [gmToAdd]@roleInternalStandardGroup.Members}
+                    let newRoleInternalGroup = Internal newStandarGroup
+                    let newInternalRoleGroup = {aRole with InternalGroup = newRoleInternalGroup}
+
+                    Ok newInternalRoleGroup
+
+                           
+
+
+            | Error error ->  
+                Error error
+                
+
+
+            
+        | false -> 
+            Error "Wrond tenant consistency"
+
+
+
+
+
+
+
+
+
+
+
+
+         
+
+
+
+
+
+
+
+
+
+
+
+
+
+module DateTimeSpan =
+
+
+
+    let create fieldName startDate endDate = 
+        ConstrainedType.createDatetimeSpan fieldName startDate endDate
+
+    let create' = create  "Datetime Span : "
+
+
+
+    let startDate aDateTimeSpan = aDateTimeSpan.Start
+    let endDate aDateTimeSpan = aDateTimeSpan.End
+
+
+
+
+
+
+
+
+module Enablement = 
+
+    let fullCreate (aStartDate:DateTime) (endDate:DateTime) (anEnablementStatus:EnablementStatus)  = 
+
+        let rsEnablement = result {
+
+            let! dateSpan = DateTimeSpan.create' aStartDate endDate
+
+            let enablement = {
+                EnablementStatus = anEnablementStatus
+                StartDate = dateSpan.Start
+                EndDate = dateSpan.End
+            }
+
+            return enablement
+        }
+
+        rsEnablement
+        
+        
+        
+
+
+
+
+
+
+
+
 
 
 
@@ -1483,25 +1785,6 @@ module Group =
 
 
  
-module ContactInformation =
 
-
-
-
-
-    let changeEmailAddress (aContactInformation:ContactInformation) anEmailAddress =
-        {aContactInformation with Email = anEmailAddress}
-  
-    let changePostalAddress (aContactInformation:ContactInformation) aPostalAddress =
-        {aContactInformation with Address = aPostalAddress}
-
-    let changePrimaryTelephone (aContactInformation:ContactInformation) aPrimaryTel =
-        {aContactInformation with PrimaryTel = aPrimaryTel}
-
-    let changeSecondaryTelephone (aContactInformation:ContactInformation) aSecondaryTel =
-        {aContactInformation with SecondaryTel = aSecondaryTel}    
-
-    
- 
 
 

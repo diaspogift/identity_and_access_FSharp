@@ -1,0 +1,23 @@
+    let provisionTenantServiceImpl : ProvisionTenantService =
+                                     
+             fun saveOneTenantDbDep  saveOneUserDbDep saveOneRoleDbDep aTenantName aTenantDescription anAdministorName anEmailAddress aPostalAddress aPrimaryTelephone aSecondaryTelephone ->
+                
+
+
+                  result {
+
+                      let  invitationDescription = RegistrationInvitationDescription.create' "Invitation for Tenant ..." 
+                      let! tenantToProvision = Tenant.createFullActivatedTenant aTenantName aTenantDescription
+                      let registrationInvitation =  Tenant.offerRegistrationInvitation  tenantToProvision  
+
+                      return tenantToProvision
+                  }
+
+     
+
+     
+
+
+
+
+

@@ -12,6 +12,10 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServices
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
+open IdentityAndAcccess.CommonDomainTypes
+open IdentityAndAcccess.DomainServices.Tenant
+open IdentityAndAcccess.DomainTypes.Role
+open IdentityAndAcccess.DomainTypes
 
 
 
@@ -308,7 +312,7 @@ match rsChangeTenantActivationStatus with
         -> printfn "Error = %A" error*)
 
 
-let rsCreateGroupSaveAndTryToReloadItFormDb = result {
+(*let rsCreateGroupSaveAndTryToReloadItFormDb = result {
 
 
                 let! gakegroupToAdd1 = Group.create "507f1f77bcf86cd799439051" "507f1f77bcf86cd799439010" "Distributeur" "Distributeur" []
@@ -391,16 +395,7 @@ let rsCreateGroupSaveAndTryToReloadItFormDb = result {
                 return groupToAdd6 
 
 
-}
-
-match rsCreateGroupSaveAndTryToReloadItFormDb with 
-| Ok aGroup
-        -> 
-  printfn "GROUP =     %A" aGroup
-  printSeparatorLine(1)
-
-| Error error 
-        -> printfn "Error = %A" error
+}*)
 
 
 
@@ -538,6 +533,49 @@ match rsChangeTenantActivationStatus with
            printfn "The full role = %A" role
 | Error error 
         -> printfn "Error = %A" error*)
+
+
+
+let resultTenantProvisioning = result {
+
+        let! tenantName = "Soweda" |> TenantName.create'
+        let! tenantDescription = "Soweda description" |> TenantDescription.create'
+        let! tenantAdminUserFirstName = "Keller" |> FirstName.create'
+        let! tenantAdminUserMiddleName = "N/A" |> MiddleName.create'
+        let! tenantAdminUserLastName = "MARTINS" |> LastName.create'
+        let! tenantAdminEmailAddress = "Keller@yahoo.fr" |> EmailAddress.create'
+        let! tenantAdminUserPostalAdress = "Buea Mile 17" |> PostalAddress.create'
+        let! tenantAdminUserPrimeTel = "669262656" |> Telephone.create'
+        let! tenantAdminUserSecondTel = "669262657" |> Telephone.create'
+
+
+        let! role = Role.create "1186184722264758b66d5db54dc62ed4" "f7147ae3dc9f4ff3af337a91d1389634" "test" "description"
+        let! user = User.create "246b6bbfa37140f6a09b0b4153edc261" "f7147ae3dc9f4ff3af337a91d1389634" "F" "M" "L" "email@gmail.com" "address" "669262656" "669272757" "username" "my_current_password"
+
+        
+        let! rssss = Role.assignUser role user
+
+
+        (*let rsOfProvisionTenant = provisionTenantServiceImpl' 
+                                                              tenantName tenantDescription tenantAdminUserFirstName tenantAdminUserMiddleName tenantAdminUserLastName
+                                                              tenantAdminEmailAddress tenantAdminUserPostalAdress tenantAdminUserPrimeTel tenantAdminUserSecondTel*)
+
+
+
+        
+
+        return rssss
+}
+
+match resultTenantProvisioning with 
+| Ok provision
+        -> 
+  printfn "Provision =     %A" provision
+  printSeparatorLine(1)
+
+| Error error 
+        -> printfn "Error = %A" error
+
 
 
 

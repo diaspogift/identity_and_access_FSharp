@@ -105,11 +105,13 @@ module ConstrainedType =
 
 
 
-    let createDatetimeSpan (fieldName:string) ctor (startDate:DateTime) (endDate:DateTime) =
+    let createDatetimeSpan (fieldName:string)  (startDate:DateTime) (endDate:DateTime) =
 
         if DateTime.Compare (startDate, endDate) <=  0 then
 
-            Ok { Start = ctor startDate; End = ctor endDate}
+            let dateTimeSpan:DateTimeSpan  = { Start =  startDate; End =  endDate} 
+
+            Ok { Start =  startDate; End =  endDate}
 
         else
 
@@ -296,6 +298,19 @@ module Password =
 
 
 
+module StrongPassword =
+
+    let value (StrongPassword str) = str
+
+    let create fieldName str = 
+        ConstrainedType.createStringControlledLength fieldName StrongPassword 6 50 str
+
+    let create' = create  "Strong Password :"
+
+
+
+
+
 
 
 
@@ -304,7 +319,7 @@ module Password =
 module EncrytedPassword = 
 
 
-    let value (Password str) = str
+    let value (EncrytedPassword str) = str
 
     let create fieldName str = 
         ConstrainedType.createStringControlledLength fieldName EncrytedPassword  6 50 str
@@ -510,14 +525,6 @@ module DateTimeWrapped =
  
 
 
-
-
-module DateTimeSpan =
-
-    let create fieldName startDate endDate = 
-        ConstrainedType.createDatetimeSpan fieldName DateTimeWrapped startDate endDate
-
-    let create' = create  "Datetime Span : "
 
 
 

@@ -14,7 +14,7 @@ open IdentityAndAccess.DatabaseTypes
 open MongoDB.Driver
 open MongoDB.Bson
 open FSharp.Data.Sql
-open Suave.Sockets
+open IdentityAndAcccess.DomainTypes
 
 
 
@@ -369,6 +369,23 @@ module RoleDb =
 
 
 
+
+    let saveRoleAdapted (aGroupCollection : IMongoCollection<RoleDto>)  (aRole:Role) = 
+               
+            try   
+                aRole 
+                |> DbHelpers.fromRoleDomainToDto
+                |> aGroupCollection.InsertOne 
+                |> Ok
+            with
+                | :? System.TypeInitializationException as ex -> Error "er2"    
+                | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+                | Failure msg -> Error "er0" 
+                | e -> Error e.Message
+
+
+
+
     let private loadRoleById (aRoleCollection : IMongoCollection<RoleDto>)  ( id : BsonObjectId ) = 
 
         try
@@ -434,7 +451,8 @@ module RoleDb =
 
 
 
-    let saveOneRole = saveRole DbConfig.roleCollection
+    let saveOneRole : RoleDb.SaveOneRole = saveRoleAdapted DbConfig.roleCollection
+
     let loadOneRoleById : BsonObjectId -> Result<RoleDto,string> = loadRoleById DbConfig.roleCollection
     let updateOneRole = updateRole DbConfig.roleCollection
 
@@ -481,6 +499,24 @@ module UserDb =
             | Failure msg -> Error (msg + ": By ...Faillure msg..." )
             | _ -> Error "Unmatched error occurred"  
 
+
+
+
+
+
+
+    let saveRoleAdapted (aGroupCollection : IMongoCollection<UserDto>)  (aUser:User) = 
+                       
+                    try   
+                        aUser 
+                        |> DbHelpers.fromUserDomainToDto 
+                        |> aGroupCollection.InsertOne 
+                        |> Ok
+                    with
+                        | :? System.TypeInitializationException as ex -> Error "er2"    
+                        | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+                        | Failure msg -> Error "er0" 
+                        | e -> Error e.Message
 
 
 
@@ -545,8 +581,7 @@ module UserDb =
 
 
 
-    let saveOneUser: UserDto -> Result<unit,string> =
-         saveUser DbConfig.userCollection
+    let saveOneUser: UserDb.SaveOneUser = saveRoleAdapted DbConfig.userCollection
 
 
     let loadOneUserById: BsonObjectId -> Result<UserDto, string> = 
@@ -563,17 +598,74 @@ module UserDb =
 
 
 
+
+
+
+
+
+
+
+
 module TenantDb =
 
 
 
 
 
+
+
+
+
     let private saveTenant (aTenantCollection : IMongoCollection<TenantDto>)(aTenantDto:TenantDto) = 
-        aTenantCollection.InsertOne aTenantDto
+
+        try
+
+            aTenantDto 
+            |> aTenantCollection.InsertOne  
+            |> Ok
+
+        with
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
+            | e -> Error e.Message        
+
+
+
+
+
+
+
+    let saveTenantAdapted (aTenantCollection : IMongoCollection<TenantDto>)  (aTenant:Tenant) = 
+               
+        try   
+            aTenant 
+            |> DbHelpers.fromTenantDomainToDto
+            |> aTenantCollection.InsertOne 
+            |> Ok
+        with
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
+            | e -> Error e.Message
+
+
+
+
+
+
+        
     let private loadTenantById (aUserCollection : IMongoCollection<TenantDto>)  ( id : BsonObjectId ) = 
         let result = aUserCollection.Find(fun x -> x._id = id).Single() 
         result
+
+
+
+
+
+
+
+
     let private updateTenant (aTenantCollection : IMongoCollection<TenantDto>)  ( aTenantDto : TenantDto ) = 
         let filter = Builders<TenantDto>.Filter.Eq((fun x -> x.TenantId), aTenantDto.TenantId)
         let updateDefinition = Builders<TenantDto>.Update.Set((fun x -> x.Name), aTenantDto.Name).Set((fun x -> x.ActivationStatus), aTenantDto.ActivationStatus).Set((fun x -> x.Description), aTenantDto.Description).Set((fun x -> x.RegistrationInvitations), aTenantDto.RegistrationInvitations) 
@@ -584,7 +676,7 @@ module TenantDb =
 
 
 
-    let saveOneTenant = saveTenant DbConfig.tenantCollection
+    let saveOneTenant: TenantDb.SaveOneTenant = saveTenantAdapted DbConfig.tenantCollection
     let loadOneTenantById: BsonObjectId -> TenantDto = loadTenantById DbConfig.tenantCollection
     let updateOneTenant: TenantDto -> unit = updateTenant DbConfig.tenantCollection
 
