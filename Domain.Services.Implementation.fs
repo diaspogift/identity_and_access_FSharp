@@ -12,6 +12,7 @@ open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.DomainTypes.Role
+open System.Collections.Generic
 
 
 
@@ -172,6 +173,25 @@ module Tenant =
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///Group type related services 
 /// 
 ///  
@@ -248,22 +268,19 @@ module Group =
 
 
 
+    let isUserInNestedGroupServiceLocal : IsUserInNestedGroupService = 
 
-
-    let isUserInNestedGroupServiceImpl : IsUserInNestedGroupService = 
-
-        fun  
-            loadGroupMemberById  //Database dependency
+        fun loadGroupMemberById  //Database dependency
             aGroup 
             aUser ->
 
 
 
 
-            let rec InternalRecursiveIsUserInNestedGroupService  
-                                                                (aMember : GroupMember)  
+            let rec InternalRecursiveIsUserInNestedGroupService (aMember : GroupMember)  
                                                                 (loadGroupMemberById : LoadGroupMemberById) 
                                                                 (aGroupMemberList : GroupMember list) =
+                                                                
 
                     match aGroupMemberList with
                     | [] -> 
@@ -295,13 +312,9 @@ module Group =
 
 
             
-
-            
-
-
-            let aStandardGroup = aGroup 
-                                 |> DomainHelpers.unwrapToStandardGroup
+            let aStandardGroup = aGroup |> DomainHelpers.unwrapToStandardGroup
             let aUserGroupMember = aUser |> User.toUserGroupMember
+
 
             match aUserGroupMember with  
             | Ok aMember ->
@@ -313,7 +326,14 @@ module Group =
 
         
     
+    let isUserInNestedGroupServiceImpl = isUserInNestedGroupServiceLocal loadGroupByGroupMemberIdDbDependencyFunction
+
+
     let isGroupMemberIsInGroupServiceImpl: IsGroupMemberService = isGroupMemberIsInGroupServiceImplLocal loadGroupByGroupMemberIdDbDependencyFunction
+
+
+
+
 
 
 
@@ -322,7 +342,7 @@ module Group =
         TimeServiceWasCalled = DateTime.Now
         CallerCredentials = CallerCredential "FOTIO"
         isGroupMember = isGroupMemberIsInGroupServiceImpl
-        isUserInNestedGroup = isUserInNestedGroupServiceImpl
+        isUserInNestedGroup = isUserInNestedGroupServiceLocal
 
     }
 
@@ -332,6 +352,67 @@ module Group =
           
 
                 
+
+
+
+
+
+
+
+
+
+module Role =
+
+
+
+
+
+    ///Database dependecies 
+     
+    
+    let loadUserByUserIdAndTenantIdDependencyFunction = UserDb.loadUserByUserIdAndTenantId
+
+
+     
+    
+
+
+
+
+
+
+
+    //Authorisation relatedservices
+
+    let isUserInRoleServiceImpl : IsUserInRoleService' = 
+
+        fun  isUserInRoleService confirmUserServive aRole aUser -> 
+
+            match aUser.Enablement.EnablementStatus with 
+            | Enabled -> 
+
+                Role.isInRole isUserInRoleService confirmUserServive aRole aUser
+
+            | Disabled ->
+
+                false
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
                                 
@@ -385,6 +466,13 @@ module User =
                 true
             | Error error ->
                 false
+
+
+
+
+
+
+
 
 
 

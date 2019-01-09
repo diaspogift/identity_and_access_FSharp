@@ -241,7 +241,24 @@ module ServiceInterfaces =
                 -> Result<UserDescriptor,string>
 
 
-    //type IsUserInRoleService = 
+
+
+    type IsUserInRoleService =  
+            IsUserInNestedGroupService 
+                -> ConfirmUserServive
+                -> Role
+                -> User
+                -> Boolean
+
+    
+
+    type IsUserInRoleService' =  
+        IsUserInNestedGroupService' 
+            -> ConfirmUserServive'
+            -> Role
+            -> User
+            -> Boolean
+
 
 
 
@@ -1901,4 +1918,12 @@ module Role =
 
 
 
-    //let isInRole (aRole:Role) (aUser:User) =
+    let isInRole (isUserInNestedGroup:IsUserInNestedGroupService') (confirmUserServive:ConfirmUserServive') (aRole:Role) (aUser:User)  =
+
+        let roleInternalGroup = aRole.InternalGroup
+        isMember isUserInNestedGroup confirmUserServive roleInternalGroup aUser
+
+
+        
+
+

@@ -5,6 +5,7 @@ namespace IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.CommonDomainTypes
 open System
 open IdentityAndAcccess.CommonDomainTypes.Functions
+open System.Text.RegularExpressions
 
 
 
@@ -390,11 +391,66 @@ module Role =
 
 
 
+    type RoleProvisioned = 
+
+        DomainEvent<RoleProvisionedEventData>
+
+    and RoleProvisionedEventData = {
+        RoleId : string
+        TenantId : string;
+    }
+
+
+
+    type GroupAssignedToRole = 
+
+        DomainEvent<GroupAssignedToRoleEventData>
+
+    and GroupAssignedToRoleEventData = {
+        GroupId : string
+        RoleId : string
+        TenantId : string;
+    }
+
+
+
+
+    type GroupUnAssignedToRole = 
+
+        DomainEvent<GroupUnAssignedToRoleEventData>
+
+    and GroupUnAssignedToRoleEventData = {
+        GroupId : string
+        RoleId : string
+        TenantId : string;
+    }
 
 
 
 
 
+    type UserAssignedToRole = 
+
+        DomainEvent<UserAssignedToRoleEventData>
+
+    and UserAssignedToRoleEventData = {
+        GroupId : string
+        RoleId : string
+        TenantId : string;
+    }
+
+
+
+
+    type UserUnAssignedToRole = 
+
+        DomainEvent<UserUnAssignedToRoleEventData>
+
+    and UserUnAssignedToRoleEventData = {
+        GroupId : string
+        RoleId : string
+        TenantId : string;
+    }
 
 
 
