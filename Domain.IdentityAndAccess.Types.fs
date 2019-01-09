@@ -6,6 +6,8 @@ open IdentityAndAcccess.CommonDomainTypes
 open System
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open System.Text.RegularExpressions
+open Suave.Logging
+open Suave.Logging
 
 
 
@@ -580,6 +582,18 @@ module Tenant =
         StartingOn: DateTime
         Until : DateTime
         }
+
+
+
+    type InvitationDescriptor = {
+        RegistrationInvitationId : string
+        TenantId : string
+        RegistrationInvitationDescription : string
+        StartingOn : DateTime
+        Until : DateTime
+        }
+    
+
 
 
     type Provision = (Tenant*User*Role)
