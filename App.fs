@@ -57,6 +57,19 @@ let printSeparatorLine(count) =
 
 
 
+let printEmptySeparatorLine(count) = 
+        
+        let countArray = List.init count (fun x -> x )
+        countArray
+        |> List.iter (fun x -> 
+        
+                        printfn ""
+                        printfn ""
+                        printfn ""
+                     )
+
+
+
 //let DomainServices:GroupMemberService = {TimeServiceWasCalled = DateTime.Now; CallerCredentials = (CallerCredential "Felicien")}
 
 
@@ -550,7 +563,7 @@ let resultTenantProvisioning = result {
 
 
         let! role = Role.create "1186184722264758b66d5db54dc62ed4" "f7147ae3dc9f4ff3af337a91d1389634" "test" "description"
-        let! user = User.create "246b6bbfa37140f6a09b0b4153edc261" "f7147ae3dc9f4ff3af337a91d1389634" "F" "M" "L" "email@gmail.com" "address" "669262656" "669272757" "username" "my_current_password"
+        let! user = User.create "246b6bbfa37140f6a09b0b4153edc261" "f7147ae3dc9f4ff3af337a91d1389634" "F" "M" "L" "email@gmail.com" "address" "669262656" "669272757" "username" "my_password"
 
         
         let! rssss = Role.assignUser role user
@@ -570,7 +583,13 @@ let resultTenantProvisioning = result {
 match resultTenantProvisioning with 
 | Ok provision
         -> 
-  printfn "Provision =     %A" provision
+
+  printEmptySeparatorLine(2)
+  printfn "Provision =     "
+  printEmptySeparatorLine(2)
+  printfn "%A" provision
+  printEmptySeparatorLine(2)
+
   printSeparatorLine(1)
 
 | Error error 

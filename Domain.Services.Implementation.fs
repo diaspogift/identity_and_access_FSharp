@@ -198,7 +198,7 @@ module Group =
     ///services
     
     
-    let isGroupMemberIsInGroupServiceImpl : IsGroupMemberService =
+    let isGroupMemberIsInGroupServiceImplLocal  =
 
         fun loadGroupMemberById  // Database dependency function
             aGroup 
@@ -243,7 +243,6 @@ module Group =
 
 
             InternalRecursiveIsGroupMemberIsInGroupService  aMember  loadGroupMemberById   aStandardGroup.Members
-
 
 
 
@@ -313,7 +312,9 @@ module Group =
                 false
 
         
-        
+    
+    let isGroupMemberIsInGroupServiceImpl: IsGroupMemberService = isGroupMemberIsInGroupServiceImplLocal loadGroupByGroupMemberIdDbDependencyFunction
+
 
 
     let groupMemberServices: GroupMemberServices = {

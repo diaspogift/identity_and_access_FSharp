@@ -145,7 +145,7 @@ module DbHelpers =
             SecondaryTel = Telephone.value aUser.Person.Contact.SecondaryTel
             FirstName = FirstName.value aUser.Person.Name.First
             LastName = LastName.value aUser.Person.Name.Last
-            MiddleName = MiddleName.value aUser.Person.Name.Middle 
+            MiddleName = MiddleName.value  aUser.Person.Name.Middle
         }
 
 

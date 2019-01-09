@@ -86,7 +86,7 @@ module User =
     /// 
     type FullName = {
         First: FirstName
-        Middle: MiddleName
+        Middle: MiddleName 
         Last: LastName
         }
 
@@ -383,7 +383,11 @@ module Role =
         SupportNesting: SupportNestingStatus
         InternalGroup: Group
         }
-open Role
+
+
+
+
+
 
 
 

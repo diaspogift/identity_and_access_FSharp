@@ -8,9 +8,8 @@ open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Role
 open FSharp.Data.Sql
-open System.Collections.Generic
-open Suave.Sockets
-open System.Collections.Generic
+open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes
 
 
 
@@ -28,7 +27,7 @@ let unwrapToStandardGroup aGroupToUnwrapp =
 let generateNoEscapeId () = Guid.NewGuid().ToString().Replace("-", "")
 
 
-type IsGroupMember' =  Group -> GroupMember  -> Boolean
+type IsGroupMemberService =  Group -> GroupMember  -> Boolean
 
 
 ///Helper functionsssss
@@ -138,8 +137,7 @@ module ServiceInterfaces =
     //group member services
     
     type IsGroupMemberService = 
-            LoadGroupMemberById 
-                -> Group 
+            Group 
                 -> GroupMember  
                 -> Boolean
 
@@ -241,6 +239,10 @@ module ServiceInterfaces =
                 -> TenantId 
                 -> Password 
                 -> Result<UserDescriptor,string>
+
+
+    //type IsUserInRoleService = 
+
 
 
 
@@ -705,7 +707,7 @@ module Tenant =
                         let contactInfo = ContactInformation.fullCreate anEmailAddress aPostalAddress aPrimaryTel aSecondaryTel
                         let strUseId = generateNoEscapeId()
                         let! userId = UserId.create' strUseId
-                        let fullName = {First = aFirstName; Middle = aMiddleNAme; Last = aLastName}
+                        let fullName = {First = aFirstName; Middle =  aMiddleNAme; Last = aLastName}
 
                         let person = {Contact = contactInfo; Name = fullName; Tenant = aTenant.TenantId; User = userId}
 
@@ -823,7 +825,7 @@ module User =
             let! username  = Username.create "username" username
             let! password  = Password.create "password" password
 
-            let name = {First = firstNames; Middle = middleNames; Last = lastNames}
+            let name = {First = firstNames; Middle =  middleNames; Last = lastNames}
             let contactInfo = {Email = emails; Address = address; PrimaryTel = primaryPhone; SecondaryTel = secondaryPhone}
             let person = {Contact = contactInfo; Name = name; Tenant = tenantIds; User = ids}
             let enablement = {EnablementStatus = EnablementStatus.Enabled; StartDate = DateTime.Now; EndDate = DateTime.Now}
@@ -964,116 +966,6 @@ module User =
 
 
 
-module Role = 
-
-
-
-
-
-
-
-
-
-
-    let create (roleId:string) (tenantId:string) (name:string) (description:string) : Result<Role,string> =
-        
-        let roleConstruct = result {
-
-            let internalGroupId = generateNoEscapeId ()
-
-            let! ids = roleId |> RoleId.create' 
-            let! tenantIds = tenantId |> TenantId.create' 
-            let! names = name |> RoleName.create'
-            let! descriptions = description |> RoleDescription.create' 
-            let! groupId = internalGroupId |> GroupId.create' 
-            let! groupName = "INTERNAL_GROUP" |> GroupName.create'
-            let! groupDescription = "INTERNAL_GROUP_DESCRIPTION" |> GroupDescription.create'
-
-
-            let internalGroup = Internal {
-                GroupId = groupId 
-                TenantId = tenantIds
-                Name = groupName
-                Description = groupDescription
-                Members = []
-                }
-            
-            let role:Role = {
-                RoleId = ids
-                TenantId = tenantIds
-                Name = names
-                Description = descriptions
-                SupportNesting = SupportNestingStatus.Support
-                InternalGroup = internalGroup
-                }
-            return role
-        }
-
-        roleConstruct
-
-
-
-
-
-
-
-    let assignUser (aRole:Role) (aUser:User) =
-
-        let areBothFromSameTenants = (aRole.TenantId = aUser.TenantId)
-
-        match areBothFromSameTenants with 
-        | true ->
-
-            let rsGroupMember = result {
-                
-
-                
-                let! userToGroupMember = aUser |> User.toUserGroupMember
-
-                let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup  
-                 
-                let foundGrouMember = roleInternalGroup.Members
-                                      |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
-
-    
-
-                return foundGrouMember, userToGroupMember
-            }
-
-
-            match rsGroupMember with 
-            
-            | Ok optionGmAndUser->
-
-
-                match optionGmAndUser with
-                | (Some fm, gmToAdd) -> 
-                
-                    Error "User already playing the role"
-
-                | (None, gmToAdd) ->
-
-
-
-
-                    let roleInternalStandardGroup = aRole.InternalGroup |> unwrapToStandardGroup  
-                    let newStandarGroup = {roleInternalStandardGroup with Members = [gmToAdd]@roleInternalStandardGroup.Members}
-                    let newRoleInternalGroup = Internal newStandarGroup
-                    let newInternalRoleGroup = {aRole with InternalGroup = newRoleInternalGroup}
-
-                    Ok newInternalRoleGroup
-
-                           
-
-
-            | Error error ->  
-                Error error
-                
-
-
-            
-        | false -> 
-            Error "Wrond tenant consistency"
 
 
 
@@ -1267,6 +1159,46 @@ module GroupMembers =
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module Group = 
 
 
@@ -1432,7 +1364,7 @@ module Group =
 
 
 
-    let addGroupToGroup (aGroupToAddTo:Group)(aGroupToAdd:Group)(isGroupMemberService: IsGroupMember') : Result<Group, string> =
+    let addGroupToGroup (aGroupToAddTo:Group)(aGroupToAdd:Group)(isGroupMemberService: IsGroupMemberService) : Result<Group, string> =
 
         let unwrappedGroupToAddTo = match aGroupToAddTo with 
                                         | Standard aStandardGroup -> aStandardGroup
@@ -1781,10 +1713,192 @@ module Group =
 
 
             
-               
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module Role = 
+
+
+
+    open ServiceInterfaces
+    open Group
+
+
+
+
+
+
+    let create (roleId:string) (tenantId:string) (name:string) (description:string) : Result<Role,string> =
+        
+        let roleConstruct = result {
+
+            let internalGroupId = generateNoEscapeId ()
+
+            let! ids = roleId |> RoleId.create' 
+            let! tenantIds = tenantId |> TenantId.create' 
+            let! names = name |> RoleName.create'
+            let! descriptions = description |> RoleDescription.create' 
+            let! groupId = internalGroupId |> GroupId.create' 
+            let! groupName = "INTERNAL_GROUP" |> GroupName.create'
+            let! groupDescription = "INTERNAL_GROUP_DESCRIPTION" |> GroupDescription.create'
+
+
+            let internalGroup = Internal {
+                GroupId = groupId 
+                TenantId = tenantIds
+                Name = groupName
+                Description = groupDescription
+                Members = []
+                }
+            
+            let role:Role = {
+                RoleId = ids
+                TenantId = tenantIds
+                Name = names
+                Description = descriptions
+                SupportNesting = SupportNestingStatus.Support
+                InternalGroup = internalGroup
+                }
+            return role
+        }
+
+        roleConstruct
+
+
+
+
+
+
+
+
+
+
+
+    let assignGroup (isGroupMemberService:IsGroupMemberService) (aRole:Role) (aGroup:Group) =
+
+        let unwrappedGroup = aGroup |> unwrapToStandardGroup
+
+        let areBothFromSameTenants = (aRole.TenantId = unwrappedGroup.TenantId)
+        let doesRoleSupportNesting = (aRole.SupportNesting = SupportNestingStatus.Support)
+
+        
+
+        match areBothFromSameTenants with 
+        | true -> 
+            
+            match doesRoleSupportNesting with  
+            | true -> 
+
+
+            
+                Ok ( addGroupToGroup aRole.InternalGroup aGroup isGroupMemberService )
+
+
+
+            | false -> 
+                
+                Error "Wrong tenant consistency"
+
+        | false -> 
+        
+            
+            Error "Wrong tenant consistency"
+
+
+
+
+
+
+
+
+    let assignUser (aRole:Role) (aUser:User) =
+
+        let areBothFromSameTenants = (aRole.TenantId = aUser.TenantId)
+
+        match areBothFromSameTenants with 
+        | true ->
+
+            let rsGroupMember = result {
+                
+
+                
+                let! userToGroupMember = aUser |> User.toUserGroupMember
+
+                let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup  
+                 
+                let foundGrouMember = roleInternalGroup.Members
+                                      |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
+
+    
+
+                return foundGrouMember, userToGroupMember
+            }
+
+
+            match rsGroupMember with 
+            
+            | Ok optionGmAndUser->
+
+
+                match optionGmAndUser with
+                | (Some fm, gmToAdd) -> 
+                
+                    Error "User already playing the role"
+
+                | (None, gmToAdd) ->
+
+
+
+
+                    let roleInternalStandardGroup = aRole.InternalGroup |> unwrapToStandardGroup  
+                    let newStandarGroup = {roleInternalStandardGroup with Members = [gmToAdd]@roleInternalStandardGroup.Members}
+                    let newRoleInternalGroup = Internal newStandarGroup
+                    let newInternalRoleGroup = {aRole with InternalGroup = newRoleInternalGroup}
+
+                    Ok newInternalRoleGroup
+
+                           
+
+
+            | Error error ->  
+                Error error
+                
+
+
+            
+        | false -> 
+            Error "Wrond tenant consistency"
+
 
 
  
 
 
 
+
+
+
+
+    //let isInRole (aRole:Role) (aUser:User) =
