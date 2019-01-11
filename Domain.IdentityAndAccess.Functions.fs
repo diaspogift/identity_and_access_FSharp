@@ -92,9 +92,11 @@ module ServiceInterfaces =
 
 
     ///Password type related services
-    type PasswordEncryptionService = StrongPassword -> Result<EncrytedPassword, string>
+    type PasswordEncryptionService = 
+            StrongPassword -> Result<EncrytedPassword, string>
 
-    type GeneratePasswordService = Password -> Result<StrongPassword, string>
+    type GeneratePasswordService = 
+            Password -> Result<StrongPassword, string>
 
 
 
@@ -177,7 +179,9 @@ module ServiceInterfaces =
 
     
     type ConfirmUserServive' = 
-             Group -> User -> Boolean  
+             Group 
+                -> User 
+                -> Boolean  
 
 
              
@@ -289,7 +293,7 @@ module ServiceInterfaces =
 module RegistrationInvitations =
 
     let fromRegistrationInvitationDtoTempToDomain = 
-        fun aInvitationDto ->                                     
+        fun (aInvitationDto:RegistrationInvitationDtoTemp) ->                                     
             result {
                                 
                 let! invitationId = aInvitationDto.RegistrationInvitationId |> RegistrationInvitationId.create "invitation id: " 

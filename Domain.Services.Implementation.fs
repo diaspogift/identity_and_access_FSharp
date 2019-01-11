@@ -78,11 +78,6 @@ module Tenant =
 
             let! tenantToProvision = Tenant.createFullActivatedTenant aTenantName aTenantDescription
 
-            printfn "------------------------------------------------------------------------------" 
-
-            //printfn "tenantToProvision =                %A" tenantToProvision
-            printfn "------------------------------------------------------------------------------" 
-
 
             let! tenantWithRegistrationInvitation, registrationInvitation =  Tenant.offerRegistrationInvitation  tenantToProvision  invitationDescription
 
