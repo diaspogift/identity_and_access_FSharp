@@ -1,6 +1,9 @@
-namespace IdentityAndAcccess.Commands
+namespace IdentityAndAcccess.CommandTypes
+
+
+
+
 open System
-open MongoDB.Driver
 
 
 
@@ -26,10 +29,12 @@ module Commands =
 
 
 
-    type ProvisionTenant =
+    type ProvisionTenantCommand =
             Command<ProvisionTenantData> 
     and ProvisionTenantData = {
+
          TenantName : string
+
     }
 
 
@@ -194,7 +199,6 @@ module Commands =
 
 
     type IdentityAndAcccessCommand = 
-        | ProvisionTenant of ProvisionTenant  
         | CreateRole of CreateRole
         | CreateGroup of CreateGroup
         | InviteUser of InviteUser  

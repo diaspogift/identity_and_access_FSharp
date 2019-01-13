@@ -494,8 +494,7 @@ module Tenant =
         
         result {
 
-            let guidTenantId = Guid.NewGuid() 
-            let strTenantId = guidTenantId.ToString()
+            let strTenantId = generateNoEscapeId()
 
             let! tenantId = TenantId.create' strTenantId
             

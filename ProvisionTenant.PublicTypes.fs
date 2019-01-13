@@ -3,7 +3,6 @@ namespace IdentityAndAcccess.DomainApiTypes
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Role
-open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.CommonDomainTypes
 
 open System
@@ -53,7 +52,7 @@ type Command<'data> = {
 
 
 
-type ProvisionTenant =
+type ProvisionTenantCommand =
         Command<UnvalidatedTenantProvision> 
 
 

@@ -115,12 +115,7 @@ module Tenant =
 
             let! resultAssignUserToSuperAdminRole = Role.assignUser adminRole adminUser
 
-            printfn("========================================================================================")
-            printfn("")
-            printfn(" %A") resultAssignUserToSuperAdminRole
-            printfn("")
-            printfn("========================================================================================")
-
+      
             //IO operation kept and the end ????
 
 

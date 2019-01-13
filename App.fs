@@ -17,6 +17,11 @@ open IdentityAndAcccess.DomainServices.Tenant
 open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.DomainTypes
 
+open IdentityAndAcccess.DomainApiTypes
+open IdentityAndAcccess.DomainApiTypes.ProvisionTenantWorflowImplementation
+open Suave.Sockets
+
+
 
 
 
@@ -549,7 +554,7 @@ match rsChangeTenantActivationStatus with
 
 
 
-let resultTenantProvisioning = result {
+(*let resultTenantProvisioning = result {
 
         let! tenantName = "Soweda" |> TenantName.create'
         let! tenantDescription = "Soweda description" |> TenantDescription.create'
@@ -594,6 +599,39 @@ match resultTenantProvisioning with
 
 | Error error 
         -> printfn "Error = %A" error
+
+*)
+
+
+
+
+let unvalidatedTenant : UnvalidatedTenant = {Name = "DiaspoGift"; Description = "DiaspoGift Worker  Owned Cooperative"}
+
+let tenantAdministrator : TenantAdministrator = {
+    FirstName = "Felicien"
+    MiddleName = "N/A"
+    LastName = "FOTIO MANFO"
+    Email = "felicien.fotiomanfo@gmail.com"
+    Address = "973 Ranch House Road Thousand Oaks CA, 91786"
+    PrimPhone = "669262656" 
+    SecondPhone = "669262657"
+}
+let unvalidatedTenantProvision : UnvalidatedTenantProvision = {TenantInfo = unvalidatedTenant; AdiminUserInfo = tenantAdministrator}
+
+
+let rsProvisionTenantWorkflow =  provisionTenantWorflow unvalidatedTenantProvision
+
+
+match  rsProvisionTenantWorkflow with  
+| Ok rs -> 
+        printfn " THE PROVISIONING RESULT"
+        printEmptySeparatorLine(1)
+        printfn " %A" rs
+| Error error ->
+        printfn " %A" error
+
+
+
 
 
 

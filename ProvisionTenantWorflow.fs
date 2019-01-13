@@ -7,12 +7,32 @@ open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServices.Tenant
 open IdentityAndAcccess.DomainApiTypes
+open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
+open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
+open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 
 
 
 
 
-//Dependencies 
+///Dependencies 
+/// 
+/// 
+
+let saveOneTenant : SaveOneTenant = TenantDb.saveOneTenant
+let saveOneRole : SaveOneRole = RoleDb.saveOneRole
+let saveOneUser : SaveOneUser = UserDb.saveOneUser
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -189,7 +209,64 @@ let provision : ProvisionTenant =
 
         
 
-///Step3 create events impl
+///Step3 persist the provision data Tenant, Administrator User and Adminitrative Role 
+
+let saveProvisionInfoLocal 
+    (saveOneTenant:SaveOneTenant)
+    (saveOneUser:SaveOneUser)
+    (saveOneRole:SaveOneRole)
+    (aProvision:Provision) = 
+
+
+    let tenant, user, role =  aProvision
+
+
+
+    let rsSaveOneTenant = 
+        tenant 
+        |> saveOneTenant 
+        |> Result.mapError ProvisionTenantError.DbError
+
+    let rsSaveOneRole = 
+        role 
+        |> saveOneRole    
+        |> Result.mapError ProvisionTenantError.DbError 
+
+    let rsSaveOneUser = 
+        user 
+        |> saveOneUser 
+        |> Result.mapError ProvisionTenantError.DbError
+
+    match rsSaveOneTenant with  
+    | Ok () -> 
+        match rsSaveOneRole with  
+        | Ok () -> 
+             match rsSaveOneUser with  
+             | Ok () -> 
+                Ok aProvision
+             | Error error ->
+                Error error
+        | Error error ->
+            Error error
+    | Error error ->
+        Error error
+
+
+    
+
+let saveProvisionInfo = saveProvisionInfoLocal saveOneTenant saveOneUser saveOneRole
+        
+
+
+        
+
+
+
+
+
+
+
+///Step4 create events impl
 let createEvents : CreateEvents = 
 
     fun aProvision ->
@@ -227,22 +304,20 @@ let createEvents : CreateEvents =
 
 
 
-
-
-
-let ProvisionTenantWorflow: ProvisionTenantWorkflow = 
+let provisionTenantWorflow: ProvisionTenantWorkflow = 
 
     fun unvalidatedTenantProvision ->
 
-
         let provision' = Result.bind provision
         let createEvents' = Result.map createEvents
+        let saveProvisionInfo' = Result.bind saveProvisionInfo
 
         unvalidatedTenantProvision
         |> validateProvision
         |> provision'
+        |> saveProvisionInfo'
         |> createEvents'
-        //|> saveProvision
+        
 
 
 

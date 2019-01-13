@@ -26,7 +26,7 @@ type ActivationStatusDto =
 
 type TenantDto = {
     _id : BsonObjectId
-    TenantId : BsonObjectId
+    TenantId : string
     Name : string
     Description : string
     RegistrationInvitations : RegistrationInvitationDto array
@@ -43,7 +43,7 @@ type EnablementStatusDto =
 
 type UserDto = {
     _id : BsonObjectId
-    UserId : BsonObjectId
+    UserId : string
     TenantId: string
     Username: string
     Password: string
@@ -80,7 +80,7 @@ type GroupMemberDto = {
 
 type GroupDto = {
     _id : BsonObjectId
-    GroupId : BsonObjectId
+    GroupId : string
     TenantId :String
     Name : string
     Description : string
@@ -102,7 +102,7 @@ type SupportNestingStatusDto =
 
 type RoleDto = {
     _id : BsonObjectId
-    RoleId : BsonObjectId
+    RoleId : string
     TenantId : string
     Name : string
     Description : string
