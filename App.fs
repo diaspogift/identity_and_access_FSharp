@@ -562,22 +562,22 @@ let resultTenantProvisioning = result {
         let! tenantAdminUserSecondTel = "669262657" |> Telephone.create'
 
 
-        let! role = Role.create "1186184722264758b66d5db54dc62ed4" "f7147ae3dc9f4ff3af337a91d1389634" "test" "description"
-        let! user = User.create "246b6bbfa37140f6a09b0b4153edc261" "f7147ae3dc9f4ff3af337a91d1389634" "F" "M" "L" "email@gmail.com" "address" "669262656" "669272757" "username" "my_password"
+        //let! role = Role.create "1186184722264758b66d5db54dc62ed4" "f7147ae3dc9f4ff3af337a91d1389634" "test" "description"
+        //let! user = User.create "246b6bbfa37140f6a09b0b4153edc261" "f7147ae3dc9f4ff3af337a91d1389634" "F" "M" "L" "email@gmail.com" "address" "669262656" "669272757" "username" "my_password"
 
         
-        let! rssss = Role.assignUser role user
+        //let! rssss = Role.assignUser role user
 
 
-        (*let rsOfProvisionTenant = provisionTenantServiceImpl' 
+        let rsOfProvisionTenant = provisionTenantServiceImpl' 
                                                               tenantName tenantDescription tenantAdminUserFirstName tenantAdminUserMiddleName tenantAdminUserLastName
-                                                              tenantAdminEmailAddress tenantAdminUserPostalAdress tenantAdminUserPrimeTel tenantAdminUserSecondTel*)
+                                                              tenantAdminEmailAddress tenantAdminUserPostalAdress tenantAdminUserPrimeTel tenantAdminUserSecondTel
 
 
 
         
 
-        return rssss
+        return rsOfProvisionTenant
 }
 
 match resultTenantProvisioning with 

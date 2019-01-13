@@ -5,9 +5,7 @@ namespace IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.CommonDomainTypes
 open System
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open System.Text.RegularExpressions
-open Suave.Logging
-open Suave.Logging
+
 
 
 
@@ -168,11 +166,22 @@ module User =
         Person: Person
         }
 
+
+
+    type RoleDescriptor = {
+            RoleId: RoleId
+            TenantId: TenantId
+            Name: RoleName
+            }
+
+
+
     type UserDescriptor = {
         UserDescriptorId: UserDescriptorId
         TenantId: TenantId
         Username: Username
         Email: EmailAddress
+        Roles: RoleDescriptor list 
         }
 
 
@@ -369,6 +378,14 @@ module Role =
 
 
 
+
+
+
+
+
+
+
+
     ///Role related types
     /// 
     /// 
@@ -389,6 +406,7 @@ module Role =
 
 
 
+    
 
 
 

@@ -16,7 +16,10 @@
     <Compile Include="Test.fsx" />
     <Compile Include="Infrastrure.Services.Implementation.fs" />
     <Compile Include="Comamd.Types.fs" />
+    <Compile Include="Domain.IdentityAndAccess.Api.Types.fs" />
+    <Compile Include="ProvisionTenantWorflow.fs" />
     <Compile Include="App.fs" />
+    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver" Version="2.7.2" />

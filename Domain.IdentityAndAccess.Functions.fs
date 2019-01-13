@@ -9,7 +9,6 @@ open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Role
 open FSharp.Data.Sql
 open IdentityAndAcccess.DomainTypes
-open IdentityAndAcccess.DomainTypes
 
 
 
@@ -94,6 +93,10 @@ module ServiceInterfaces =
     ///Password type related services
     type PasswordEncryptionService = 
             StrongPassword -> Result<EncrytedPassword, string>
+
+    
+    type PasswordsMatcherService = 
+            Password -> EncrytedPassword -> Boolean
 
     type GeneratePasswordService = 
             Password -> Result<StrongPassword, string>
@@ -209,6 +212,8 @@ module ServiceInterfaces =
 
 
 
+
+
     type ProvisionTenantService' = 
             TenantName 
                 -> TenantDescription 
@@ -218,6 +223,8 @@ module ServiceInterfaces =
                 -> Telephone 
                 -> Telephone 
                 -> Result<Tenant,string>
+
+
 
 
 
@@ -236,23 +243,28 @@ module ServiceInterfaces =
 
 
     ///User type related services
+    
+
+    type IsUserInRoleService =  
+        IsUserInNestedGroupService 
+            -> ConfirmUserServive
+            -> Role
+            -> User
+            -> Boolean
+            
+
     type AuthenticationService = 
-            LoadUserByUserIdPasswordAndTenantId 
-                -> LoadTenantById 
-                -> UserId
-                -> TenantId 
+            PasswordsMatcherService
+                -> IsUserInRoleService
+                -> User
+                -> Tenant 
                 -> Password 
                 -> Result<UserDescriptor,string>
 
 
 
 
-    type IsUserInRoleService =  
-            IsUserInNestedGroupService 
-                -> ConfirmUserServive
-                -> Role
-                -> User
-                -> Boolean
+
 
     
 
@@ -262,6 +274,21 @@ module ServiceInterfaces =
             -> Role
             -> User
             -> Boolean
+
+
+    type Subject = Subject of string
+    type Content = Content of string
+    type EmailSentAknowledgment = 
+        | Sent of DateTime
+        | NotSent
+
+
+    type EmailSenderService =
+        EmailAddress 
+            -> EmailAddress
+            -> Subject
+            -> Content
+            -> EmailSentAknowledgment
 
 
 
@@ -966,6 +993,7 @@ module User =
                 TenantId = aUser.TenantId
                 Username = aUser.Username
                 Email = aUser.Person.Contact.Email
+                Roles = []
                 }
         }
 

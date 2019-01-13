@@ -10,9 +10,9 @@ open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes
-open IdentityAndAcccess.CommonDomainTypes
+open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Role
-open System.Collections.Generic
+open FSharp.Data.Sql
 
 
 
@@ -81,33 +81,13 @@ module Tenant =
 
             let! tenantWithRegistrationInvitation, registrationInvitation =  Tenant.offerRegistrationInvitation  tenantToProvision  invitationDescription
 
-            printfn "------------------------------------------------------------------------------" 
 
-            printfn "tenantWithRegistrationInvitation =                 %A" tenantWithRegistrationInvitation
-
-            printfn "------------------------------------------------------------------------------" 
-
-            let! password = Password.create' "123456"
-
-            printfn "password =                 %A" password
-
-            printfn "------------------------------------------------------------------------------" 
-
+            let! password = "123456" |> Password.create' 
 
             let!  strongPassword = password |> strongPasswordService
 
 
-            printfn "strongPassword =                 %A" strongPassword
-
-
-            printfn "------------------------------------------------------------------------------" 
-
-
             let! encryptedPassword = strongPassword |> passwordEncryptionService
-
-            printfn "encryptedPassword =                 %A" encryptedPassword
-
-            printfn "------------------------------------------------------------------------------" 
 
 
             let! unwrappedEncryptedPassword = encryptedPassword 
@@ -115,36 +95,14 @@ module Tenant =
                                            |> Password.create'
 
 
-            printfn "unwrappedEncryptedPassword =                 %A" unwrappedEncryptedPassword
 
-
-            printfn "------------------------------------------------------------------------------" 
-
-
-            let! adminUsername = Username.create' "Default Aministrator"
-
-            printfn "------------------------------------------------------------------------------" 
-
-
-            printfn "adminUsername =                %A" adminUsername
-
-            printfn "------------------------------------------------------------------------------" 
+            let! adminUsername = "Default Aministrator" |> Username.create' 
 
             let! adminUserEnablement = Enablement.fullCreate enablementSartDate enablementEndDate EnablementStatus.Enabled
-
-            printfn "------------------------------------------------------------------------------" 
-
-            printfn "adminUserEnablement =                %A" adminUserEnablement
-
-            printfn "------------------------------------------------------------------------------" 
-
 
             let! adminUser = Tenant.registerUserForTenant tenantWithRegistrationInvitation registrationInvitation.RegistrationInvitationId adminUsername  
                                                           unwrappedEncryptedPassword adminUserEnablement anEmailAddress aPostalAddress aPrimaryTelephone 
                                                           aSecondaryTelephone anAdministorFirstName anAdministorMiddleName anAdministorLastName 
-
-            printfn "adminUser =           %A" adminUser
-
 
                                         
             let! rsWithdrawInvitation = Tenant.withdrawInvitation tenantWithRegistrationInvitation registrationInvitation.RegistrationInvitationId
@@ -155,12 +113,18 @@ module Tenant =
 
             let! adminRole = Tenant.provisionRole rsWithdrawInvitation adminRoleName adminRoleDescription
 
-            let resultAssignUserToRole = Role.assignUser adminRole adminUser
+            let! resultAssignUserToSuperAdminRole = Role.assignUser adminRole adminUser
+
+            printfn("========================================================================================")
+            printfn("")
+            printfn(" %A") resultAssignUserToSuperAdminRole
+            printfn("")
+            printfn("========================================================================================")
 
             //IO operation kept and the end ????
 
 
-            return (tenantToProvision, adminUser, adminRole)
+            return (tenantToProvision, adminUser, resultAssignUserToSuperAdminRole)
           }
 
 
@@ -381,12 +345,12 @@ module Role =
 
     let isUserInRoleServiceImpl : IsUserInRoleService' = 
 
-        fun  isUserInRoleService confirmUserServive aRole aUser -> 
+        fun  isUserInNestedGroupService confirmUserServive aRole aUser -> 
 
             match aUser.Enablement.EnablementStatus with 
             | Enabled -> 
 
-                Role.isInRole isUserInRoleService confirmUserServive aRole aUser
+                Role.isInRole isUserInNestedGroupService confirmUserServive aRole aUser
 
             | Disabled ->
 
@@ -437,41 +401,106 @@ module User =
 
 
 
+    //Domain related services
     let confirmUserServiveImpl : ConfirmUserServive = 
 
         fun loadUserByUserIdAndTenantId aGroup aUser ->
+            let unWrappedGroup  =  aGroup |> unwrapToStandardGroup 
+            aUser.TenantId = unWrappedGroup.TenantId
 
-            let rsConfirmUser = result {
-
-
-                let unWrappedGroup  =  aGroup |> unwrapToStandardGroup 
-                let tenantIdFromUnWrappedGroup = unWrappedGroup.TenantId
-                let userId = aUser.UserId
-
-                let! confirmedUser = loadUserByUserIdAndTenantId userId tenantIdFromUnWrappedGroup
-
-
-                     
-                return confirmedUser
-            }
             
 
-            match rsConfirmUser with 
-            | Ok confirmUser ->
-                true
-            | Error error ->
-                false
+
+
+    let passwordMatcherService : PasswordsMatcherService = 
+        fun aPassword anEncryptedPasssword ->
+            true
 
 
 
 
 
+    let allRolesForIdentifiedUser (isUserInNestedGroup:IsUserInNestedGroupService')  //Dependency
+                                  (confirmUserServive:ConfirmUserServive')          //Dependency
+                                  (allTenantRoles:Role list) (aTenant:Tenant) (aUser:User) : RoleDescriptor list = 
+
+        let fromRoleToRoleDescriptor (aRole:Role) =
+             {RoleId = aRole.RoleId; TenantId = aRole.TenantId; Name = aRole.Name}
+
+
+
+        let isUserPlayingRole aUser aRole  = 
+            Role.isInRole isUserInNestedGroup confirmUserServive aRole aUser
+
+        let isUserPlayingRole' = isUserPlayingRole  aUser
+
+        allTenantRoles
+        |> List.filter isUserPlayingRole'
+        |> List.map fromRoleToRoleDescriptor
+
+
+
+
+    let authenticate : AuthenticationService = 
+        fun aPasswordMatcherService             // Dependency
+            isUserInNestedGroupService          // Dependency
+            aUser aTenant aPassword ->
+
+            match aTenant.ActivationStatus with
+            | ActivationStatus.Activated ->
+
+                match aUser.Enablement.EnablementStatus with
+                | EnablementStatus.Enabled ->
+
+
+                    let rsPasswordComparison = result {
+
+                        let strUserEncryptedPassWord  = aUser.Password |> Password.value 
+                        let! userEncryptedPassWord = strUserEncryptedPassWord |> EncrytedPassword.create'
+
+                        let areSamePasswords = aPasswordMatcherService aPassword userEncryptedPassWord
+            
+
+                        return areSamePasswords
+                    }
+
+                    match rsPasswordComparison with 
+                    | Ok areSamePasswords ->
+
+
+                            if areSamePasswords then 
+
+                                let userDescriptor = aUser |> User.toUserDesriptor
+
+                                userDescriptor
+
+                            else
+
+                                Error "Password does not match"
+
+                    | Error error ->
+                        Error error
+
+                    
+
+                
+
+                | EnablementStatus.Disabled ->
+
+
+                    let msg = "User enablement status is desabled"
+
+                    Error msg
+
+
+            | ActivationStatus.Disactivated ->
+
+                let msg = "User tenant Activation status is deactivated"
+
+                Error msg
 
 
 
 
 
-
-
-
-
+    let authenticate' = authenticate passwordMatcherService
