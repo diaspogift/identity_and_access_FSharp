@@ -310,12 +310,12 @@ let provisionTenantWorflow: ProvisionTenantWorkflow =
 
         let provision' = Result.bind provision
         let createEvents' = Result.map createEvents
-        let saveProvisionInfo' = Result.bind saveProvisionInfo
+        //let saveProvisionInfo' = Result.bind saveProvisionInfo
 
         unvalidatedTenantProvision
         |> validateProvision
         |> provision'
-        |> saveProvisionInfo'
+        //|> saveProvisionInfo'
         |> createEvents'
         
 

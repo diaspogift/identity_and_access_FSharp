@@ -5,6 +5,8 @@ open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainApiTypes.ProvisionTenantWorflowImplementation
+open FSharp.Data.Sql
+open Suave.Sockets
 
 
 
@@ -27,27 +29,98 @@ module ProvisionTenant =
 
 
 
-    let handleProvisionTenant saveOneTenant saveOneUser saveOneRole (aProvisionTenantCommand:ProvisionTenantCommand) = 
+    let handleProvisionTenant 
+                            (saveOneTenant:TenantDb.SaveOneTenant) (saveOneUser: UserDb.SaveOneUser) (saveOneRole:RoleDb.SaveOneRole)
+                            (aProvisionTenantCommand:ProvisionTenantCommand) = 
 
-        //IO ad the edge
+        //Extract the command data
+
+
+
 
         let aProvisionTenantCommandData = aProvisionTenantCommand.Data
 
-        let rsProvision = aProvisionTenantCommandData |> provisionTenantWorflow 
-
-
-  
 
 
 
 
+        //Call into pure business logic
 
 
 
-        //IO ad the edge
+        let ouput = 
+            aProvisionTenantCommandData 
+            |> provisionTenantWorflow 
 
-        saveOneTenant
 
-        saveOneUser
 
-        saveOneRole
+        //IO ad the edge base on the result / decision from the actual worflow
+
+
+
+        match ouput with 
+        | Ok tenantProvisionedEventList ->
+
+            let firstEvent : TenantProvisionedEvent  = 
+                tenantProvisionedEventList 
+                |> List.head
+
+            match firstEvent with
+            | TenantProvisionCreated aTenantProvisionCreated->  
+
+                let tenantToSave = aTenantProvisionCreated.TenantProvisioned
+                let roleToSave = aTenantProvisionCreated.RoleProvisioned
+                let userToSave = aTenantProvisionCreated.UserCreated
+
+
+                printfn "-----------------------------------------------------------------------------------------"
+                printfn " tenantToSave === %A"  tenantToSave
+                printfn "-----------------------------------------------------------------------------------------"
+
+                 
+
+                let rst = 
+                    tenantToSave 
+                    |> saveOneTenant
+
+                match rst  with  
+                | Ok () ->
+
+                    let rsu = 
+                        userToSave 
+                        |> saveOneUser
+
+
+                    match rsu  with  
+                    | Ok () ->
+
+                        let rsr = 
+                            roleToSave
+                            |> saveOneRole 
+
+                        match rsr  with  
+                        | Ok () -> 
+                            Ok tenantProvisionedEventList
+                        | Error error ->
+                            Error (ProvisionTenantError.DbError error)
+
+                    | Error error ->
+                        Error (ProvisionTenantError.DbError error)        
+                    
+                | Error error ->
+                    Error (ProvisionTenantError.DbError error)  
+
+
+            | ProvisionAcknowledgementSent aProvisionAcknowledgementSent ->
+
+                Ok tenantProvisionedEventList
+
+
+        | Error error ->
+
+            Error error
+
+
+    let handleProvisionTenant' = handleProvisionTenant saveOneTenant saveOneUser saveOneRole
+
+

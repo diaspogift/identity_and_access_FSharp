@@ -18,8 +18,13 @@ open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.DomainTypes
 
 open IdentityAndAcccess.DomainApiTypes
+open IdentityAndAcccess.DomainApiTypes.Handlers
 open IdentityAndAcccess.DomainApiTypes.ProvisionTenantWorflowImplementation
 open Suave.Sockets
+
+open IdentityAndAcccess.DomainApiTypes.Handlers
+open MongoDB.Driver
+open System
 
 
 
@@ -618,15 +623,32 @@ let tenantAdministrator : TenantAdministrator = {
 }
 let unvalidatedTenantProvision : UnvalidatedTenantProvision = {TenantInfo = unvalidatedTenant; AdiminUserInfo = tenantAdministrator}
 
+type Command<'data> = {
+    Data : 'data;
+    TimeStamp : DateTime;
+    UserId : string;
+}
+let provisionTenantCommand : ProvisionTenantCommand = {
+        
+        Data = unvalidatedTenantProvision
+        TimeStamp = DateTime.Now
+        UserId = "Felicien"
 
-let rsProvisionTenantWorkflow =  provisionTenantWorflow unvalidatedTenantProvision
+        } 
+
+let rsProvisionTenantCommand = ProvisionTenant.handleProvisionTenant' provisionTenantCommand
+
+//let rsProvisionTenantWorkflow =  provisionTenantWorflow unvalidatedTenantProvision
 
 
-match  rsProvisionTenantWorkflow with  
+match  rsProvisionTenantCommand with  
 | Ok rs -> 
+        printEmptySeparatorLine(1)
         printfn " THE PROVISIONING RESULT"
         printEmptySeparatorLine(1)
         printfn " %A" rs
+        printEmptySeparatorLine(1)
+
 | Error error ->
         printfn " %A" error
 

@@ -9,6 +9,7 @@ open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Role
 open FSharp.Data.Sql
 open IdentityAndAcccess.DomainTypes
+open MongoDB.Bson
 
 
 
@@ -23,7 +24,12 @@ let unwrapToStandardGroup aGroupToUnwrapp =
 
 
 
-let generateNoEscapeId () = Guid.NewGuid().ToString().Replace("-", "")
+let generateNoEscapeId () =   
+    let objectId = new MongoDB.Bson.ObjectId (Guid.NewGuid().ToString().Replace("-", ""))
+    let bsonObjectId = new BsonObjectId(objectId)
+    let strObjectId = bsonObjectId.ToString()
+    strObjectId
+
 
 
 type IsGroupMemberService =  Group -> GroupMember  -> Boolean
