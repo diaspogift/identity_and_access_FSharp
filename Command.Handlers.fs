@@ -2,11 +2,16 @@ module IdentityAndAcccess.DomainApiTypes.Handlers
 
 
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
-
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
-open IdentityAndAcccess.DomainApiTypes.ProvisionTenantWorflowImplementation
+open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
+open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
+open IdentityAndAcccess.OffertRegistrationInvitationApiTypes.OffertRegistrationInvitationWorflowImplementation
 open FSharp.Data.Sql
+open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
+open IdentityAndAcccess.CommonDomainTypes
+open IdentityAndAcccess.CommonDomainTypes.Functions
 open Suave.Sockets
+
 
 
 
@@ -123,4 +128,69 @@ module ProvisionTenant =
 
     let handleProvisionTenant' = handleProvisionTenant saveOneTenant saveOneUser saveOneRole
 
+
+
+
+module OffertRegistrationInvitationCommand = 
+
+
+    let loadTenantById = TenantDb.loadOneTenantById 
+    let saveOneTenant = TenantDb.saveOneTenant
+
+
+
+
+    let handleOfferRegistrationInvitation 
+                            (loadTenantById: TenantDb.LoadOneTenantById) 
+                            (updateTenant: TenantDb.UpdateOneTenant) 
+                            (aOfferRegistrationInvitationCommand:OfferRegistrationInvitationCommand)
+                            :Result<RegistrationInvitationOfferredEvent, OfferRegistrationInvitationError> = 
+
+        let aOfferRegistrationInvitationCommandData = aOfferRegistrationInvitationCommand.Data
+
+        //IO at the edges
+
+
+        let rsOfferInvitation = result {
+
+            let unvalidatedRegistrationInvitationDescription:UnvalidatedRegistrationInvitationDescription = {
+                TenantId = aOfferRegistrationInvitationCommandData.TenantId
+                Description =  aOfferRegistrationInvitationCommandData.Description 
+                }
+            
+            let! tenantId = aOfferRegistrationInvitationCommandData.TenantId |> TenantId.create'
+            let! foundTenant = loadTenantById tenantId
+      
+
+            let rs = offerRegistrationInvitationWorkflow foundTenant unvalidatedRegistrationInvitationDescription
+
+
+            return rs
+        }
+
+        match rsOfferInvitation with  
+        | Ok rs ->
+
+            match rs with  
+            | Ok r ->
+
+
+                let rsUpdateTenant = updateTenant r.Tenant
+
+
+                match rsUpdateTenant with 
+                | Ok () ->
+                    Ok r
+                | Error error ->
+                    Error (OfferRegistrationInvitationError.DbError error)
+                  
+
+            | Error error ->
+            Error error
+
+        | Error error ->
+            Error (OfferRegistrationInvitationError.DbError error)
+
+
+    let handleOfferRegistrationInvitation' = handleOfferRegistrationInvitation loadOneTenantById updateTenant
 

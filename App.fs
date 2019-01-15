@@ -19,7 +19,10 @@ open IdentityAndAcccess.DomainTypes
 
 open IdentityAndAcccess.DomainApiTypes
 open IdentityAndAcccess.DomainApiTypes.Handlers
-open IdentityAndAcccess.DomainApiTypes.ProvisionTenantWorflowImplementation
+open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
+open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
+open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
+open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
 open Suave.Sockets
 
 open IdentityAndAcccess.DomainApiTypes.Handlers
@@ -610,16 +613,16 @@ match resultTenantProvisioning with
 
 
 
-let unvalidatedTenant : UnvalidatedTenant = {Name = "DiaspoGift"; Description = "DiaspoGift Worker  Owned Cooperative"}
+(*let unvalidatedTenant : UnvalidatedTenant = {Name = "Le Quattro"; Description = "Restauration - Mets locaux et traditionnels"}
 
 let tenantAdministrator : TenantAdministrator = {
-    FirstName = "Felicien"
-    MiddleName = "N/A"
-    LastName = "FOTIO MANFO"
-    Email = "felicien.fotiomanfo@gmail.com"
+    FirstName = "Megan"
+    MiddleName = "Amanda"
+    LastName = "Hess"
+    Email = "mah90@gmail.com"
     Address = "973 Ranch House Road Thousand Oaks CA, 91786"
-    PrimPhone = "669262656" 
-    SecondPhone = "669262657"
+    PrimPhone = "669262658" 
+    SecondPhone = "669262659"
 }
 let unvalidatedTenantProvision : UnvalidatedTenantProvision = {TenantInfo = unvalidatedTenant; AdiminUserInfo = tenantAdministrator}
 
@@ -632,9 +635,12 @@ let provisionTenantCommand : ProvisionTenantCommand = {
         
         Data = unvalidatedTenantProvision
         TimeStamp = DateTime.Now
-        UserId = "Felicien"
+        UserId = "Megan"
 
         } 
+
+
+
 
 let rsProvisionTenantCommand = ProvisionTenant.handleProvisionTenant' provisionTenantCommand
 
@@ -652,7 +658,44 @@ match  rsProvisionTenantCommand with
 | Error error ->
         printfn " %A" error
 
+*)
 
+
+
+let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
+        TenantId = "6e63646526d84149868a92e3"; 
+        Description = "Invitation for Mobile Biller Tenancy"
+        }
+
+type Command<'data> = {
+    Data : 'data;
+    TimeStamp : DateTime;
+    UserId : string;
+}
+let offerRegistrationInvitationCommand : OfferRegistrationInvitationCommand = {
+        
+        Data = unvalidatedRegistrationInvitationDescription
+        TimeStamp = DateTime.Now
+        UserId = "Megan"
+
+        } 
+
+
+
+
+let rsOfferRegistrationInvitationCommand = OffertRegistrationInvitationCommand.handleOfferRegistrationInvitation' offerRegistrationInvitationCommand
+
+
+match  rsOfferRegistrationInvitationCommand with  
+| Ok rs -> 
+        printEmptySeparatorLine(1)
+        printfn " THE INVITATION RESULT"
+        printEmptySeparatorLine(1)
+        printfn " %A" rs
+        printEmptySeparatorLine(1)
+
+| Error error ->
+        printfn " %A" error
 
 
 

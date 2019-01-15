@@ -130,6 +130,9 @@ module ServiceInterfaces =
     type LoadTenantById = 
             TenantId -> Result<Tenant, string>
 
+    type UpdateOneTenant = 
+            Tenant -> Result<unit, string>
+
     type LoadUserByUserIdAndTenantId = 
             UserId -> TenantId -> Result<User,string>
 
@@ -539,8 +542,11 @@ module Tenant =
             
             result {
 
-                    let id = Guid.NewGuid().ToString().Replace("-", "")
-                    let! registrationInvitationId = RegistrationInvitationId.create "registration invitation id" id
+                    let id = generateNoEscapeId()
+
+                    let! registrationInvitationId = 
+                        id 
+                        |> RegistrationInvitationId.create' 
 
                     let registrationInvitation : RegistrationInvitation = {
                             Description = aDescription
@@ -555,7 +561,7 @@ module Tenant =
                     return (tenantWithNewRegistrationInvitation, registrationInvitation)
                 }
         else 
-            let msg =  "Could not offer registration invitation" 
+            let msg =  "Tenant activation status is deactivated" 
             Error  msg
 
 

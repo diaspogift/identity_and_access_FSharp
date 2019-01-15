@@ -17,7 +17,9 @@
     <Compile Include="Infrastrure.Services.Implementation.fs" />
     <Compile Include="Comamd.Types.fs" />
     <Compile Include="ProvisionTenant.PublicTypes.fs" />
-    <Compile Include="ProvisionTenantWorflow.fs" />
+    <Compile Include="ProvisionTenantWorflow.Implementation.fs" />
+    <Compile Include="OffertRegistrationInvitation.PublicTypes.fs" />
+    <Compile Include="OffertRegistrationInvitationWorflow.Implementation.fs" />
     <Compile Include="Command.Handlers.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>

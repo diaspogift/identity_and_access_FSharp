@@ -1,4 +1,4 @@
-namespace IdentityAndAcccess.DomainApiTypes
+namespace IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User

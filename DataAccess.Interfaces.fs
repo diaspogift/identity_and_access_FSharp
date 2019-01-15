@@ -120,7 +120,7 @@ module TenantDb =
 
     type UpdateOneTenant = 
     
-        Tenant -> Result<string, string> 
+        Tenant -> Result<unit, string> 
 
 
 

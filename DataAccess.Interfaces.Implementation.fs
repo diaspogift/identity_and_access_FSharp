@@ -645,7 +645,7 @@ module TenantDb =
             |> Ok
         with
             | :? System.TypeInitializationException as ex -> Error "er2"    
-            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1 vv"
             | Failure msg -> Error "er0" 
             | e -> Error e.Message
 
@@ -656,9 +656,43 @@ module TenantDb =
 
         
     let private loadTenantById (aUserCollection : IMongoCollection<TenantDto>)  ( id : BsonObjectId ) = 
-        let result = aUserCollection.Find(fun x -> x._id = id).Single() 
-        result
 
+        try
+
+            let tenant = aUserCollection.Find(fun x -> x._id = id).Single() 
+            
+            tenant
+            |> DbHelpers.fromDbDtoToTenant
+
+        with
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1 load"
+            | Failure msg -> Error "er0" 
+            | e -> Error e.Message
+
+
+
+
+
+
+    let private loadTenantByIdAdapted (aUserCollection : IMongoCollection<TenantDto>)  ( aTenantId : TenantId ) = 
+
+        let srtTenantId = TenantId.value aTenantId
+        let bsonId = new BsonObjectId (new ObjectId(srtTenantId))
+
+
+        try
+
+            let tenant = aUserCollection.Find(fun x -> x._id = bsonId).Single() 
+            
+            tenant
+            |> DbHelpers.fromDbDtoToTenant
+
+        with
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1"
+            | Failure msg -> Error "er0" 
+            | e -> Error e.Message
 
 
 
@@ -667,18 +701,47 @@ module TenantDb =
 
 
     let private updateTenant (aTenantCollection : IMongoCollection<TenantDto>)  ( aTenantDto : TenantDto ) = 
-        let filter = Builders<TenantDto>.Filter.Eq((fun x -> x.TenantId), aTenantDto.TenantId)
-        let updateDefinition = Builders<TenantDto>.Update.Set((fun x -> x.Name), aTenantDto.Name).Set((fun x -> x.ActivationStatus), aTenantDto.ActivationStatus).Set((fun x -> x.Description), aTenantDto.Description).Set((fun x -> x.RegistrationInvitations), aTenantDto.RegistrationInvitations) 
-        let result = aTenantCollection.UpdateOne(filter, updateDefinition)
-        ()
+
+        try
+            let filter = Builders<TenantDto>.Filter.Eq((fun x -> x.TenantId), aTenantDto.TenantId)
+            let updateDefinition = Builders<TenantDto>.Update.Set((fun x -> x.Name), aTenantDto.Name).Set((fun x -> x.ActivationStatus), aTenantDto.ActivationStatus).Set((fun x -> x.Description), aTenantDto.Description).Set((fun x -> x.RegistrationInvitations), aTenantDto.RegistrationInvitations) 
+            let result = aTenantCollection.UpdateOne(filter, updateDefinition)
+            
+            Ok ()
+
+        with
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1 update"
+            | Failure msg -> Error "er0" 
+            | e -> Error e.Message       
         
 
+
+    let private updateTenantAdapted (aTenantCollection : IMongoCollection<TenantDto>)  ( aTenant : Tenant ) = 
+
+
+        try
+
+            let aTenantDto = aTenant |> DbHelpers.fromTenantDomainToDto 
+
+            let filter = Builders<TenantDto>.Filter.Eq((fun x -> x.TenantId), aTenantDto.TenantId)
+            let updateDefinition = Builders<TenantDto>.Update.Set((fun x -> x.Name), aTenantDto.Name).Set((fun x -> x.ActivationStatus), aTenantDto.ActivationStatus).Set((fun x -> x.Description), aTenantDto.Description).Set((fun x -> x.RegistrationInvitations), aTenantDto.RegistrationInvitations) 
+            let result = aTenantCollection.UpdateOne(filter, updateDefinition)
+            
+            Ok ()
+
+        with
+            | :? System.TypeInitializationException as ex -> Error "er2"    
+            | :? MongoDB.Driver.MongoWriteException as ex -> Error "er1 update"
+            | Failure msg -> Error "er0" 
+            | e -> Error e.Message       
+              
 
 
 
     let saveOneTenant: TenantDb.SaveOneTenant = saveTenantAdapted DbConfig.tenantCollection
-    let loadOneTenantById: BsonObjectId -> TenantDto = loadTenantById DbConfig.tenantCollection
-    let updateOneTenant: TenantDto -> unit = updateTenant DbConfig.tenantCollection
+    let loadOneTenantById: TenantDb.LoadOneTenantById = loadTenantByIdAdapted DbConfig.tenantCollection
+    let updateOneTenant: TenantDb.UpdateOneTenant = updateTenantAdapted DbConfig.tenantCollection
 
 
 

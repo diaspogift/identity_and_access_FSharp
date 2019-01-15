@@ -1,4 +1,4 @@
-module IdentityAndAcccess.DomainApiTypes.ProvisionTenantWorflowImplementation
+module IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
 
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User
@@ -6,7 +6,7 @@ open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServices.Tenant
-open IdentityAndAcccess.DomainApiTypes
+open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
@@ -310,12 +310,13 @@ let provisionTenantWorflow: ProvisionTenantWorkflow =
 
         let provision' = Result.bind provision
         let createEvents' = Result.map createEvents
-        //let saveProvisionInfo' = Result.bind saveProvisionInfo
+
+
+        
 
         unvalidatedTenantProvision
         |> validateProvision
         |> provision'
-        //|> saveProvisionInfo'
         |> createEvents'
         
 
