@@ -78,7 +78,7 @@ module DbHelpers =
             match anAcitvationStatusDto with 
             | ActivationStatusDto.Activated  -> Ok ActivationStatus.Activated
             | ActivationStatusDto.Disactivated -> Ok ActivationStatus.Disactivated
-            | _ -> Error "Non matching case given"
+            | _ -> Error "Unconsistent state"
          
         result {
             let! activationStatus = aDtoTenant.ActivationStatus |> fromAcitvationStatusDtoToAcitvationStatus
