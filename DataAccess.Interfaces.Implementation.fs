@@ -82,7 +82,7 @@ module DbHelpers =
          
         result {
             let! activationStatus = aDtoTenant.ActivationStatus |> fromAcitvationStatusDtoToAcitvationStatus
-            let! tenant = Tenant.fullCreate id aDtoTenant.Name aDtoTenant.Description activationStatus
+            let! tenant = Tenant.fullCreate id aDtoTenant.Name aDtoTenant.Description activationStatus 
             return tenant
         }
 

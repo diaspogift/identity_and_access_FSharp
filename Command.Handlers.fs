@@ -157,10 +157,18 @@ module OffertRegistrationInvitationCommand =
                 TenantId = aOfferRegistrationInvitationCommandData.TenantId
                 Description =  aOfferRegistrationInvitationCommandData.Description 
                 }
+
             
             let! tenantId = aOfferRegistrationInvitationCommandData.TenantId |> TenantId.create'
             let! foundTenant = loadTenantById tenantId
       
+            printfn "-----------------------------------------------------------------"
+            printfn "-----------------------------------------------------------------"
+
+            printfn "LOADED TENANT %A " foundTenant
+
+            printfn "-----------------------------------------------------------------"
+            printfn "-----------------------------------------------------------------"
 
             let rs = offerRegistrationInvitationWorkflow foundTenant unvalidatedRegistrationInvitationDescription
 
