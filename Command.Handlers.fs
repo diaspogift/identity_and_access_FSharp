@@ -146,6 +146,11 @@ module OffertRegistrationInvitationCommand =
                             (aOfferRegistrationInvitationCommand:OfferRegistrationInvitationCommand)
                             :Result<RegistrationInvitationOfferredEvent, OfferRegistrationInvitationError> = 
 
+
+        printfn "IN handleOfferRegistrationInvitation"
+        printfn "IN handleOfferRegistrationInvitation"
+        printfn "IN handleOfferRegistrationInvitation"
+
         let aOfferRegistrationInvitationCommandData = aOfferRegistrationInvitationCommand.Data
 
         //IO at the edges
@@ -160,6 +165,10 @@ module OffertRegistrationInvitationCommand =
 
             
             let! tenantId = aOfferRegistrationInvitationCommandData.TenantId |> TenantId.create'
+
+            printfn "BEFORE LOADED TENANT "
+
+
             let! foundTenant = loadTenantById tenantId
       
             printfn "-----------------------------------------------------------------"
@@ -182,9 +191,7 @@ module OffertRegistrationInvitationCommand =
             match rs with  
             | Ok r ->
 
-
                 let rsUpdateTenant = updateTenant r.Tenant
-
 
                 match rsUpdateTenant with 
                 | Ok () ->

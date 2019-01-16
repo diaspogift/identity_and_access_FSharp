@@ -42,16 +42,16 @@ module DbHelpers =
 
 
 
-    let fromOneRegInvListToOneRegInvDtoList 
+    let fromOneRegInvListToOneRegInvDtoTempList 
         (aRegistrationInvitation : RegistrationInvitation) 
-        : RegistrationInvitationDto =
+        : RegistrationInvitationDtoTemp =
 
         let srtRegInvId = aRegistrationInvitation.RegistrationInvitationId 
                           |>RegistrationInvitationId.value
 
         let id = new BsonObjectId(new ObjectId(srtRegInvId))
         {
-            RegistrationInvitationId = id
+            RegistrationInvitationId = id.ToString()
             Description = RegistrationInvitationDescription.value aRegistrationInvitation.Description
             TenantId = TenantId.value aRegistrationInvitation.TenantId
             StartingOn = aRegistrationInvitation.StartingOn
@@ -62,9 +62,9 @@ module DbHelpers =
 
 
 
-    let fromRegInvListToRegInvDtoArray (aRegistrationInvitationList : RegistrationInvitation list) : RegistrationInvitationDto array =
+    let fromRegInvListToRegInvDtoTempArray (aRegistrationInvitationList : RegistrationInvitation list) : RegistrationInvitationDtoTemp array =
         aRegistrationInvitationList 
-        |> List.map fromOneRegInvListToOneRegInvDtoList
+        |> List.map fromOneRegInvListToOneRegInvDtoTempList
         |> List.toArray 
 
 
@@ -72,6 +72,11 @@ module DbHelpers =
 
 
     let fromDbDtoToTenant (aDtoTenant : TenantDto) = 
+
+        printfn "IN fromDbDtoToTenant"
+        printfn "IN fromDbDtoToTenant"
+        printfn "IN fromDbDtoToTenant"
+        printfn "IN fromDbDtoToTenant"
 
         let id = aDtoTenant.TenantId.ToString()
         let fromAcitvationStatusDtoToAcitvationStatus (anAcitvationStatusDto : ActivationStatusDto)= 
@@ -82,7 +87,7 @@ module DbHelpers =
          
         result {
             let! activationStatus = aDtoTenant.ActivationStatus |> fromAcitvationStatusDtoToAcitvationStatus
-            let! tenant = Tenant.fullCreate id aDtoTenant.Name aDtoTenant.Description activationStatus 
+            let! tenant = Tenant.fullCreate id aDtoTenant.Name aDtoTenant.Description activationStatus aDtoTenant.RegistrationInvitations
             return tenant
         }
 
@@ -98,7 +103,7 @@ module DbHelpers =
                                 | Disactivated -> ActivationStatusDto.Disactivated
         let invitations = aTenant.RegistrationInvitations
         let invitationsDtos = invitations 
-                              |> fromRegInvListToRegInvDtoArray 
+                              |> fromRegInvListToRegInvDtoTempArray 
 
         let rsTenantDto : TenantDto = {
             _id = id
@@ -677,13 +682,35 @@ module TenantDb =
 
     let private loadTenantByIdAdapted (aUserCollection : IMongoCollection<TenantDto>)  ( aTenantId : TenantId ) = 
 
+
+        printfn " loadTenantByIdAdapted CALLED WITH TENANTID = %A " aTenantId
+
         let srtTenantId = TenantId.value aTenantId
+
+        printfn " srtTenantId =  %A " srtTenantId
+        printfn " srtTenantId =  %A " srtTenantId
+        printfn " srtTenantId =  %A " srtTenantId
+        printfn " srtTenantId =  %A " srtTenantId
+
+
         let bsonId = new BsonObjectId (new ObjectId(srtTenantId))
+
+        printfn " bsonId =  %A " bsonId
+        printfn " bsonId =  %A " bsonId
+        printfn " bsonId =  %A " bsonId
+        printfn " bsonId =  %A " bsonId
+
 
 
         try
 
             let tenant = aUserCollection.Find(fun x -> x._id = bsonId).Single() 
+
+
+            printfn " tenant =  %A " tenant
+            printfn " tenant =  %A " tenant
+            printfn " tenant =  %A " tenant
+
             
             tenant
             |> DbHelpers.fromDbDtoToTenant

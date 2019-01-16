@@ -613,7 +613,8 @@ match resultTenantProvisioning with
 
 
 
-(*let unvalidatedTenant : UnvalidatedTenant = {Name = "Le Quattro"; Description = "Restauration - Mets locaux et traditionnels"}
+(*
+let unvalidatedTenant : UnvalidatedTenant = {Name = "Le Quattro"; Description = "Restauration - Mets locaux et traditionnels"}
 
 let tenantAdministrator : TenantAdministrator = {
     FirstName = "Megan"
@@ -657,14 +658,13 @@ match  rsProvisionTenantCommand with
 
 | Error error ->
         printfn " %A" error
-
 *)
 
 
 
 let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
-        TenantId = "6e63646526d84149868a92e3"; 
-        Description = "Invitation for Mobile Biller Tenancy"
+        TenantId = "bcbd4857c742446fafacd54d"; 
+        Description = "Invitation for Mobile Car Mecanic"
         }
 
 type Command<'data> = {

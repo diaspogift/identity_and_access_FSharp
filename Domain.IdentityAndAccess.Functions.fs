@@ -10,6 +10,9 @@ open IdentityAndAcccess.DomainTypes.Role
 open FSharp.Data.Sql
 open IdentityAndAcccess.DomainTypes
 open MongoDB.Bson
+open System.Collections.Generic
+open YoLo
+open YoLo
 
 
 
@@ -452,7 +455,30 @@ module Tenant =
 
 
 
+
+
+
+    ///Helper functions
+    /// 
+    /// 
+    let preppend  firstR restR = 
+        match firstR, restR with
+        | Ok first, Ok rest -> Ok (first::rest)  
+        | Error error1, Ok _ -> Error error1
+        | Ok _, Error error2 -> Error error2  
+        | Error error1, Error _ -> Error error1
+
+
+
+
+    let ResultOfSequenceTemp aListOfResults =
+        let initialValue = Ok List.empty
+        List.foldBack preppend aListOfResults initialValue
+
+
     open ContactInformation
+
+
 
 
 
@@ -479,19 +505,69 @@ module Tenant =
 
 
 
-    let fullCreate id name description activationStatus = 
+    let fullCreate id name description activationStatus (regInvDtoList:RegistrationInvitationDtoTemp array) = 
+
+
+        printfn "---------------------------------------------------------------"
+        printfn "---------------------------------------------------------------"
+        
+        printfn " I RECEIVED THIS : %A---------------------------------------------------------------" regInvDtoList
+
+
+        printfn "---------------------------------------------------------------"
+        printfn "---------------------------------------------------------------"
+
+
+        let fromRegIncDtoTempToRegInv (aRegIncDtoTemp : RegistrationInvitationDtoTemp) = 
+
+            let rsRegistrationInvitation = result {
+
+                let! invId = aRegIncDtoTemp.RegistrationInvitationId |> RegistrationInvitationId.create'
+                let! desc = aRegIncDtoTemp.Description |> RegistrationInvitationDescription.create'
+                let! tenantId = aRegIncDtoTemp.TenantId |> TenantId.create'
+                let startingOn = aRegIncDtoTemp.StartingOn 
+                let until = aRegIncDtoTemp.Until
+
+                let invitation : RegistrationInvitation = {
+
+                    RegistrationInvitationId = invId
+                    Description = desc
+                    TenantId = tenantId
+                    StartingOn = startingOn
+                    Until = until
+                }
+
+                return invitation
+            }
+
+            rsRegistrationInvitation
+
+            
+
+            
+
+
+
         
         result {
 
             let! ids = TenantId.create "tenant id: " id
             let! names = TenantName.create "tenant name: " name
             let! descriptions = TenantDescription.create "tenant description: " description
+
+            
+            let! registrationInvitations = 
+                regInvDtoList
+                |> Array.map fromRegIncDtoTempToRegInv
+                |> Array.toList
+                |> ResultOfSequenceTemp
+
             
             return {
                     TenantId = ids
                     Name = names
                     Description = descriptions
-                    RegistrationInvitations = []
+                    RegistrationInvitations = registrationInvitations
                     ActivationStatus = activationStatus
             }
         }

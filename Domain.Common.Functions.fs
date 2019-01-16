@@ -573,6 +573,23 @@ module ResultComputationExpression =
         member this.Combine (a,b) = 
             this.Bind(a, fun () -> b())
 
+
+        member  __.Preppend  firstR restR = 
+            match firstR, restR with
+            | Ok first, Ok rest -> Ok (first::rest)  
+            | Error error1, Ok _ -> Error error1
+            | Ok _, Error error2 -> Error error2  
+            | Error error1, Error _ -> Error error1
+
+
+
+
+
+        member  __.Sequence aListOfResults =
+            let initialValue = Ok List.empty
+            List.foldBack  __.Preppend  aListOfResults initialValue
+
+
     let result = new ResultBuilder()
 
  

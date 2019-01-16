@@ -2,6 +2,7 @@ namespace IdentityAndAccess.DatabaseTypes
 
 open System
 open MongoDB.Bson
+open IdentityAndAcccess.DomainTypes.Tenant
 
 
 
@@ -11,7 +12,7 @@ open MongoDB.Bson
 /// 
 /// 
 type RegistrationInvitationDto = {
-    RegistrationInvitationId: BsonObjectId
+    RegistrationInvitationId: string
     Description: string
     TenantId: string
     StartingOn: DateTime
@@ -29,7 +30,7 @@ type TenantDto = {
     TenantId : string
     Name : string
     Description : string
-    RegistrationInvitations : RegistrationInvitationDto array
+    RegistrationInvitations : RegistrationInvitationDtoTemp array
     ActivationStatus : ActivationStatusDto
 }
 
