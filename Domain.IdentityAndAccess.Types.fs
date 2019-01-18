@@ -4,8 +4,16 @@ namespace IdentityAndAcccess.DomainTypes
 ///Imported local libs
 open IdentityAndAcccess.CommonDomainTypes
 open System
-open IdentityAndAcccess.CommonDomainTypes.Functions
 
+
+
+
+
+
+type Reason = {
+
+    Description : string
+}
 
 
 

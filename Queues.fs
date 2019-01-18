@@ -15,12 +15,14 @@ module Queue =
 
     // Named queues
     type Queue =
+    | UserCreated
     | OrderReceived
     | OrderPaid
     | OrderFulfilled
 
     let private resolve queue =
         match queue with
+        | UserCreated -> "users"
         | OrderReceived -> "orders"
         | OrderPaid -> "payments"
         | OrderFulfilled -> "fulfillments"

@@ -3,7 +3,10 @@
 
 
 
+open IdentityAndAcccess.EventStore.Implementation
+open IdentityAndAcccess.EventStorePlayGround.Implementation
 
+open IdentityAndAcccess.Serialization
 
 open Suave.Web
 open Suave.Successful
@@ -31,6 +34,8 @@ open System
 
 
 open IdentityAndAcces.Infrstructure.Queue.Impl
+
+open IdentityAndAccess.RabbitMQ.FSharp.Client
 
 
 
@@ -75,7 +80,7 @@ let printSeparatorLine(count) =
 
 let printEmptySeparatorLine(count) = 
         
-        let countArray = List.init count (fun x -> x )
+        let countArray = List.init count (fun x -> x)
         countArray
         |> List.iter (fun x -> 
         
@@ -717,31 +722,136 @@ let main argv =
 
 
 open System
-
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAccess.DatabaseTypes
+open System
+open System
+open System
+open FSharp.Data.Sql
+open System.Text.RegularExpressions
 // Object used as queue message
-type Order = { OrderId : int }
 
 [<EntryPoint>]
 let main argv = 
 
+
+(* 
+    let readFun () = "str"
+    let publishFun (aString:string) = ()
+
+        
+    let userCreatedQueue =  { Name = "UserCreatedQueue"; Read = readFun; Publish = publishFun }
+
+    let rabbitConn = openConnection "localhost"
+
+
+    let channel = openChannel rabbitConn
+
+    let rs = declareQueue channel userCreatedQueue.Name
+
+    publishToQueue channel  userCreatedQueue.Name "Test Json New"
+
+ *)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //let dbConnectionString = "tcp://admin:changeimt@localhost:1113"
+
+
+
+  
+    let asss = async {
+
+
+        let! store = EventStorePlayGround.create()
+
+        let events = Seq.init 5 (fun x ->  if x%2 = 0 then RedNew x else BlueNew x)
+
+        let! rsAppend = EventStorePlayGround.appendToStream store "test_stream" -1L events
+
+        return rsAppend
+
+    }
+
+
+    let r = asss |>  Async.RunSynchronously
+
+
+    
+
+    (* let eventStoreConn = EventStore.conn dbConnectionString
+
+
+    let userRepo = EventStore.makeRepository eventStoreConn "Users"
+
+    printfn "HERE MY CONNECTION SETTINGS %A" eventStoreConn.Settings.VerboseLogging 
+
+
     // Set up subscription
-    let cancelOrderReceivedQueue = subscribe<Order> OrderReceived (fun message -> 
-        printfn "Order received! Id #%d" message.OrderId // Message is strongly typed
+    
+    let userCreatedQueueListener = subscribe<User> UserCreated (fun message -> 
+        printfn "User created! userId #%A" message.UserId // Message is strongly typed
     )
 
     // Create function for adding message to specific queue using partial application
-    let enqueueOrder = (enqueue OrderReceived)
+    let enqueueUser = (enqueue UserCreated)
+
+
+    let loadUser, saveUser = EventStore.makeRepository  eventStoreConn "UserRepository" serializer
+
+    
 
     // Keep looping until user quits
     let rec loop id =
         let char = Console.ReadKey()
         match char.Key with
-        | ConsoleKey.Escape -> cancelOrderReceivedQueue()
+        | ConsoleKey.Escape -> userCreatedQueueListener()
         | _ ->
-            enqueueOrder { OrderId = id }
+
+            let userId =  Guid.NewGuid()
+            let tenantId =  Guid.NewGuid()
+
+            let strUserId =  userId.ToString()
+            let strTenantId =  tenantId.ToString()
+
+            let aFixUser = User.create strUserId strTenantId "f" "m" "l" "e@gmail.com" "add" "669262660" "669262680" "felicien" "secret"
+            
+
+            saveUser (userId , 0L) aFixUser  |> Async.RunSynchronously
+        
+
+            //loadUser (typeof<User> , userId)  |> Async.AwaitTask 
+
+        
+            printfn "-----------------------------------------------------------------------"
+            //printfn "SAVE RESULT IS u = %A" u
+            printfn "-----------------------------------------------------------------------"
+
+            enqueueUser aFixUser
+
+
             loop (id + 1)
     
-    printfn "Press a key to order, [ESC] to exit"
-    loop 0
+    printfn "Press a key to create a user, [ESC] to exit"
+    loop 0 *)
+
+
+
+    
 
     0

@@ -21,11 +21,20 @@
     <Compile Include="OffertRegistrationInvitation.PublicTypes.fs" />
     <Compile Include="OffertRegistrationInvitationWorflow.Implementation.fs" />
     <Compile Include="Command.Handlers.fs" />
-     <Compile Include="Queues.fs" />
+    <Compile Include="Queues.fs" />
+    <Compile Include="Aggregates.fs" />
+    <Compile Include="Serialization.fs" />
+    <Compile Include="EventStore.Implementation.fs" />
+    <Compile Include="SerializationPlayGround.fs" />
+    <Compile Include="EventStorePlayGround.Implementation.fs" />
+    <Compile Include="Queue.RabbitMq.Implementation.fs" />
     <Compile Include="App.fs" />
-   
+    
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="EventStore.Client" Version="4.1.0" />
+    <PackageReference Include="EventStore.Client.FSharp" Version="4.2.0" />
+    <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
