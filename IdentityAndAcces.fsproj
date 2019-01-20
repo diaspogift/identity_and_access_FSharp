@@ -22,6 +22,8 @@
     <Compile Include="OffertRegistrationInvitationWorflow.Implementation.fs" />
     <Compile Include="DeactivateTenantActivationStatusWorflow.PublicTypes.fs" />
     <Compile Include="DeactivateTenantActivationStatusWorflow.Implementation.fs" />
+    <Compile Include="ReactivateTenantActivationStatusWorflow.PublicTypes.fs" />
+    <Compile Include="ReactivateTenantActivationStatusWorflow.Implementation.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="EventStore.Implementation.fs" />
     <Compile Include="SerializationPlayGround.fs" />

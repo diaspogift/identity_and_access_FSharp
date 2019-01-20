@@ -43,7 +43,8 @@ open EventStore.ClientAPI
 
 open IdentityAndAcccess.DeactivateTenantActivationStatusApiTypes.DeactivateTenantActivationStatusWorflowImplementation
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
-
+open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
+open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 
 let tt = ObjectId.GenerateNewId()
 let aa = ObjectId.GenerateNewId()
@@ -194,14 +195,14 @@ match  rsOfferRegistrationInvitationCommand with
 
 
 
-let unvalidatedDeactivateTenant : UnvalidatedTenantActivationStatus = {
+let unvalidatedDeactivateTenant : UnvalidatedTenantActivationStatusData = {
         TenantId = "5c4353b53766624bce89cf91"; 
-        ActivationStatus = true
+        ActivationStatus = false
         Reason = "Fuck that userrrr ..."
         }
 
 
-let deactivateTenantActivationStatusCommand : DeactivateTenantActivationStatusCommand = {
+let reactivateTenantActivationStatusCommand : ReactivateTenantActivationStatusCommand = {
         
         Data = unvalidatedDeactivateTenant
         TimeStamp = DateTime.Now
@@ -212,7 +213,7 @@ let deactivateTenantActivationStatusCommand : DeactivateTenantActivationStatusCo
 
 
 
-let rsDeactivateTenantActivationStatusCommand = DeactivateTenantActivationStatus.handleDeactivateTenantActivationStatus deactivateTenantActivationStatusCommand
+let rsDeactivateTenantActivationStatusCommand = ReactivateTenantActivationStatus.handleReactivateTenantActivationStatus reactivateTenantActivationStatusCommand
 
 
 match  rsDeactivateTenantActivationStatusCommand with  

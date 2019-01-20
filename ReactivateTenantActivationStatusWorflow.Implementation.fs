@@ -1,19 +1,15 @@
-module IdentityAndAcccess.DeactivateTenantActivationStatusApiTypes.DeactivateTenantActivationStatusWorflowImplementation
+module IdentityAndAcccess.ReactivateTenantActivationStatusApiTypes.ReactivateTenantActivationStatusWorflowImplementation
 
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
-open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
+open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainServices
 
 
-open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseTypes
 
 
@@ -24,8 +20,8 @@ open IdentityAndAccess.DatabaseTypes
 /// 
 /// 
 
-let loadOneTenantById : LoadTenantById = TenantDb.loadOneTenantById
-let updateTenant : UpdateOneTenant = TenantDb.updateOneTenant
+//let loadOneTenantById : LoadTenantById = TenantDb.loadOneTenantById
+//let updateTenant : UpdateOneTenant = TenantDb.updateOneTenant
 
 
 
@@ -52,7 +48,7 @@ type ValidatedTenantActivationStatus = {
 
 type ValidateTenantActivationStatus =
 
-    UnvalidatedTenantActivationStatus -> Result<ValidatedTenantActivationStatus, DeactivateTenantActivationStatusError>
+    UnvalidatedTenantActivationStatusData -> Result<ValidatedTenantActivationStatus, ReactivateTenantActivationStatusError>
 
 
 
@@ -60,11 +56,11 @@ type ValidateTenantActivationStatus =
 
 
 
-//Step 2 Deactivate tenant activation status
+//Step 2 Reactivate tenant activation status
 
-type DeactivateTenantActivationStatus = 
+type ReactivateTenantActivationStatus = 
 
-    Tenant -> ValidatedTenantActivationStatus -> Result<Tenant, DeactivateTenantActivationStatusError>
+    Tenant -> ValidatedTenantActivationStatus -> Result<Tenant, ReactivateTenantActivationStatusError>
 
 
 
@@ -81,7 +77,7 @@ let validateTenantActivationStatus : ValidateTenantActivationStatus =
 
             let! tenantId = aUnvalidatedTenantActivationStatus.TenantId 
                             |> TenantId.create'
-                            |> Result.mapError DeactivateTenantActivationStatusError.ValidationError
+                            |> Result.mapError ReactivateTenantActivationStatusError.ValidationError
 
             let validatedTenantActivationStatus:ValidatedTenantActivationStatus = {
 
@@ -100,20 +96,20 @@ let validateTenantActivationStatus : ValidateTenantActivationStatus =
 
 
 ///Step2 deactivate tenant activation status impl
-let deactivateTenantActivationStatus : DeactivateTenantActivationStatus = 
+let reactivateTenantActivationStatus : ReactivateTenantActivationStatus = 
 
     fun  aTenant validatedTenantStatus ->
         
         aTenant
-        |> Tenant.deactivateTenant 
-        |> Result.mapError DeactivateTenantActivationStatusError.DeactivationError 
+        |> Tenant.activateTenant 
+        |> Result.mapError ReactivateTenantActivationStatusError.ReactivationError 
      
 
 
 
 
 
-type CreateEvents = Tenant -> TenantActivationStatusDeactivatedEvent 
+type CreateEvents = Tenant -> TenantActivationStatusReactivatedEvent 
 
         
 
@@ -125,14 +121,14 @@ let createEvents : CreateEvents =
 
         
 
-        let tenantActivationStatusDeactivatedEvent : TenantActivationStatusDeactivatedEvent = {
+        let tenantActivationStatusReactivatedEvent : TenantActivationStatusReactivatedEvent = {
             Tenant =  tenant |> DbHelpers.fromTenantDomainToDto
             ActivationStatus = ActivationStatusDto.Disactivated
             Reason = "FIXTURE FOR NOW"
         }
 
 
-        tenantActivationStatusDeactivatedEvent
+        tenantActivationStatusReactivatedEvent
 
 
 
@@ -140,20 +136,20 @@ let createEvents : CreateEvents =
 
 
 
-///Offer registration invitation workflow implementation
+///Reactivate tenant activation status workflow implementation
 /// 
 /// 
-let deactivateTenantActivationStatusWorkflow: DeactivateTenantActivationStatusWorkflow = 
+let reactivateTenantActivationStatusWorkflow: ReactivateTenantActivationStatusWorkflow = 
 
     fun aTenant anUnvalidatedTenantActivationStatus ->
 
-        let  deactivateTenantActivationStatus =  deactivateTenantActivationStatus aTenant
-        let  deactivateTenantActivationStatus =  Result.bind deactivateTenantActivationStatus
+        let  reactivateTenantActivationStatus =  reactivateTenantActivationStatus aTenant
+        let  reactivateTenantActivationStatus =  Result.bind reactivateTenantActivationStatus
         let createEvents =   Result.map createEvents
 
         anUnvalidatedTenantActivationStatus
         |> validateTenantActivationStatus
-        |> deactivateTenantActivationStatus
+        |> reactivateTenantActivationStatus 
         |> createEvents
 
         

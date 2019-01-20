@@ -18,9 +18,9 @@ open IdentityAndAcccess.EventStorePlayGround.Implementation
 open IdentityAndAccess.DatabaseTypes
 
 open IdentityAndAcccess.DeactivateTenantActivationStatusApiTypes.DeactivateTenantActivationStatusWorflowImplementation
-open IdentityAndAcccess.DomainTypes
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
+open IdentityAndAcccess.ReactivateTenantActivationStatusApiTypes.ReactivateTenantActivationStatusWorflowImplementation
 
+open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 
 
 
@@ -814,3 +814,252 @@ module DeactivateTenantActivationStatus =
 
 
 
+
+module ReactivateTenantActivationStatus = 
+
+    let handleReactivateTenantActivationStatus 
+                            (aReactivateTenantActivationStatusCommand:ReactivateTenantActivationStatusCommand)
+                            :Result<TenantActivationStatusReactivatedEvent, ReactivateTenantActivationStatusError> = 
+
+
+
+
+
+
+         //Helpers
+        let fromRegInvToDto (aRegInv:RegistrationInvitation) =
+            let rs : RegistrationInvitationDtoTemp = {
+                RegistrationInvitationId = aRegInv.RegistrationInvitationId |> RegistrationInvitationId.value
+                Description = aRegInv.Description |> RegistrationInvitationDescription.value
+                TenantId = aRegInv.TenantId |> TenantId.value
+                StartingOn = aRegInv.StartingOn
+                Until = aRegInv.Until
+            } 
+            rs
+
+
+        let fromDtoToDtoTemp (aRegInvDto:RegistrationInvitationDto):RegistrationInvitationDtoTemp = 
+            let t : RegistrationInvitationDtoTemp = {
+                RegistrationInvitationId = aRegInvDto.RegistrationInvitationId
+                TenantId = aRegInvDto.TenantId
+                Description = aRegInvDto.Description
+                StartingOn = aRegInvDto.StartingOn
+                Until = aRegInvDto.Until
+
+            }
+            t
+
+
+
+
+        //Input
+
+        let aReactivateTenantActivationStatusCommand = aReactivateTenantActivationStatusCommand.Data
+
+ 
+
+        //IO at the edges
+
+
+
+        let unvalidatedTenantActivationStatus:UnvalidatedTenantActivationStatusData = {
+            TenantId = aReactivateTenantActivationStatusCommand.TenantId
+            ActivationStatus =  aReactivateTenantActivationStatusCommand.ActivationStatus 
+            Reason = aReactivateTenantActivationStatusCommand.Reason
+            }
+
+        
+
+        let strTenantId = unvalidatedTenantActivationStatus.TenantId 
+        let prefix = "TENANT_With_ID_=_"
+        let connName = prefix + strTenantId 
+        let store = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
+
+        printfn "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+        printfn "STREAM ID FOR TENANT TO REPLAY = %A" connName
+        printfn "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+
+
+
+        let foundTenantEventStreamList,lastEventNumber,nextEventNumber = EventStorePlayGround.readStream<TenantStreamEvent> store connName 0L 4095  |> Async.RunSynchronously
+
+
+
+        printfn ""
+        printfn ""
+        printfn ""
+        printfn "FoundTenantEventStreamList is foundTenantEventStreamList Satrt "
+        printfn  "HERE THE ACTUAL foundTenantEventStreamList,_,_  = %A" foundTenantEventStreamList
+        printfn "FoundTenantEventStreamList is foundTenantEventStreamList End "
+        printfn ""
+        printfn ""
+        printfn ""
+
+
+
+
+        let apply aTenant anEvent = 
+
+
+
+            match anEvent with 
+            | TenantStreamEvent.TenantCreated t ->
+              t
+            | TenantStreamEvent.ActivationStatusDeActivated t ->
+                {aTenant with ActivationStatus = ActivationStatusDto.Disactivated}
+            | TenantStreamEvent.ActivationStatusReActivated t ->
+                {aTenant with ActivationStatus = ActivationStatusDto.Activated}
+
+            | TenantStreamEvent.RegistrationInvitationOfferred  t ->  
+                let regInDto = t.Invitation
+                {aTenant with RegistrationInvitations = Array.append ([regInDto |> fromDtoToDtoTemp] |> List.toArray)   aTenant.RegistrationInvitations}
+                
+
+
+                
+
+
+        let stateZero : TenantCreatedDto = {
+            _id = "5c4353b53766624bce89cf91"
+            TenantId = "5c4353b53766624bce89cf91"
+            Name = "Le Quattro"
+            Description =  "Restauration - Mets locaux et traditionnels"
+            RegistrationInvitations = [] |> List.toArray
+            ActivationStatus = ActivationStatusDto.Activated
+        }
+
+
+
+
+
+
+        let state = foundTenantEventStreamList 
+                    |> Seq.fold apply stateZero
+
+        let tenantDto:TenantDto = {
+            _id = state._id
+            TenantId = state.TenantId
+            Name = state.Name
+            Description  = state.Description
+            RegistrationInvitations = state.RegistrationInvitations
+            ActivationStatus = state.ActivationStatus
+            
+        }
+                       
+        
+
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+        printf ""
+        printf ""
+        printf ""
+        printf ""
+        printf "STATEEEEEE ================== %A" state
+        printf ""
+        printf ""
+        printf ""
+        printf ""
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+
+
+
+
+        let rsDeactivateTenantWorkflow = result {
+            
+            let! rsTenant = result {
+                
+                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
+
+
+                let rs = reactivateTenantActivationStatusWorkflow tenantFound unvalidatedTenantActivationStatus
+
+                printfn "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+                printfn "HERE THE ACTUAL %A" rs
+                printfn "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+                          
+
+                return rs 
+            }
+
+          
+            return rsTenant
+        }
+
+
+
+        match rsDeactivateTenantWorkflow with  
+        | Ok en ->
+            match en with  
+            | Ok ev ->
+                let saveTenantActivationStatusReactevatedEvent = async {
+
+                        let strTenantId = ev.Tenant.TenantId 
+                        let prefix = "TENANT_With_ID_"
+                        let connName = prefix + strTenantId 
+                        let! store = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113"
+
+
+                        let fromRegInvToDto (aRegInv:RegistrationInvitation) =
+                            let rs : RegistrationInvitationDtoTemp = {
+                                RegistrationInvitationId = aRegInv.RegistrationInvitationId |> RegistrationInvitationId.value
+                                Description = aRegInv.Description |> RegistrationInvitationDescription.value
+                                TenantId = aRegInv.TenantId |> TenantId.value
+                                StartingOn = aRegInv.StartingOn
+                                Until = aRegInv.Until
+                            } 
+                            rs
+
+
+
+
+
+
+                        let tenantDto : TenantDto = {
+                            _id = strTenantId 
+                            TenantId =  strTenantId
+                            Name =  ev.Tenant.Name 
+                            Description =  ev.Tenant.Description 
+                            RegistrationInvitations =  ev.Tenant.RegistrationInvitations 
+                            ActivationStatus =  ev.Tenant.ActivationStatus
+                        }
+
+                  
+
+                        let tenantActivationStatusDeactivatedDto : TenantActivationStatusDeactivatedDto   = {   
+                            Tenant = tenantDto 
+                            ActivationStatus = ev.Tenant.ActivationStatus
+                            Reason = "FIXTURE FOR NW"
+                        }
+
+                        let tenantActivationStatusDeactivatedEvent = ActivationStatusDeActivated tenantActivationStatusDeactivatedDto
+
+                        let events = Seq.init 1 (fun _ ->  tenantActivationStatusDeactivatedEvent)
+                        let tenantStreamIdPart1 = "TENANT_With_ID_=_"
+                        let tenantStreamIdPart2 = tenantDto.TenantId
+                        let tenatstreamId = tenantStreamIdPart1 + tenantStreamIdPart2
+                        let! rsAppendToTenantStream = EventStorePlayGround.appendToStream store tenatstreamId  lastEventNumber events
+
+                        
+                        return rsAppendToTenantStream
+
+                    }
+
+                saveTenantActivationStatusReactevatedEvent
+                |> Async.RunSynchronously
+
+                Ok ev
+
+            | Error error ->
+                Error  error
+
+
+        | Error error ->
+            let er = ReactivateTenantActivationStatusError.ReactivationError error
+            Error er
