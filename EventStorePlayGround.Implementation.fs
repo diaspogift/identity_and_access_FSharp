@@ -18,8 +18,8 @@ open IdentityAndAccess.DatabaseTypes
 
 
 type TenantStreamEvent =
-    | TenantCreated of TenantProvisionedEventDto
-    | RegistrationInvitationOfferred of RegistrationInvitationOfferredEventDto
+    | TenantCreated of TenantCreatedDto
+    | RegistrationInvitationOfferred of RegistrationInvitationOfferredDto
     | ActivationStatusReActivated of Reason
     | ActivationStatusDeActivated of Reason 
 
@@ -104,9 +104,9 @@ module EventStorePlayGround =
             let! slice = store.AsyncReadStreamEventsForward streamId version count true
 
 
-            printfn "----------------------" 
-            printfn "READ SLICE %A" slice
-            printfn "----------------------" 
+            printfn "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr" 
+            printfn "READ slice newwwwwwwwwwwwwwwwwwwwwwwwwwww %A" slice.Events
+            printfn "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr" 
 
             let events = 
                 slice.Events 
@@ -114,7 +114,7 @@ module EventStorePlayGround =
                 |> Seq.toList
 
             printfn "----------------------" 
-            printfn "READ EVENTS %A" events
+            printfn "READ EVENTS 11111 %A" events
             printfn "----------------------" 
 
             
@@ -122,6 +122,12 @@ module EventStorePlayGround =
                 if slice.IsEndOfStream 
                 then None 
                 else Some slice.NextEventNumber
+
+
+            
+            printfn "----------------------" 
+            printfn "READ EVENTS 22222 %A"  events  
+            printfn "----------------------" 
 
             return events, slice.LastEventNumber, nextEventNumber 
         }

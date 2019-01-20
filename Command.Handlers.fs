@@ -15,6 +15,12 @@ open IdentityAndAcccess.EventStorePlayGround.Implementation
 
 open IdentityAndAccess.DatabaseTypes
 open MongoDB.Bson
+open IdentityAndAcccess.DomainTypes.Functions
+open System
+open System.Collections.Generic
+open FSharp.Data.Sql
+open IdentityAndAcccess.CommonDomainTypes
+open IdentityAndAcccess.DomainServices
 
 
 
@@ -91,7 +97,7 @@ module ProvisionTenant =
 
               
 
-                    let tenantProvisionedEventDto : TenantProvisionedEventDto   = {   
+                    let tenantProvisionedEventDto : TenantCreatedDto   = {   
                         _id = tenantProvisioned.TenantId
                         TenantId =  tenantProvisioned.TenantId 
                         Name = tenantProvisioned.Name 
@@ -245,6 +251,17 @@ module OffertRegistrationInvitationCommand =
 
         let aOfferRegistrationInvitationCommandData = aOfferRegistrationInvitationCommand.Data
 
+        let fromDtoToDtoTemp (aRegInvDto:RegistrationInvitationDto):RegistrationInvitationDtoTemp = 
+            let t : RegistrationInvitationDtoTemp = {
+                RegistrationInvitationId = aRegInvDto.RegistrationInvitationId
+                TenantId = aRegInvDto.TenantId
+                Description = aRegInvDto.Description
+                StartingOn = aRegInvDto.StartingOn
+                Until = aRegInvDto.Until
+
+            }
+            t
+
         //IO at the edges
 
 
@@ -257,30 +274,49 @@ module OffertRegistrationInvitationCommand =
         
 
         let strTenantId = unvalidatedRegistrationInvitationDescription.TenantId 
-        let prefix = "TENANT_With_ID_"
+        let prefix = "TENANT_With_ID_=_"
         let connName = prefix + strTenantId 
         let store = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
 
+        printfn "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+        printfn "STREAM ID FOR TENANT TO REPLAY = %A" connName
+        printfn "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
 
 
-        let foundTenantEventStreamList,_,_ = EventStorePlayGround.readStream<TenantStreamEvent> store connName 0L 10  |> Async.RunSynchronously
 
+        let foundTenantEventStreamList,lastEventNumber,nextEventNumber = EventStorePlayGround.readStream<TenantStreamEvent> store connName 0L 4095  |> Async.RunSynchronously
+
+
+        printfn "?????????????????? "
+        printfn "?????????????????? "
+        printfn  "HER THE ACTUAL foundTenantEventStreamList,_,_  = %A" foundTenantEventStreamList
+        printfn "?????????????????? "
+        printfn "?????????????????? "
 
 
         let apply aTenant anEvent = 
             match anEvent with 
-            | TenantCreated t ->
+            | TenantStreamEvent.TenantCreated t ->
               t
-            | ActivationStatusDeActivated t ->
-                aTenant
-            | ActivationStatusReActivated t ->
-                aTenant
+            | TenantStreamEvent.ActivationStatusDeActivated t ->
+                {aTenant with ActivationStatus = ActivationStatusDto.Disactivated}
+            | TenantStreamEvent.ActivationStatusReActivated t ->
+                {aTenant with ActivationStatus = ActivationStatusDto.Activated}
 
-            | RegistrationInvitationOfferred  t -> 
-                aTenant
+            | TenantStreamEvent.RegistrationInvitationOfferred  t ->  
+                let regInDto = t.Invitation
+                let tt = {aTenant with RegistrationInvitations = Array.append ([regInDto |> fromDtoToDtoTemp] |> List.toArray)   aTenant.RegistrationInvitations}
+                printfn "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
+                printfn "RETURNED TENANT %A" tt
+                printfn "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
+                tt
+                
 
 
-        let stateZero : TenantProvisionedEventDto = {
+                
+
+
+        let stateZero : TenantCreatedDto = {
             _id = "5c4353b53766624bce89cf91"
             TenantId = "5c4353b53766624bce89cf91"
             Name = "Le Quattro"
@@ -291,11 +327,14 @@ module OffertRegistrationInvitationCommand =
 
 
 
+
+
+
         let state = foundTenantEventStreamList 
                     |> Seq.fold apply stateZero
 
         let tenantDto:TenantDto = {
-            _id = new BsonObjectId(new ObjectId(state._id)) 
+            _id = state._id
             TenantId = state.TenantId
             Name = state.Name
             Description  = state.Description
@@ -305,6 +344,12 @@ module OffertRegistrationInvitationCommand =
         }
                        
         
+
+        printf "-------------------------------------"
+        printf "-------------------------------------"
+        printf "STATEEEEEE ================== %A" state
+        printf "-------------------------------------"
+        printf "-------------------------------------"
 
 
 
@@ -317,6 +362,10 @@ module OffertRegistrationInvitationCommand =
 
 
                 let rs = offerRegistrationInvitationWorkflow tenantFound unvalidatedRegistrationInvitationDescription
+
+                printfn "ppppppppppppppppppppppppppppppppppppppp"
+                printfn "HERE THE ACTUAL %A" rs
+                printfn "ppppppppppppppppppppppppppppppppppppppp"
                           
 
                 return rs 
@@ -360,7 +409,7 @@ module OffertRegistrationInvitationCommand =
 
 
                         let tenantDto : TenantDto = {
-                            _id = new BsonObjectId(new ObjectId(strTenantId)) 
+                            _id = strTenantId 
                             TenantId =  strTenantId
                             Name =  ev.Tenant.Name |> TenantName.value
                             Description =  ev.Tenant.Description |> TenantDescription.value
@@ -378,7 +427,7 @@ module OffertRegistrationInvitationCommand =
                         }
                   
 
-                        let registrationInvitationOfferredEventDto : RegistrationInvitationOfferredEventDto   = {   
+                        let registrationInvitationOfferredEventDto : RegistrationInvitationOfferredDto   = {   
                             Tenant = tenantDto
                             Invitation = registrationInvitationDto
                         }
@@ -389,7 +438,7 @@ module OffertRegistrationInvitationCommand =
                         let tenantStreamIdPart1 = "TENANT_With_ID_=_"
                         let tenantStreamIdPart2 = tenantDto.TenantId
                         let tenatstreamId = tenantStreamIdPart1 + tenantStreamIdPart2
-                        let! rsAppendToTenantStream = EventStorePlayGround.appendToStream store tenatstreamId  0L events
+                        let! rsAppendToTenantStream = EventStorePlayGround.appendToStream store tenatstreamId  5L events
 
                         
                         return rsAppendToTenantStream

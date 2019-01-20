@@ -102,7 +102,7 @@ module DbHelpers =
                               |> fromRegInvListToRegInvDtoTempArray 
 
         let rsTenantDto : TenantDto = {
-            _id = id
+            _id = id.ToString()
             TenantId = id.ToString()
             Name = TenantName.value aTenant.Name
             Description = TenantDescription.value aTenant.Description
@@ -662,7 +662,7 @@ module TenantDb =
 
         try
 
-            let tenant = aUserCollection.Find(fun x -> x._id = id).Single() 
+            let tenant = aUserCollection.Find(fun x -> x._id = id.ToString()).Single() 
             
             tenant
             |> DbHelpers.fromDbDtoToTenant
@@ -702,7 +702,7 @@ module TenantDb =
 
         try
 
-            let tenant = aUserCollection.Find(fun x -> x._id = bsonId).Single() 
+            let tenant = aUserCollection.Find(fun x -> x._id = bsonId.ToString()).Single() 
 
 
             printfn " tenant =  %A " tenant

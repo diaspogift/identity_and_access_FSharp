@@ -30,7 +30,7 @@ type ActivationStatusDto =
 
 
 type TenantDto = {
-    _id : BsonObjectId
+    _id : string
     TenantId : string
     Name : string
     Description : string
@@ -39,12 +39,12 @@ type TenantDto = {
 }
 
 
-type RegistrationInvitationOfferredEventDto = {
+type RegistrationInvitationOfferredDto = {
     Tenant : TenantDto
     Invitation: RegistrationInvitationDto
 }
 
-type TenantProvisionedEventDto = {
+type TenantCreatedDto = {
     _id : string
     TenantId : string
     Name : string

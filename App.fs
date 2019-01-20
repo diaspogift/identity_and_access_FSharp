@@ -105,19 +105,7 @@ let printEmptySeparatorLine(count) =
 
 
 
-async {
 
-        let! store = EventStorePlayGround.create  "testRead" "tcp://admin:changeit@localhost:1113"
-        let! rs = readStream<TenantStreamEvent> store "TENANT_With_ID_=_5c4353b53766624bce89cf91" 0L 10 
-
-
-        printfn "%A" rs
-
-        return rs
-        
-} 
-|> Async.RunSynchronously
-|> ignore
 
 
 
@@ -172,8 +160,8 @@ match  rsProvisionTenantCommand with
 *)
 
 let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
-        TenantId = "5c4482a543ef6b5bb539e815"; 
-        Description = "Invitation for Rocklyn"
+        TenantId = "5c4353b53766624bce89cf91"; 
+        Description = "Invitation for Megan"
         }
 
 
