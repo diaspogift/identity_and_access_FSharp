@@ -276,7 +276,7 @@ let createEvents : CreateEvents =
         let tenantProvisionCreatedEvent = {
             TenantProvisioned = tenant
             RoleProvisioned = role
-            UserCreated = user
+            UserRegistered = user
         }
 
 

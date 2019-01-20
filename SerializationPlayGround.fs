@@ -9,6 +9,7 @@ module IdentityAndAcccess.SerializationPlayGroung
 // a specialization for cleaner F# type serialization
 
 open System
+open System.Text
 open System.Reflection
 open Newtonsoft.Json
 open Microsoft.FSharp.Reflection
@@ -21,6 +22,7 @@ type GameId = GameId of int
 type Game = {
     GameId : GameId 
 }
+
 
 
 
@@ -95,6 +97,14 @@ module private Json =
             let fieldName = string r.Value
             read r
             let i, fieldType = Map.find fieldName fieldMap
+
+            printfn "i  = %A " i
+            printfn "FIELD TYPE = %A " fieldType
+            printfn "i  = %A " i
+            printfn "FIELD TYPE = %A " fieldType
+            printfn "i  = %A " i
+            printfn "FIELD TYPE = %A " fieldType
+
             let prop = i, s.Deserialize(r, fieldType)
             read r
             prop
@@ -139,6 +149,9 @@ module private Json =
                 FSharpValue.MakeUnion(case, null)
 
 open Reflection
+open System.Text
+open System
+open System
 
 // This converter reads/writes a discriminated union
 // as a record, adding a "_Case" field.
@@ -223,7 +236,24 @@ let converters =
     [ unionConverter;optionConverter]
     @ valueConverters
 
-let deserializeUnion<'a> eventType data = 
+let deserializeUnion<'a>  eventType data = 
+
+    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
+    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
+    printfn "HERE THE EVENT TYPE %A " eventType
+    
+    let text =   Encoding.ASCII.GetString (ReadOnlySpan data)
+
+    printfn "HERE THE EVENT DATA %A " text
+    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
+    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
+
+
+
+    printfn "HERE THE typeof<'a> %A " typeof<'a>
+    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
+    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
+
     FSharpType.GetUnionCases(typeof<'a>)
     |> Array.tryFind (fun c -> c.Name = eventType)
     |> function

@@ -1,22 +1,24 @@
 namespace IdentityAndAcccess.Aggregates.Implementation
 open IdentityAndAcccess.DomainTypes.Tenant
-open IdentityAndAcccess.DomainTypes.Role
-open IdentityAndAcccess.DomainTypes.User
-open IdentityAndAcccess.DomainTypes.Tenant
-open IdentityAndAcccess.CommonDomainTypes
-open IdentityAndAcccess.DomainTypes.Functions.Tenant
 open IdentityAndAcccess.DomainServices
-open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions
+open IdentityAndAccess.DatabaseTypes
+open FSharp.Data.Sql
+open System
+open IdentityAndAcccess.CommonDomainTypes.Functions
+open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.CommonDomainTypes
+open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 
 
 
 
 
-
+(* 
 type Aggregate<'TState, 'TCommand, 'TEvent> = {
+    
     zero : 'TState
-    apply : 'TState -> 'TEvent -> 'TState
+    apply : 'TState option -> 'TEvent -> 'TState
     exec : 'TState -> 'TCommand -> 'TEvent
 }
 
@@ -25,19 +27,24 @@ type Aggregate<'TState, 'TCommand, 'TEvent> = {
 
 
 
+
+
 /// Tenant aggregate related commands
 type TenantCommand = 
-    | CreateTenant of Tenant
-    | DeactivateTenant
-    | ReactivateTenant 
+    | CreateTenant of TenantDto
+    | DeactivateTenant of TenantDto
+    | ReactivateTenant of TenantDto
     | OffertRegistrationInvitation of RegistrationInvitation
 
 
 type TenantEvents = 
-    | TenantCreated of Tenant
-    | TenantDeactivated 
-    | TenantReactivated 
+    | TenantCreated of TenantDto
+    | TenantDeactivated of TenantDto
+    | TenantReactivated of TenantDto
     | RegistrationInvitationOfferred of RegistrationInvitation
+
+
+
 
 
 
@@ -49,40 +56,138 @@ type TenantEvents =
 module Tenant = 
 
 
-    let apply (aTenant:Tenant) (anEvent:TenantEvents) =
+    open IdentityAndAcccess.DomainTypes.Tenant
+
+
+
+
+
+
+
+
+    let apply (aTenant:TenantDto option) (anEvent:TenantEvents) =
 
         match anEvent with  
         | TenantEvents.TenantCreated createdTenant ->
-            Ok createdTenant
+             createdTenant
 
-        | TenantEvents.TenantDeactivated  ->
-            if aTenant.ActivationStatus = ActivationStatus.Disactivated then 
-                Error "Tenant already deactivated"
-            else
-                Ok {aTenant with ActivationStatus = ActivationStatus.Disactivated}
+        | TenantEvents.TenantDeactivated tenant ->
+
+            match aTenant with  
+            | Some tenant ->
+                if tenant.ActivationStatus = ActivationStatusDto.Disactivated then 
+                    Error "Tenant already deactivated"
+                else
+                     {tenant with ActivationStatus = ActivationStatusDto.Disactivated}
+            | None ->
+
+                Error "No tenant given"
 
         | TenantEvents.TenantReactivated  ->
-            if aTenant.ActivationStatus = ActivationStatus.Activated then 
-                Error "Tenant already activated"
-            else
-                Ok {aTenant with ActivationStatus = ActivationStatus.Activated}
+
+            match aTenant with  
+            | Some tenant ->
+                if tenant.ActivationStatus = ActivationStatusDto.Activated then 
+                    Error "Tenant already activated"
+                else
+                    Ok {tenant with ActivationStatus = ActivationStatusDto.Activated}
+            | None ->
+
+                Error "No tenant given"
 
         | TenantEvents.RegistrationInvitationOfferred aRegistrationInvitation  ->
-            Ok {aTenant with RegistrationInvitations = [aRegistrationInvitation] @ aTenant.RegistrationInvitations}
+           
+            match aTenant with  
+            | Some tenant ->
 
 
-    let exec (aTenant:Tenant) (aCommand:TenantCommand) =
+                let aRegistrationInvitationList = 
+                               [aRegistrationInvitation] 
+                               |> List.toArray
+                               |> Array.map (
+                                   fun regIn -> 
+                                        let  registrationInvitationDtoTemp : RegistrationInvitationDtoTemp = {
+                                          RegistrationInvitationId = regIn.RegistrationInvitationId |> RegistrationInvitationId.value  
+                                          TenantId = regIn.TenantId |> TenantId.value
+                                          Description = regIn.Description |> RegistrationInvitationDescription.value
+                                          StartingOn = regIn.StartingOn
+                                          Until = regIn.Until
+                                        }
+
+                                        registrationInvitationDtoTemp
+                               )
+
+
+
+                let invitationsDtoTempList =  Array.append aRegistrationInvitationList  tenant.RegistrationInvitations
+
+
+                Ok {tenant with RegistrationInvitations = invitationsDtoTempList }
+
+            | None ->
+
+                Error "No tenant given"
+
+
+    (* let exec (aTenant:TenantDto) (aCommand:TenantCommand) =
 
         match aCommand with  
         | CreateTenant tenant ->
-            Ok tenant
-        | DeactivateTenant ->
-            aTenant
-            |> Tenant.deactivateTenant 
+             tenant
+        | DeactivateTenant tenant ->
+
+            let deactivateTenant = 
+                tenant 
+                |> DbHelpers.fromDbDtoToTenant 
+                |> Result.bind Tenant.deactivateTenant 
+
+            deactivateTenant
+
+            match tenant with 
+            | Ok t -> t
+            | Error error -> aTenant
             
-        | ReactivateTenant ->
-            aTenant
+
+
+
+            tenant
+            
+            
+        | ReactivateTenant tenant ->
+            tenant
             |> Tenant.deactivateTenant 
+
+            tenant
     
         | OffertRegistrationInvitation regInv ->
-            Ok {aTenant with RegistrationInvitations = [regInv] @ aTenant.RegistrationInvitations}
+
+             {aTenant with RegistrationInvitations = [regInv] @ aTenant.RegistrationInvitations} *)
+
+
+
+    type Id = System.Guid
+
+    /// Creates a persistent, async command handler for an aggregate given load and commit functions.
+    let makeHandler (aggregate:Aggregate<'TState, 'TCommand, 'TEvent>) (load:System.Type * Id -> Async<obj seq>, commit:Id * int -> obj -> Async<unit>) =
+        fun (id,version) command -> async {
+            let! events = load (typeof<'TEvent>,id)
+            let events = events |> Seq.cast :> 'TEvent seq
+            let state = Seq.fold aggregate.apply aggregate.zero events
+            let event = aggregate.exec state command
+            match event with
+            | Choice1Of2 event ->
+                let! _ = event |> commit (id,version)
+                return Choice1Of2 ()
+            | Choice2Of2 errors -> 
+                return errors |> Choice2Of2
+        }
+
+    /// Creates a persistent command handler for an aggregate given load and commit functions.
+    let makeHandlerSync (aggregate:Aggregate<'TState, 'TCommand, 'TEvent>) (load:System.Type * Id -> obj seq, commit:Id * int -> obj -> unit) =
+        fun (id,version) command ->
+            let events = load (typeof<'TEvent>,id) |> Seq.cast :> 'TEvent seq
+            let state = Seq.fold aggregate.apply aggregate.zero events
+            let result = aggregate.exec state command
+            match result with
+            | Choice1Of2 event  -> event |> commit (id,version)   |> Choice1Of2 
+            | Choice2Of2 errors -> errors |> Choice2Of2 *)

@@ -73,10 +73,6 @@ module DbHelpers =
 
     let fromDbDtoToTenant (aDtoTenant : TenantDto) = 
 
-        printfn "IN fromDbDtoToTenant"
-        printfn "IN fromDbDtoToTenant"
-        printfn "IN fromDbDtoToTenant"
-        printfn "IN fromDbDtoToTenant"
 
         let id = aDtoTenant.TenantId.ToString()
         let fromAcitvationStatusDtoToAcitvationStatus (anAcitvationStatusDto : ActivationStatusDto)= 
@@ -135,7 +131,7 @@ module DbHelpers =
                                 | Enabled  -> EnablementStatusDto.Enabled
                                 | Disabled -> EnablementStatusDto.Disabled
 
-        {
+        let r:UserDto = {
             _id = id
             UserId = id.ToString()
             TenantId = TenantId.value aUser.TenantId
@@ -152,6 +148,8 @@ module DbHelpers =
             LastName = LastName.value aUser.Person.Name.Last
             MiddleName = MiddleName.value  aUser.Person.Name.Middle
         }
+
+        r
 
 
 

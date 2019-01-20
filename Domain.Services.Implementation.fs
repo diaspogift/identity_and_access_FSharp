@@ -74,7 +74,8 @@ module Tenant =
 
             let enablementSartDate = DateTime.Now
             let enablementEndDate = enablementSartDate.AddDays(365.0)
-            let!  invitationDescription = "Invitation for Tenant ..."  |> RegistrationInvitationDescription.create' 
+
+            let! invitationDescription = "Invitation for Tenant ..."  |> RegistrationInvitationDescription.create' 
 
             let! tenantToProvision = Tenant.createFullActivatedTenant aTenantName aTenantDescription
 

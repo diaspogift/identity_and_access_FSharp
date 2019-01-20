@@ -65,7 +65,7 @@ type ProvisionTenantCommand =
 type TenantProvisionCreated = {
     TenantProvisioned : Tenant
     RoleProvisioned : Role
-    UserCreated : User
+    UserRegistered : User
 }
 
 type ProvisionAcknowledgementSent = {

@@ -3,6 +3,7 @@ namespace IdentityAndAccess.DatabaseTypes
 open System
 open MongoDB.Bson
 open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Functions
 
 
 
@@ -20,6 +21,9 @@ type RegistrationInvitationDto = {
 }
 
 
+
+
+
 type ActivationStatusDto = 
     |Activated  = 1
     |Disactivated = 0
@@ -27,6 +31,21 @@ type ActivationStatusDto =
 
 type TenantDto = {
     _id : BsonObjectId
+    TenantId : string
+    Name : string
+    Description : string
+    RegistrationInvitations : RegistrationInvitationDtoTemp array
+    ActivationStatus : ActivationStatusDto
+}
+
+
+type RegistrationInvitationOfferredEventDto = {
+    Tenant : TenantDto
+    Invitation: RegistrationInvitationDto
+}
+
+type TenantProvisionedEventDto = {
+    _id : string
     TenantId : string
     Name : string
     Description : string
@@ -44,6 +63,24 @@ type EnablementStatusDto =
 
 type UserDto = {
     _id : BsonObjectId
+    UserId : string
+    TenantId: string
+    Username: string
+    Password: string
+    EnablementStatus: EnablementStatusDto
+    EnablementStartDate: DateTime
+    EnablementEndDate: DateTime
+    EmailAddress: string
+    PostalAddress: string
+    PrimaryTel: string
+    SecondaryTel: string
+    FirstName: string
+    LastName: string
+    MiddleName: string
+}
+
+type UserRegisteredEventDto = {
+    _id : string
     UserId : string
     TenantId: string
     Username: string
@@ -88,6 +125,15 @@ type GroupDto = {
     Members : GroupMemberDto array
 }
 
+type GroupEventDto = {
+    _id : string
+    GroupId : string
+    TenantId :String
+    Name : string
+    Description : string
+    Members : GroupMemberDto array
+}
+
 
 
 
@@ -110,6 +156,17 @@ type RoleDto = {
     SupportNesting : SupportNestingStatusDto
     Group : GroupDto
 }
+
+type RoleProvisionedEventDto = {
+    _id : string
+    RoleId : string
+    TenantId : string
+    Name : string
+    Description : string
+    SupportNesting : SupportNestingStatusDto
+    Group : GroupDto
+}
+
 
 
 //TO DO 

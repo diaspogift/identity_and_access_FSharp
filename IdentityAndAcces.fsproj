@@ -20,13 +20,14 @@
     <Compile Include="ProvisionTenantWorflow.Implementation.fs" />
     <Compile Include="OffertRegistrationInvitation.PublicTypes.fs" />
     <Compile Include="OffertRegistrationInvitationWorflow.Implementation.fs" />
-    <Compile Include="Command.Handlers.fs" />
-    <Compile Include="Queues.fs" />
-    <Compile Include="Aggregates.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="EventStore.Implementation.fs" />
     <Compile Include="SerializationPlayGround.fs" />
     <Compile Include="EventStorePlayGround.Implementation.fs" />
+    <Compile Include="Aggregates.fs" />
+    <Compile Include="Command.Handlers.fs" />
+    <Compile Include="Queues.fs" />
+
     <Compile Include="Queue.RabbitMq.Implementation.fs" />
     <Compile Include="App.fs" />
     

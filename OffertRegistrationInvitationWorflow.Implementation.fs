@@ -139,22 +139,23 @@ let createEvents : CreateEvents =
 
 let offerRegistrationInvitationWorkflow: OfferRegistrationInvitationWorkflow = 
 
-    fun aTenant aUnvalidatedRegistrationInvitationDescription ->
+    fun aTenant anUnvalidatedRegistrationInvitationDescription ->
 
-        let offerRegistrationInvitation' = offerRegistrationInvitation aTenant
-        let offerRegistrationInvitation'' = Result.bind offerRegistrationInvitation' 
-        let createEvents' = Result.map createEvents
-
-
+        let offerRegistrationInvitation = offerRegistrationInvitation aTenant
+        let offerRegistrationInvitation = Result.bind offerRegistrationInvitation
+        let createEvents = Result.map createEvents
 
 
-        aUnvalidatedRegistrationInvitationDescription
+
+
+        anUnvalidatedRegistrationInvitationDescription
         |> validateRegistrationInvitationDescription
-        |> offerRegistrationInvitation''
-        |> createEvents'
-
-
+        |> offerRegistrationInvitation
+        |> createEvents
         
+
+
+     
         
 
 
