@@ -20,8 +20,8 @@ open IdentityAndAccess.DatabaseTypes
 type TenantStreamEvent =
     | TenantCreated of TenantCreatedDto
     | RegistrationInvitationOfferred of RegistrationInvitationOfferredDto
-    | ActivationStatusReActivated of Reason
-    | ActivationStatusDeActivated of Reason 
+    | ActivationStatusReActivated of TenantActivationStatusReactivatedDto
+    | ActivationStatusDeActivated of TenantActivationStatusDeactivatedDto 
 
 
 

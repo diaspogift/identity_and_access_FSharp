@@ -598,7 +598,7 @@ module Tenant =
             match result with  
             | Some _ -> true
             | None -> false
-        | Disactivated 
+        | Deactivated 
             -> false
         
 
@@ -741,7 +741,7 @@ module Tenant =
         | ActivationStatus.Activated 
             -> aTenant.RegistrationInvitations
                |> List.filter RegistrationInvitations.isAvailableWithBakedDateTimeParam
-        | ActivationStatus.Disactivated 
+        | Deactivated 
             -> []
 
 
@@ -755,7 +755,7 @@ module Tenant =
         | ActivationStatus.Activated 
             -> aTenant.RegistrationInvitations
                |> List.filter RegistrationInvitations.isNotAvailableWithBakedDateTimeParam
-        | ActivationStatus.Disactivated 
+        | Deactivated 
             -> []
 
 
@@ -792,7 +792,7 @@ module Tenant =
                        Error msg
 
 
-          | ActivationStatus.Disactivated -> 
+          | Deactivated -> 
                let error = sprintf "Tenant is deactivated"
                Error error
 
@@ -857,7 +857,7 @@ module Tenant =
                 let msg = sprintf "Registration expired/not available "
                 Error msg
             
-        | Disactivated ->
+        | Deactivated ->
             let msg = sprintf "Tenant deactivated"
             Error msg
 
@@ -896,7 +896,7 @@ module Tenant =
     let activateTenant (aTenant : Tenant) : Result<Tenant, string> =
             
             match aTenant.ActivationStatus with  
-            | Disactivated ->
+            | Deactivated ->
                 Ok { aTenant with ActivationStatus = ActivationStatus.Activated }  
             | Activated -> 
                 Error "Tenant already has its activation status set to Activated" 
@@ -909,10 +909,10 @@ module Tenant =
     let deactivateTenant (aTenant : Tenant) : Result<Tenant, string> =
         
         match aTenant.ActivationStatus with  
-        | Disactivated ->
+        | Deactivated ->
             Error "Tenant already has its activation status set to Deactivated"
         | Activated -> 
-            Ok { aTenant with ActivationStatus = ActivationStatus.Disactivated } 
+            Ok { aTenant with ActivationStatus = Deactivated } 
 
 
 

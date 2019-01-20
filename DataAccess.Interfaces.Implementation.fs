@@ -78,7 +78,7 @@ module DbHelpers =
         let fromAcitvationStatusDtoToAcitvationStatus (anAcitvationStatusDto : ActivationStatusDto)= 
             match anAcitvationStatusDto with 
             | ActivationStatusDto.Activated  -> Ok ActivationStatus.Activated
-            | ActivationStatusDto.Disactivated -> Ok ActivationStatus.Disactivated
+            | ActivationStatusDto.Disactivated -> Ok Deactivated
             | _ -> Error "Unconsistent state"
          
         result {
@@ -96,7 +96,7 @@ module DbHelpers =
         let id = new BsonObjectId(new ObjectId((TenantId.value aTenant.TenantId)))
         let activationStatus = match aTenant.ActivationStatus  with 
                                 | Activated  -> ActivationStatusDto.Activated
-                                | Disactivated -> ActivationStatusDto.Disactivated
+                                | Deactivated -> ActivationStatusDto.Disactivated
         let invitations = aTenant.RegistrationInvitations
         let invitationsDtos = invitations 
                               |> fromRegInvListToRegInvDtoTempArray 

@@ -41,7 +41,8 @@ open IdentityAndAccess.RabbitMQ.FSharp.Client
 open IdentityAndAcccess.EventStorePlayGround.Implementation.EventStorePlayGround
 open EventStore.ClientAPI
 
-
+open IdentityAndAcccess.DeactivateTenantActivationStatusApiTypes.DeactivateTenantActivationStatusWorflowImplementation
+open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 
 
 let tt = ObjectId.GenerateNewId()
@@ -159,7 +160,7 @@ match  rsProvisionTenantCommand with
  
 *)
 
-let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
+(* let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
         TenantId = "5c4353b53766624bce89cf91"; 
         Description = "Invitation for Megan"
         }
@@ -188,8 +189,42 @@ match  rsOfferRegistrationInvitationCommand with
         printEmptySeparatorLine(1)
 
 | Error error ->
-        printfn " %A" error
+        printfn " %A" error *)
 
+
+
+
+let unvalidatedDeactivateTenant : UnvalidatedTenantActivationStatus = {
+        TenantId = "5c4353b53766624bce89cf91"; 
+        ActivationStatus = true
+        Reason = "Fuck that userrrr ..."
+        }
+
+
+let deactivateTenantActivationStatusCommand : DeactivateTenantActivationStatusCommand = {
+        
+        Data = unvalidatedDeactivateTenant
+        TimeStamp = DateTime.Now
+        UserId = "Megan"
+
+        } 
+
+
+
+
+let rsDeactivateTenantActivationStatusCommand = DeactivateTenantActivationStatus.handleDeactivateTenantActivationStatus deactivateTenantActivationStatusCommand
+
+
+match  rsDeactivateTenantActivationStatusCommand with  
+| Ok rs -> 
+        printEmptySeparatorLine(1)
+        printfn " THE DEACTIVATION RESULT"
+        printEmptySeparatorLine(1)
+        printfn " %A" rs
+        printEmptySeparatorLine(1)
+
+| Error error ->
+        printfn " %A" error
 
 
 

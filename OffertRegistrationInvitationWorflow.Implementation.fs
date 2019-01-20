@@ -136,7 +136,9 @@ let createEvents : CreateEvents =
 
 
 
-
+///Offer registration invitation workflow implementation
+/// 
+/// 
 let offerRegistrationInvitationWorkflow: OfferRegistrationInvitationWorkflow = 
 
     fun aTenant anUnvalidatedRegistrationInvitationDescription ->

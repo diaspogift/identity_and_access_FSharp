@@ -29,6 +29,8 @@ type ActivationStatusDto =
     |Disactivated = 0
 
 
+type DeactivationStatusDto = Disactivated
+
 type TenantDto = {
     _id : string
     TenantId : string
@@ -37,6 +39,23 @@ type TenantDto = {
     RegistrationInvitations : RegistrationInvitationDtoTemp array
     ActivationStatus : ActivationStatusDto
 }
+
+
+
+type TenantActivationStatusDeactivatedDto = {
+    Tenant : TenantDto
+    ActivationStatus: ActivationStatusDto 
+    Reason : string
+}
+
+
+type TenantActivationStatusReactivatedDto = {
+    Tenant : TenantDto
+    ActivationStatus: ActivationStatusDto 
+    Reason : string
+}
+
+
 
 
 type RegistrationInvitationOfferredDto = {

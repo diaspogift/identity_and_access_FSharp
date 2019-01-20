@@ -489,7 +489,7 @@ module User =
                     Error msg
 
 
-            | ActivationStatus.Disactivated ->
+            | Deactivated ->
 
                 let msg = "User tenant Activation status is deactivated"
 

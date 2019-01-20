@@ -517,7 +517,7 @@ module Tenant =
     /// 
     type ActivationStatus = 
         |Activated 
-        |Disactivated
+        |Deactivated
 
 
     type RegistrationInvitation = {
