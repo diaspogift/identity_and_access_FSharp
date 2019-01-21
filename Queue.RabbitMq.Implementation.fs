@@ -32,13 +32,16 @@ module Client =
     let connectToQueue connection (channel:IModel) queueName =
         declareQueue channel queueName |> ignore
 
-        {Name = queueName;
-        Read = (fun () ->
-                        let ea = channel.BasicGet(queueName, true)
-                        if ea <> null then
-                            let body = ea.Body
-                            let message = Encoding.UTF8.GetString(body)
-                            message
-                        else
-                            "");
-        Publish = (publishToQueue channel queueName)}
+        {
+            Name = queueName;
+            Read = (fun () ->
+                            let ea = channel.BasicGet(queueName, true)
+                            if ea <> null then
+                                let body = ea.Body
+                                let message = Encoding.UTF8.GetString(body)
+                                message
+                            else
+                                "");
+            Publish = (publishToQueue channel queueName)
+        
+        }

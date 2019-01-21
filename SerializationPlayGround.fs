@@ -98,13 +98,6 @@ module private Json =
             read r
             let i, fieldType = Map.find fieldName fieldMap
 
-            printfn "i  = %A " i
-            printfn "FIELD TYPE = %A " fieldType
-            printfn "i  = %A " i
-            printfn "FIELD TYPE = %A " fieldType
-            printfn "i  = %A " i
-            printfn "FIELD TYPE = %A " fieldType
-
             let prop = i, s.Deserialize(r, fieldType)
             read r
             prop
@@ -237,22 +230,6 @@ let converters =
     @ valueConverters
 
 let deserializeUnion<'a>  eventType data = 
-
-    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
-    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
-    printfn "HERE THE EVENT TYPE %A " eventType
-    
-    let text =   Encoding.ASCII.GetString (ReadOnlySpan data)
-
-    printfn "HERE THE EVENT DATA %A " text
-    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
-    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
-
-
-
-    printfn "HERE THE typeof<'a> %A " typeof<'a>
-    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
-    printfn ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
 
     FSharpType.GetUnionCases(typeof<'a>)
     |> Array.tryFind (fun c -> c.Name = eventType)

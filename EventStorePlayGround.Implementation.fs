@@ -98,34 +98,19 @@ module EventStorePlayGround =
     let readStream<'a> (store: IEventStoreConnection) streamId version count = 
         
         async {
+
+
             let! slice = store.AsyncReadStreamEventsForward streamId version count true
-
-
-            printfn "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr" 
-            printfn "READ slice newwwwwwwwwwwwwwwwwwwwwwwwwwww %A" slice.Events
-            printfn "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr" 
-
             let events = 
                 slice.Events 
                 |> Seq.choose deserialize<'a>
                 |> Seq.toList
 
-            printfn "----------------------" 
-            printfn "READ EVENTS 11111 %A" events
-            printfn "----------------------" 
-
-            
             let nextEventNumber = 
                 if slice.IsEndOfStream 
                 then None 
                 else Some slice.NextEventNumber
-
-
-            
-            printfn "----------------------" 
-            printfn "READ EVENTS 22222 %A"  events  
-            printfn "----------------------" 
-
+                
             return events, slice.LastEventNumber, nextEventNumber 
         }
 

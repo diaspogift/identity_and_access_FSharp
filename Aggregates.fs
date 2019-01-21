@@ -9,18 +9,21 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
+open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 
 
 
 
 
-(* 
+ 
 type Aggregate<'TState, 'TCommand, 'TEvent> = {
     
     zero : 'TState
-    apply : 'TState option -> 'TEvent -> 'TState
+    apply : 'TState option -> Result<'TEvent, string> -> 'TState
     exec : 'TState -> 'TCommand -> 'TEvent
 }
+
+
 
 
 
@@ -41,7 +44,8 @@ type TenantEvents =
     | TenantCreated of TenantDto
     | TenantDeactivated of TenantDto
     | TenantReactivated of TenantDto
-    | RegistrationInvitationOfferred of RegistrationInvitation
+    | RegistrationInvitationOfferred of RegistrationInvitationOfferredDto
+    | RegistrationInvitationWithdrawn of RegistrationInvitationDto
 
 
 
@@ -65,27 +69,29 @@ module Tenant =
 
 
 
-    let apply (aTenant:TenantDto option) (anEvent:TenantEvents) =
+    let apply (aTenantCurrentState:TenantDto option) (aTenantEvent:TenantEvents) : Result<TenantDto, string> =
 
-        match anEvent with  
+        match aTenantEvent with  
         | TenantEvents.TenantCreated createdTenant ->
-             createdTenant
+             Ok createdTenant
 
         | TenantEvents.TenantDeactivated tenant ->
 
-            match aTenant with  
+            match aTenantCurrentState with  
             | Some tenant ->
+
                 if tenant.ActivationStatus = ActivationStatusDto.Disactivated then 
                     Error "Tenant already deactivated"
                 else
-                     {tenant with ActivationStatus = ActivationStatusDto.Disactivated}
+                    Ok {tenant with ActivationStatus = ActivationStatusDto.Disactivated}
+
             | None ->
 
                 Error "No tenant given"
 
-        | TenantEvents.TenantReactivated  ->
+        | TenantEvents.TenantReactivated  tenant ->
 
-            match aTenant with  
+            match aTenantCurrentState with  
             | Some tenant ->
                 if tenant.ActivationStatus = ActivationStatusDto.Activated then 
                     Error "Tenant already activated"
@@ -97,7 +103,7 @@ module Tenant =
 
         | TenantEvents.RegistrationInvitationOfferred aRegistrationInvitation  ->
            
-            match aTenant with  
+            match aTenantCurrentState with  
             | Some tenant ->
 
 
@@ -107,9 +113,43 @@ module Tenant =
                                |> Array.map (
                                    fun regIn -> 
                                         let  registrationInvitationDtoTemp : RegistrationInvitationDtoTemp = {
-                                          RegistrationInvitationId = regIn.RegistrationInvitationId |> RegistrationInvitationId.value  
-                                          TenantId = regIn.TenantId |> TenantId.value
-                                          Description = regIn.Description |> RegistrationInvitationDescription.value
+                                          RegistrationInvitationId = regIn.Invitation.RegistrationInvitationId  
+                                          TenantId = regIn.TenantId 
+                                          Description = regIn.Invitation.Description 
+                                          StartingOn = regIn.Invitation.StartingOn
+                                          Until = regIn.Invitation.Until
+                                        }
+
+                                        registrationInvitationDtoTemp
+                               )
+
+
+
+                let invitationsDtoTempList =  Array.append aRegistrationInvitationList  tenant.RegistrationInvitations
+
+
+                Ok {tenant with RegistrationInvitations = invitationsDtoTempList }
+
+            | None ->
+
+                Error "No tenant given"
+
+
+        | TenantEvents.RegistrationInvitationWithdrawn aRegistrationInvitation  ->
+       
+            match aTenantCurrentState with  
+            | Some tenant ->
+
+
+                let aRegistrationInvitationList = 
+                               [aRegistrationInvitation] 
+                               |> List.toArray
+                               |> Array.map (
+                                   fun regIn -> 
+                                        let  registrationInvitationDtoTemp : RegistrationInvitationDtoTemp = {
+                                          RegistrationInvitationId = regIn.RegistrationInvitationId  
+                                          TenantId = regIn.TenantId 
+                                          Description = regIn.Description 
                                           StartingOn = regIn.StartingOn
                                           Until = regIn.Until
                                         }
@@ -127,6 +167,8 @@ module Tenant =
             | None ->
 
                 Error "No tenant given"
+
+            
 
 
     (* let exec (aTenant:TenantDto) (aCommand:TenantCommand) =
@@ -161,7 +203,7 @@ module Tenant =
     
         | OffertRegistrationInvitation regInv ->
 
-             {aTenant with RegistrationInvitations = [regInv] @ aTenant.RegistrationInvitations} *)
+             {aTenant with RegistrationInvitations = [regInv] @ aTenant.RegistrationInvitations} 
 
 
 

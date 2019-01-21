@@ -103,7 +103,7 @@ let printEmptySeparatorLine(count) =
 
 
 
-
+(*
 
 let unvalidatedTenant : UnvalidatedTenant = {Name = "Mobile Biller"; Description = "Mobile Biller offre les services mobile de transfert d'argent"}
 
@@ -152,21 +152,17 @@ match  rsProvisionTenantCommand with
  
 
 
-(* let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
-        TenantId = "5c4353b53766624bce89cf91"; 
+let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
+        TenantId = "5c464a449c40a87f406780e8"; 
         Description = "Invitation for Megan"
         }
 
 
 let offerRegistrationInvitationCommand : OfferRegistrationInvitationCommand = {
-        
         Data = unvalidatedRegistrationInvitationDescription
         TimeStamp = DateTime.Now
         UserId = "Megan"
-
         } 
-
-
 
 
 let rsOfferRegistrationInvitationCommand = OffertRegistrationInvitationCommand.handleOfferRegistrationInvitation offerRegistrationInvitationCommand
@@ -183,17 +179,17 @@ match  rsOfferRegistrationInvitationCommand with
 | Error error ->
         printfn " %A" error 
 
+*)
 
 
-
-let unvalidatedDeactivateTenant : UnvalidatedTenantActivationStatusData = {
-        TenantId = "5c4353b53766624bce89cf91"; 
-        ActivationStatus = false
-        Reason = "Fuck that userrrr ..."
+let unvalidatedDeactivateTenant : UnvalidatedTenantActivationStatus = {
+        TenantId = "5c464a449c40a87f406780e8"; 
+        ActivationStatus = true
+        Reason = "Fuck that tenantt ..."
         }
 
 
-let reactivateTenantActivationStatusCommand : ReactivateTenantActivationStatusCommand = {
+let deactivateTenantActivationStatusCommand : DeactivateTenantActivationStatusCommand = {
         
         Data = unvalidatedDeactivateTenant
         TimeStamp = DateTime.Now
@@ -204,20 +200,20 @@ let reactivateTenantActivationStatusCommand : ReactivateTenantActivationStatusCo
 
 
 
-let rsDeactivateTenantActivationStatusCommand = ReactivateTenantActivationStatus.handleReactivateTenantActivationStatus reactivateTenantActivationStatusCommand
+let rsDeactivateTenantActivationStatusCommand = DeactivateTenantActivationStatus.handleDeactivateTenantActivationStatus deactivateTenantActivationStatusCommand
 
 
 match  rsDeactivateTenantActivationStatusCommand with  
 | Ok rs -> 
         printEmptySeparatorLine(1)
-        printfn " THE REACTIVATION RESULT"
+        printfn " THE DEACTIVATION RESULT"
         printEmptySeparatorLine(1)
         printfn " %A" rs
         printEmptySeparatorLine(1)
 
 | Error error ->
         printfn " %A" error
-*)
+
 
 
 
