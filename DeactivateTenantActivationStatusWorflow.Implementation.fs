@@ -140,7 +140,7 @@ let createEvents : CreateEvents =
 
 
 
-///Offer registration invitation workflow implementation
+///Deactivate tenant activation status workflow implementation
 /// 
 /// 
 let deactivateTenantActivationStatusWorkflow: DeactivateTenantActivationStatusWorkflow = 

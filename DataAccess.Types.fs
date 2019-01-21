@@ -59,9 +59,17 @@ type TenantActivationStatusReactivatedDto = {
 
 
 type RegistrationInvitationOfferredDto = {
-    Tenant : TenantDto
+    TenantId : string
     Invitation: RegistrationInvitationDto
 }
+
+
+type RegistrationInvitationWithdrawnedDto = {
+    TenantId : string
+    Invitation: RegistrationInvitationDto
+}
+
+
 
 type TenantCreatedDto = {
     _id : string

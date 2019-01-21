@@ -5,22 +5,29 @@ open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
 open IdentityAndAcccess.OffertRegistrationInvitationApiTypes.OffertRegistrationInvitationWorflowImplementation
+open IdentityAndAcccess.DeactivateTenantActivationStatusApiTypes.DeactivateTenantActivationStatusWorflowImplementation
+open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
+open IdentityAndAcccess.ReactivateTenantActivationStatusApiTypes.ReactivateTenantActivationStatusWorflowImplementation
+
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 
-open FSharp.Data.Sql
-open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
+open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
+open IdentityAndAcccess.DomainTypes
+open FSharp.Data.Sql
+
 open IdentityAndAcccess.DomainTypes.Tenant
+
+open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
 
 open IdentityAndAcccess.EventStorePlayGround.Implementation
 
 
 open IdentityAndAccess.DatabaseTypes
 
-open IdentityAndAcccess.DeactivateTenantActivationStatusApiTypes.DeactivateTenantActivationStatusWorflowImplementation
-open IdentityAndAcccess.ReactivateTenantActivationStatusApiTypes.ReactivateTenantActivationStatusWorflowImplementation
 
-open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
+open System
+
 
 
 
@@ -40,14 +47,158 @@ module ProvisionTenant =
 
 
 
-    //let saveOneTenant = TenantDb.saveOneTenant 
-    //let saveOneUser = UserDb.saveOneUser
-    //let saveOneRole = RoleDb.saveOneRole 
 
 
 
 
 
+
+
+
+    let allTenantAggregateEvents (tenantProvisionedEventLis) : (TenantStreamEvent array * RoleStreamEvent array * UserStreamEvent array) = 
+
+        let mutable tenantEventList = Array.Empty()
+        let mutable userEventList = Array.Empty()
+        let mutable roleEventList = Array.Empty()
+
+        tenantProvisionedEventLis
+        |> List.map (
+            
+            fun event -> 
+                match event with
+                | TenantProvisionCreated aTenantProvisionCreated ->  
+
+
+                    let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned |> DbHelpers.fromTenantDomainToDto
+                    let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> DbHelpers.fromRoleDomainToDto
+                    let userRegistered = aTenantProvisionCreated.UserRegistered |> DbHelpers.fromUserDomainToDto
+
+
+                
+
+                    let tenantProvisionedEventDto : TenantCreatedDto   = {   
+                        _id = tenantProvisioned.TenantId
+                        TenantId =  tenantProvisioned.TenantId 
+                        Name = tenantProvisioned.Name 
+                        Description = tenantProvisioned.Description 
+                        RegistrationInvitations = tenantProvisioned.RegistrationInvitations
+                        ActivationStatus = tenantProvisioned.ActivationStatus
+                    }
+
+                    let tenantCreatedEvent = TenantCreated tenantProvisionedEventDto
+                    let tenantCreatedEventL = tenantCreatedEvent |> List.singleton |> List.toArray
+
+                    tenantEventList <- Array.append tenantEventList tenantCreatedEventL
+                       
+        
+                    let roleProvisionedEventDto : RoleProvisionedEventDto   = {   
+                        _id = roleProvisioned.RoleId 
+                        RoleId =  tenantProvisioned.TenantId 
+                        TenantId =  roleProvisioned.TenantId 
+                        Name = roleProvisioned.Name 
+                        Description = roleProvisioned.Description 
+                        SupportNesting = roleProvisioned.SupportNesting
+                        Group = roleProvisioned.Group
+                    }
+
+
+                    let roleCreatedEvent = RoleCreated roleProvisionedEventDto
+                    let roleCreatedEventL = [roleCreatedEvent] |> List.toArray
+
+                    roleEventList <- Array.append roleEventList roleCreatedEventL
+
+
+                    
+                    let userRegisteredEventDto : UserRegisteredEventDto   = {   
+                        _id = userRegistered.UserId 
+                        UserId =  userRegistered.UserId 
+                        TenantId =  userRegistered.TenantId 
+                        Username = userRegistered.Username
+                        Password = userRegistered.Password
+                        EnablementStatus = userRegistered.EnablementStatus
+                        EnablementStartDate = userRegistered.EnablementStartDate
+                        EnablementEndDate = userRegistered.EnablementEndDate
+                        EmailAddress = userRegistered.EmailAddress
+                        PostalAddress = userRegistered.PostalAddress
+                        PrimaryTel = userRegistered.PrimaryTel
+                        SecondaryTel = userRegistered.SecondaryTel
+                        FirstName = userRegistered.FirstName
+                        LastName = userRegistered.LastName
+                        MiddleName = userRegistered.MiddleName
+                    }
+
+
+                    let userRegisteredEvent = UserRegistered userRegisteredEventDto
+                    let userRegisteredEventL = [userRegisteredEvent] |> List.toArray
+
+      
+                    userEventList <- Array.append userEventList userRegisteredEventL
+
+
+                | InvitationOffered invitaton ->
+
+
+                        let ridto : RegistrationInvitationDto = {
+                            RegistrationInvitationId = invitaton.Invitation.RegistrationInvitationId
+                            Description = invitaton.Invitation.Description
+                            TenantId = invitaton.TenantId
+                            StartingOn = invitaton.Invitation.StartingOn
+                            Until = invitaton.Invitation.Until
+                        }
+     
+
+                        let invitationOffered : RegistrationInvitationOfferredDto   = {   
+                            TenantId = invitaton.TenantId
+                            Invitation =  ridto 
+
+                        }
+
+                        let invitationOfferedEvent = TenantStreamEvent.InvitationOfferred  invitationOffered
+                        let invitationOfferedEventL = [invitationOfferedEvent] |> List.toArray
+
+                        tenantEventList <- Array.append tenantEventList invitationOfferedEventL
+
+
+
+
+                | InvitationWithdrawn invitation ->
+
+        
+
+                        let ridto : RegistrationInvitationDto = {
+                            RegistrationInvitationId = invitation.Invitation.RegistrationInvitationId
+                            Description = invitation.Invitation.Description
+                            TenantId = invitation.TenantId
+                            StartingOn = invitation.Invitation.StartingOn
+                            Until = invitation.Invitation.Until
+                        }
+                      
+                        let registrationInvitationWithdrawnedDto : RegistrationInvitationWithdrawnedDto   = {   
+                            TenantId =  invitation.TenantId
+                            Invitation =  ridto
+
+                        }
+
+                        let invitationWithdrawn = TenantStreamEvent.InvitationWithdrawned registrationInvitationWithdrawnedDto
+                        let invitationWithdrawnL = [invitationWithdrawn] |> List.toArray
+
+
+                        tenantEventList <- Array.append tenantEventList invitationWithdrawnL
+
+
+            
+                   
+                | ProvisionAcknowledgementSent aProvisionAcknowledgementSent ->
+
+                    printfn "aProvisionAcknowledgementSent = %A " aProvisionAcknowledgementSent
+
+        )|>ignore
+               
+
+        (tenantEventList , roleEventList , userEventList)
+    
+
+                      
 
 
 
@@ -71,148 +222,24 @@ module ProvisionTenant =
         //IO ad the edge base on the result / decision from the actual worflow
 
 
-
         match ouput with 
         | Ok tenantProvisionedEventList ->
+                    
+            let tenantEventList , roleEventList , userEventList = allTenantAggregateEvents tenantProvisionedEventList
 
-            let firstEvent : TenantProvisionedEvent  = 
-                tenantProvisionedEventList 
-                |> List.head
+            printfn "tenantEventList =  -------------------                  %A " tenantEventList
+            printfn "roleEventList =  -------------------                  %A " roleEventList
+            printfn "userEventList =  -------------------                  %A " userEventList
 
-            match firstEvent with
-            | TenantProvisionCreated aTenantProvisionCreated->  
-
-
-                let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned |> DbHelpers.fromTenantDomainToDto
-                let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> DbHelpers.fromRoleDomainToDto
-                let userRegistered = aTenantProvisionCreated.UserRegistered |> DbHelpers.fromUserDomainToDto
-
-
-                let saveOneTenantProvisionedEvent = async {
-
-                    let strTenantId = tenantProvisioned.TenantId 
-                    let prefix = "TENANT_With_ID_"
-                    let connName = prefix + strTenantId 
-                    let! store = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113"
-
-              
-
-                    let tenantProvisionedEventDto : TenantCreatedDto   = {   
-                        _id = tenantProvisioned.TenantId
-                        TenantId =  tenantProvisioned.TenantId 
-                        Name = tenantProvisioned.Name 
-                        Description = tenantProvisioned.Description 
-                        RegistrationInvitations = tenantProvisioned.RegistrationInvitations
-                        ActivationStatus = tenantProvisioned.ActivationStatus
-                    }
-
-                    let tenantCreatedEvent = TenantCreated tenantProvisionedEventDto
-
-                    let events = Seq.init 1 (fun _ ->  tenantCreatedEvent)
-                    let tenantStreamIdPart1 = "TENANT_With_ID_=_"
-                    let tenantStreamIdPart2 = tenantProvisioned.TenantId
-                    let tenatstreamId = tenantStreamIdPart1 + tenantStreamIdPart2
-                    let! rsAppendToTenantStream = EventStorePlayGround.appendToStream store tenatstreamId  -1L events
-
-                    return rsAppendToTenantStream
-
-                }
-
-                let saveOneRoleProvisionedEvent = async {
-
-
-                    let strRoleId = tenantProvisioned.TenantId 
-                    let prefix = "ROLE_With_ID_"
-                    let connName = prefix + strRoleId 
-                    let! store = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113"
-
-
-                    let roleProvisionedEventDto : RoleProvisionedEventDto   = {   
-                        _id = roleProvisioned.RoleId 
-                        RoleId =  tenantProvisioned.TenantId 
-                        TenantId =  roleProvisioned.TenantId 
-                        Name = roleProvisioned.Name 
-                        Description = roleProvisioned.Description 
-                        SupportNesting = roleProvisioned.SupportNesting
-                        Group = roleProvisioned.Group
-                    }
-
-
-                    let roleCreatedEvent = RoleCreated roleProvisionedEventDto
-
-                    let events = Seq.init 1 (fun _ ->  roleCreatedEvent)
-                    let roleStreamIdPart1 = "ROLE_With_ID_=_"
-                    let roleStreamIdPart2 = roleProvisioned.RoleId
-                    let roleStreamId = roleStreamIdPart1 +  roleStreamIdPart2
-                    let! rsAppendToRoleStream = EventStorePlayGround.appendToStream store roleStreamId  -1L events
-
-                    return rsAppendToRoleStream
-
-                }
-
-                let saveOneUserRegisteredEvent = async {
-
-
-                    let strUserId = tenantProvisioned.TenantId 
-                    let prefix = "USER_With_ID_"
-                    let connName = prefix + strUserId 
-                    let! store = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113"
-
-
-                    let userRegisteredEventDto : UserRegisteredEventDto   = {   
-                        _id = userRegistered.UserId 
-                        UserId =  userRegistered.UserId 
-                        TenantId =  userRegistered.TenantId 
-                        Username = userRegistered.Username
-                        Password = userRegistered.Password
-                        EnablementStatus = userRegistered.EnablementStatus
-                        EnablementStartDate = userRegistered.EnablementStartDate
-                        EnablementEndDate = userRegistered.EnablementEndDate
-                        EmailAddress = userRegistered.EmailAddress
-                        PostalAddress = userRegistered.PostalAddress
-                        PrimaryTel = userRegistered.PrimaryTel
-                        SecondaryTel = userRegistered.SecondaryTel
-                        FirstName = userRegistered.FirstName
-                        LastName = userRegistered.LastName
-                        MiddleName = userRegistered.MiddleName
-                    }
-
-
-                    let roleCreatedEvent = UserRegistered userRegisteredEventDto
-
-                    let events = Seq.init 1 (fun _ ->  roleCreatedEvent)
-                    let userStreamIdPart1 = "USER_With_ID_=_"
-                    let userStreamIdPart2 = userRegistered.UserId
-                    let userStreamId = userStreamIdPart1 +  userStreamIdPart2
-                    let! rsAppendToUserStream = EventStorePlayGround.appendToStream store userStreamId  -1L events
-
-                    return rsAppendToUserStream
-
-                }
-
-
-                saveOneTenantProvisionedEvent 
-                |>  Async.RunSynchronously
-                saveOneRoleProvisionedEvent 
-                |>  Async.RunSynchronously
-                saveOneUserRegisteredEvent 
-                |>  Async.RunSynchronously
-
-
-                Ok tenantProvisionedEventList
-
-
-
-            | ProvisionAcknowledgementSent aProvisionAcknowledgementSent ->
-
-                printfn "aProvisionAcknowledgementSent = %A " aProvisionAcknowledgementSent
-
-                Ok tenantProvisionedEventList
-
+            Ok tenantProvisionedEventList
 
         | Error error ->
-
             Error error
+
+
+
+
+
 
 
 
@@ -330,9 +357,6 @@ module OffertRegistrationInvitationCommand =
             | TenantStreamEvent.RegistrationInvitationOfferred  t ->  
                 let regInDto = t.Invitation
                 let tt = {aTenant with RegistrationInvitations = Array.append ([regInDto |> fromDtoToDtoTemp] |> List.toArray)   aTenant.RegistrationInvitations}
-                printfn "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
-                printfn "RETURNED TENANT %A" tt
-                printfn "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
                 tt
                 
 
@@ -480,7 +504,7 @@ module OffertRegistrationInvitationCommand =
                   
 
                         let registrationInvitationOfferredEventDto : RegistrationInvitationOfferredDto   = {   
-                            Tenant = tenantDto
+                            TenantId = tenantDto.TenantId
                             Invitation = registrationInvitationDto
                         }
 
@@ -914,9 +938,39 @@ module ReactivateTenantActivationStatus =
                 let regInDto = t.Invitation
                 {aTenant with RegistrationInvitations = Array.append ([regInDto |> fromDtoToDtoTemp] |> List.toArray)   aTenant.RegistrationInvitations}
                 
+            | TenantStreamEvent.InvitationOfferred t ->
 
 
-                
+                    let inv = t.Invitation
+
+                    let inv : RegistrationInvitationDtoTemp = {
+
+                        RegistrationInvitationId = inv.RegistrationInvitationId
+                        TenantId = inv.TenantId
+                        Description = inv.Description
+                        StartingOn = inv.StartingOn
+                        Until = inv.Until
+                    }
+
+                    let singInvArray = [inv]|> List.toArray
+
+
+                    let invs = Array.append singInvArray aTenant.RegistrationInvitations
+
+                    {aTenant with RegistrationInvitations = invs  }
+
+
+               | TenantStreamEvent.InvitationWithdrawned t ->
+
+
+    
+                    let invs = aTenant.RegistrationInvitations
+                               |>Array.filter (fun inv -> not (inv.RegistrationInvitationId = inv.RegistrationInvitationId) )
+
+                    {aTenant with RegistrationInvitations = invs  }
+
+
+                             
 
 
         let stateZero : TenantCreatedDto = {
@@ -971,7 +1025,7 @@ module ReactivateTenantActivationStatus =
 
 
 
-        let rsDeactivateTenantWorkflow = result {
+        let rsReactivateTenantWorkflow = result {
             
             let! rsTenant = result {
                 
@@ -994,7 +1048,7 @@ module ReactivateTenantActivationStatus =
 
 
 
-        match rsDeactivateTenantWorkflow with  
+        match rsReactivateTenantWorkflow with  
         | Ok en ->
             match en with  
             | Ok ev ->
@@ -1032,15 +1086,15 @@ module ReactivateTenantActivationStatus =
 
                   
 
-                        let tenantActivationStatusDeactivatedDto : TenantActivationStatusDeactivatedDto   = {   
+                        let tenantActivationStatusReactivatedDto : TenantActivationStatusReactivatedDto   = {   
                             Tenant = tenantDto 
                             ActivationStatus = ev.Tenant.ActivationStatus
                             Reason = "FIXTURE FOR NW"
                         }
 
-                        let tenantActivationStatusDeactivatedEvent = ActivationStatusDeActivated tenantActivationStatusDeactivatedDto
+                        let tenantActivationStatusReactivatedEvent = ActivationStatusReActivated tenantActivationStatusReactivatedDto
 
-                        let events = Seq.init 1 (fun _ ->  tenantActivationStatusDeactivatedEvent)
+                        let events = Seq.init 1 (fun _ ->  tenantActivationStatusReactivatedEvent)
                         let tenantStreamIdPart1 = "TENANT_With_ID_=_"
                         let tenantStreamIdPart2 = tenantDto.TenantId
                         let tenatstreamId = tenantStreamIdPart1 + tenantStreamIdPart2

@@ -7,12 +7,7 @@ open System
 open EventStore.ClientAPI
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAcccess.DomainTypes
-open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User
-open IdentityAndAcccess.DomainTypes.Group
-open IdentityAndAcccess.DomainTypes.Role
-open IdentityAndAcccess.DomainServices
 open IdentityAndAccess.DatabaseTypes
 
 
@@ -22,6 +17,8 @@ type TenantStreamEvent =
     | RegistrationInvitationOfferred of RegistrationInvitationOfferredDto
     | ActivationStatusReActivated of TenantActivationStatusReactivatedDto
     | ActivationStatusDeActivated of TenantActivationStatusDeactivatedDto 
+    | InvitationOfferred of RegistrationInvitationOfferredDto 
+    | InvitationWithdrawned of RegistrationInvitationWithdrawnedDto 
 
 
 

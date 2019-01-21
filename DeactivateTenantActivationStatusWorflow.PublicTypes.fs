@@ -64,12 +64,7 @@ type TenantActivationStatusDeactivatedEvent = {
 }
    
 
-type TenantActivationStatusReactivatedEvent = {
 
-    Tenant : TenantDto
-    ActivationStatus : ActivationStatusDto
-    Reason : string
-}
    
 
 

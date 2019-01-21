@@ -622,7 +622,7 @@ module Tenant =
 
 
 
-    type Provision = (Tenant*User*Role)
+    type Provision = (Tenant*User*Role*RegistrationInvitation list)
 
 
 

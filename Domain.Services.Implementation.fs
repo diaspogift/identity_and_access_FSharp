@@ -120,7 +120,7 @@ module Tenant =
             //IO operation kept and the end ????
 
 
-            return (tenantToProvision, adminUser, resultAssignUserToSuperAdminRole)
+            return (tenantToProvision, adminUser, resultAssignUserToSuperAdminRole, tenantWithRegistrationInvitation.RegistrationInvitations)
           }
 
 

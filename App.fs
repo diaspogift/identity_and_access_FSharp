@@ -114,16 +114,16 @@ let printEmptySeparatorLine(count) =
 
 
 
-(*let unvalidatedTenant : UnvalidatedTenant = {Name = "Le Quattro"; Description = "Restauration - Mets locaux et traditionnels"}
+let unvalidatedTenant : UnvalidatedTenant = {Name = "Mobile Biller"; Description = "Mobile Biller offre les services mobile de transfert d'argent"}
 
 let tenantAdministrator : TenantAdministrator = {
-    FirstName = "Megan"
-    MiddleName = "Amanda"
-    LastName = "Hess"
-    Email = "mah90@gmail.com"
-    Address = "973 Ranch House Road Thousand Oaks CA, 91786"
-    PrimPhone = "669262658" 
-    SecondPhone = "669262659"
+    FirstName = "Didier"
+    MiddleName = "N/A"
+    LastName = "Nkalla"
+    Email = "didnkallaehawe@gmail.com"
+    Address = "Douala, Cameroun"
+    PrimPhone = "669262690" 
+    SecondPhone = "669262691"
 }
 let unvalidatedTenantProvision : UnvalidatedTenantProvision = {TenantInfo = unvalidatedTenant; AdiminUserInfo = tenantAdministrator}
 
@@ -159,7 +159,7 @@ match  rsProvisionTenantCommand with
         printfn " %A" error
 
  
-*)
+
 
 (* let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
         TenantId = "5c4353b53766624bce89cf91"; 
@@ -190,7 +190,7 @@ match  rsOfferRegistrationInvitationCommand with
         printEmptySeparatorLine(1)
 
 | Error error ->
-        printfn " %A" error *)
+        printfn " %A" error 
 
 
 
@@ -219,14 +219,14 @@ let rsDeactivateTenantActivationStatusCommand = ReactivateTenantActivationStatus
 match  rsDeactivateTenantActivationStatusCommand with  
 | Ok rs -> 
         printEmptySeparatorLine(1)
-        printfn " THE DEACTIVATION RESULT"
+        printfn " THE REACTIVATION RESULT"
         printEmptySeparatorLine(1)
         printfn " %A" rs
         printEmptySeparatorLine(1)
 
 | Error error ->
         printfn " %A" error
-
+*)
 
 
 

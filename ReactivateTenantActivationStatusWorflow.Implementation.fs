@@ -95,7 +95,7 @@ let validateTenantActivationStatus : ValidateTenantActivationStatus =
 
 
 
-///Step2 deactivate tenant activation status impl
+///Step2 reactivate tenant activation status impl
 let reactivateTenantActivationStatus : ReactivateTenantActivationStatus = 
 
     fun  aTenant validatedTenantStatus ->

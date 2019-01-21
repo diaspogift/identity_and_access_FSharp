@@ -6,6 +6,8 @@ open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.CommonDomainTypes
 
 open System
+open IdentityAndAcccess.DomainTypes
+open IdentityAndAccess.DatabaseTypes
 
 
 
@@ -68,6 +70,17 @@ type TenantProvisionCreated = {
     UserRegistered : User
 }
 
+type InvitationWithdrawn = {
+    TenantId : string
+    Invitation : RegistrationInvitationDtoTemp
+}
+
+type InvitationOffered = {
+    TenantId : string
+    Invitation : RegistrationInvitationDtoTemp
+}
+
+
 type ProvisionAcknowledgementSent = {
         TenantId : TenantId
         Email : EmailAddress
@@ -76,6 +89,8 @@ type ProvisionAcknowledgementSent = {
 
 type TenantProvisionedEvent = 
     | TenantProvisionCreated of TenantProvisionCreated
+    | InvitationWithdrawn of InvitationWithdrawn
+    | InvitationOffered of InvitationOffered
     | ProvisionAcknowledgementSent of ProvisionAcknowledgementSent
 
 
