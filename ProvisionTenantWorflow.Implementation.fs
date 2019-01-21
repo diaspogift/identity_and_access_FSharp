@@ -283,25 +283,8 @@ let createEvents : CreateEvents =
 
         let tenantProvisionedEvent = TenantProvisionCreated tenantProvisionCreatedEvent
 
-        let listOfWithdrawnRegInv = 
-            invs
-            |> List.map (
-                
-                fun regInv -> 
 
-                    let regInvDto:RegistrationInvitationDtoTemp = {
-                        RegistrationInvitationId = regInv.RegistrationInvitationId |> RegistrationInvitationId.value
-                        TenantId = regInv.TenantId |> TenantId.value
-                        Description = regInv.Description |> RegistrationInvitationDescription.value
-                        StartingOn = regInv.StartingOn
-                        Until = regInv.Until
-                    }
 
-                    let v : InvitationWithdrawn = {TenantId = tenant.TenantId |> TenantId.value ; Invitation = regInvDto}
-            
-                    v 
-                    |> TenantProvisionedEvent.InvitationWithdrawn)
-        
         let listOfOfferedRegInv = 
             invs
             |> List.map (
@@ -321,10 +304,32 @@ let createEvents : CreateEvents =
             
                     v 
                     |> TenantProvisionedEvent.InvitationOffered)
+                    
 
-        let r = List.append [tenantProvisionedEvent]  listOfWithdrawnRegInv 
+        let listOfWithdrawnRegInv = 
+            invs
+            |> List.map (
+                
+                fun regInv -> 
+
+                    let regInvDto:RegistrationInvitationDtoTemp = {
+                        RegistrationInvitationId = regInv.RegistrationInvitationId |> RegistrationInvitationId.value
+                        TenantId = regInv.TenantId |> TenantId.value
+                        Description = regInv.Description |> RegistrationInvitationDescription.value
+                        StartingOn = regInv.StartingOn
+                        Until = regInv.Until
+                    }
+
+                    let v : InvitationWithdrawn = {TenantId = tenant.TenantId |> TenantId.value ; Invitation = regInvDto}
+            
+                    v 
+                    |> TenantProvisionedEvent.InvitationWithdrawn)
         
-        List.append r listOfOfferedRegInv
+        
+
+        let r = List.append [tenantProvisionedEvent]  listOfOfferedRegInv  
+        
+        List.append r listOfWithdrawnRegInv
 
 
 
@@ -352,16 +357,16 @@ let provisionTenantWorflow: ProvisionTenantWorkflow =
 
     fun unvalidatedTenantProvision ->
 
-        let provision' = Result.bind provision
-        let createEvents' = Result.map createEvents
+        let provision = Result.bind provision
+        let createEvents = Result.map createEvents
 
 
         
 
         unvalidatedTenantProvision
         |> validateProvision
-        |> provision'
-        |> createEvents'
+        |> provision
+        |> createEvents
         
 
 

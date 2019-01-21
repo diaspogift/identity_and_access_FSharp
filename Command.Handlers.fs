@@ -27,6 +27,10 @@ open IdentityAndAccess.DatabaseTypes
 
 
 open System
+open FSharp.Data.Sql
+open FSharp.Data.Sql
+open FSharp.Data.Sql
+open System.Collections.Generic
 
 
 
@@ -55,16 +59,22 @@ module ProvisionTenant =
 
 
 
-    let allTenantAggregateEvents (tenantProvisionedEventLis) : (TenantStreamEvent array * RoleStreamEvent array * UserStreamEvent array) = 
+    let allTenantAggregateEvents (tenantProvisionedEventLis) : (string * TenantStreamEvent array * string * RoleStreamEvent array * string * UserStreamEvent array) = 
 
         let mutable tenantEventList = Array.Empty()
         let mutable userEventList = Array.Empty()
         let mutable roleEventList = Array.Empty()
+        let mutable tenantId = ""
+        let mutable roleId = ""
+        let mutable userId = ""
+       
 
         tenantProvisionedEventLis
         |> List.map (
             
             fun event -> 
+
+
                 match event with
                 | TenantProvisionCreated aTenantProvisionCreated ->  
 
@@ -72,6 +82,11 @@ module ProvisionTenant =
                     let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned |> DbHelpers.fromTenantDomainToDto
                     let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> DbHelpers.fromRoleDomainToDto
                     let userRegistered = aTenantProvisionCreated.UserRegistered |> DbHelpers.fromUserDomainToDto
+
+                    tenantId <- tenantProvisioned.TenantId
+                    roleId <- roleProvisioned.RoleId
+                    userId <- userRegistered.UserId
+
 
 
                 
@@ -89,11 +104,14 @@ module ProvisionTenant =
                     let tenantCreatedEventL = tenantCreatedEvent |> List.singleton |> List.toArray
 
                     tenantEventList <- Array.append tenantEventList tenantCreatedEventL
+
+
+
                        
         
                     let roleProvisionedEventDto : RoleProvisionedEventDto   = {   
                         _id = roleProvisioned.RoleId 
-                        RoleId =  tenantProvisioned.TenantId 
+                        RoleId =  roleProvisioned.RoleId 
                         TenantId =  roleProvisioned.TenantId 
                         Name = roleProvisioned.Name 
                         Description = roleProvisioned.Description 
@@ -193,9 +211,14 @@ module ProvisionTenant =
                     printfn "aProvisionAcknowledgementSent = %A " aProvisionAcknowledgementSent
 
         )|>ignore
+
+
+        let tId:string = tenantId
+        let rId:string = roleId
+        let uId:string = userId
                
 
-        (tenantEventList , roleEventList , userEventList)
+        (tId, tenantEventList , rId, roleEventList , uId, userEventList)
     
 
                       
@@ -207,30 +230,173 @@ module ProvisionTenant =
 
         //Extract the command data
 
-
         let aProvisionTenantCommandData = aProvisionTenantCommand.Data
 
         //Call into pure business logic
 
-
-        let ouput = 
-            aProvisionTenantCommandData 
-            |> provisionTenantWorflow 
-
-
-
+        let ouput = aProvisionTenantCommandData 
+                    |> provisionTenantWorflow 
+ 
         //IO ad the edge base on the result / decision from the actual worflow
 
 
         match ouput with 
         | Ok tenantProvisionedEventList ->
                     
-            let tenantEventList , roleEventList , userEventList = allTenantAggregateEvents tenantProvisionedEventList
+            let tenantId, 
+                tenantEventList , 
+                roleId, 
+                roleEventList, 
+                userId, 
+                userEventList = allTenantAggregateEvents tenantProvisionedEventList
 
-            printfn "tenantEventList =  -------------------                  %A " tenantEventList
-            printfn "roleEventList =  -------------------                  %A " roleEventList
-            printfn "userEventList =  -------------------                  %A " userEventList
 
+            let saveTenantStream = async {
+
+                        
+                        let prefix = "TENANT_With_ID_=_"
+                        let tenantStreamId = prefix + tenantId 
+                        let connName = tenantStreamId 
+
+                        let! eventStore = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113"
+
+
+
+
+                        let toSequence = fun x -> Seq.init 1 (fun _ ->  x)
+                        let events =  tenantEventList |> Array.map toSequence
+
+
+                        let rec recursivePersistEventsStream (position:int64) (eventsToPersist:seq<TenantStreamEvent> array) = 
+
+                            let eventsToPersist = eventsToPersist |> Array.toList
+
+                            match eventsToPersist with
+                            | [] -> ()
+                            | head::tail -> 
+
+                                let rsAppendToTenantStream = EventStorePlayGround.appendToStream eventStore tenantStreamId  position head
+                               
+                                rsAppendToTenantStream 
+                                |> Async.RunSynchronously
+
+
+                                recursivePersistEventsStream (position + 1L) (tail |> List.toArray)
+
+
+
+                
+                       
+                        let r = recursivePersistEventsStream -1L events
+
+
+                        
+
+
+                        
+                        return r
+
+                    }
+
+            let saveUserStream = async {
+
+                        
+                        let prefix = "USER_With_ID_=_"
+                        let userStreamId = prefix + userId 
+                        let connName = userStreamId 
+
+                        let! eventStore = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113"
+
+
+
+
+                        let toSequence = fun x -> Seq.init 1 (fun _ ->  x)
+                        let events =  userEventList |> Array.map toSequence
+
+
+                        let rec recursivePersistEventsStream (position:int64) (eventsToPersist:seq<UserStreamEvent> array) = 
+
+                            let eventsToPersist = eventsToPersist |> Array.toList
+
+                            match eventsToPersist with
+                            | [] -> ()
+                            | head::tail -> 
+
+                                let rsAppendToUserStream = EventStorePlayGround.appendToStream eventStore userStreamId  position head
+                               
+                                rsAppendToUserStream 
+                                |> Async.RunSynchronously
+
+
+                                recursivePersistEventsStream (position + 1L) (tail |> List.toArray)
+
+
+
+                
+                       
+                        let r = recursivePersistEventsStream -1L events
+
+
+                        
+
+
+                        
+                        return r
+
+                    }
+            
+            let saveRoleStream = async {
+
+                        
+                        let prefix = "ROLE_With_ID_=_"
+                        let roleStreamId = prefix + roleId 
+                        let connName = roleStreamId 
+
+                        let! eventStore = EventStorePlayGround.create connName "tcp://admin:changeit@localhost:1113"
+
+
+
+
+                        let toSequence = fun x -> Seq.init 1 (fun _ ->  x)
+                        let events =  roleEventList |> Array.map toSequence
+
+
+                        let rec recursivePersistEventsStream (position:int64) (eventsToPersist:seq<RoleStreamEvent> array) = 
+
+                            let eventsToPersist = eventsToPersist |> Array.toList
+
+                            match eventsToPersist with
+                            | [] -> ()
+                            | head::tail -> 
+
+                                let rsAppendToTenantStream = EventStorePlayGround.appendToStream eventStore roleStreamId  position head
+                               
+                                rsAppendToTenantStream 
+                                |> Async.RunSynchronously
+
+
+                                recursivePersistEventsStream (position + 1L) (tail |> List.toArray)
+
+
+
+                
+                       
+                        let r = recursivePersistEventsStream -1L events
+
+
+                        
+
+
+                        
+                        return r
+
+                    }
+
+            
+            saveTenantStream |> Async.RunSynchronously
+            saveUserStream |> Async.RunSynchronously
+            saveRoleStream |> Async.RunSynchronously
+                
             Ok tenantProvisionedEventList
 
         | Error error ->
@@ -331,19 +497,6 @@ module OffertRegistrationInvitationCommand =
 
 
 
-        
-        printfn "FoundTenantEventStreamList is foundTenantEventStreamList Satrt "
-        printfn  "HER THE ACTUAL foundTenantEventStreamList,_,_  = %A" foundTenantEventStreamList
-        printfn "FoundTenantEventStreamList is foundTenantEventStreamList End "
-        printfn "LastTenatEventStream Number is  lastEventNumber Start="
-        printfn "%A " lastEventNumber
-        printfn "LastTenatEventStream Number is  lastEventNumber End"
-        printfn "NextEventNumber nextEventNumber Start ="
-        printfn "%A " nextEventNumber
-        printfn "NextEventNumber nextEventNumber End"
-
-
-
 
         let apply aTenant anEvent = 
             match anEvent with 
@@ -395,54 +548,22 @@ module OffertRegistrationInvitationCommand =
 
         printf "-------------------------------------"
         printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
+        printf ""
+        printf ""
         printf "STATEEEEEE ================== %A" state
+        printf ""
+        printf ""
         printf "-------------------------------------"
         printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-        printf "-------------------------------------"
-
 
 
 
         let rsOfferRegistrationInvitationWorkflow = result {
             
             let! rsTenant = result {
-                
+               
                 let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
-
-
                 let rs = offerRegistrationInvitationWorkflow tenantFound unvalidatedRegistrationInvitationDescription
-
-                printfn "ppppppppppppppppppppppppppppppppppppppp"
-                printfn "HERE THE ACTUAL %A" rs
-                printfn "ppppppppppppppppppppppppppppppppppppppp"
-                          
 
                 return rs 
             }

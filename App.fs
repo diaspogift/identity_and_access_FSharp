@@ -46,15 +46,6 @@ open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 
-let tt = ObjectId.GenerateNewId()
-let aa = ObjectId.GenerateNewId()
-let bb = ObjectId.GenerateNewId()
-
-
-printfn "tt ==== %A" tt
-printfn "aa ==== %A" aa
-printfn "bb ==== %A" bb
-
 
 
 
