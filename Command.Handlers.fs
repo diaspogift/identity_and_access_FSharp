@@ -4,6 +4,8 @@ module IdentityAndAcccess.DomainApiTypes.Handlers
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
+open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
+open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImplementation
 open IdentityAndAcccess.OffertRegistrationInvitationApiTypes.OffertRegistrationInvitationWorflowImplementation
 open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes
 open IdentityAndAcccess.WithdrawRegistrationInvitationApiTypes.WithdrawRegistrationInvitationWorflowImplementation
@@ -518,4 +520,56 @@ module ReactivateTenantActivationStatus =
                 Error  error
         | Error error ->
             let er = ReactivateTenantActivationStatusError.ReactivationError error
+            Error er
+
+
+
+
+module ProvisionGroupCommand = 
+
+
+
+
+
+    let handleProvisionGroup (aCommad:ProvisionGroupCommand) = 
+
+        let aCommandData = aCommad.Data
+
+        let unvalidatedGroup  = aCommandData
+
+            
+        let rsProvisionGroupWorkflow = result {  
+            
+            let strTenantId =  unvalidatedGroup.TenantId |> concatTenantStreamId 
+            let! tenantStreamId, tenantDto, lastEventNumber = strTenantId |> loadTenantWithId    
+
+
+            let! rsTenant = result {      
+                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
+                let rs = unvalidatedGroup |> provisionGroupWorkflow tenantFound 
+                return rs 
+                }    
+            return (rsTenant)
+            }
+
+        match rsProvisionGroupWorkflow with  
+        | Ok en ->
+            match en with  
+            | Ok ev -> 
+                let saveProvisionGroupEvent = async {
+
+                        let groupStreamId = ev.Group.GroupId |> concatGroupStreamId 
+                        let groupProvisionedEvent =  ev.Group |> GroupStreamEvent.GroupCreated 
+                        let groupProvisionedEventL = groupProvisionedEvent |> toSequence |> Array.singleton
+                        let rsAppendToTenantStream = recursivePersistEventsStream groupStreamId -1L groupProvisionedEventL
+                     
+                        return rsAppendToTenantStream
+                        }
+                saveProvisionGroupEvent
+                |> Async.RunSynchronously
+                Ok ev
+            | Error error ->
+                Error  error
+        | Error error ->
+            let er = ProvisionGroupError.DbError error
             Error er

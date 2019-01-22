@@ -47,7 +47,7 @@ open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 
-
+open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
 
 
 
@@ -246,32 +246,39 @@ match  rsOfferRegistrationInvitationCommand with
 
 
 
-let unvalidatedRegistrationIdentifier : UnvalidatedRegistrationInvitationIdentifier = {
-        RegistrationInvitationId = "5c46f9effa223d279537c362"
-        TenantId = "5c46f8c65dd81b2405ecd568"; 
-        }
 
 
-let withdrawRegistrationInvitationCommand : WithdrawRegistrationInvitationCommand = {
-        Data = unvalidatedRegistrationIdentifier
+let unvalidatedGroup:UnvalidatedGroup = {
+        TenantId = "5c46f8c65dd81b2405ecd568";
+        Name = "Stagaires"
+        Description = "Group Des Stagaires"
+        Members = [||]
+} 
+
+let provisionGroupCommand : ProvisionGroupCommand = {
+        Data = unvalidatedGroup
         TimeStamp = DateTime.Now
         UserId = "Megan"
         } 
 
+ 
+let rsProvisionGroupCommand = ProvisionGroupCommand.handleProvisionGroup provisionGroupCommand
 
-let rsWithdrawRegistrationInvitationCommand = WithdrawRegistrationInvitationCommand.handleWithdrawRegistrationInvitation withdrawRegistrationInvitationCommand
 
-
-match  rsWithdrawRegistrationInvitationCommand with  
+match  rsProvisionGroupCommand with  
 | Ok rs -> 
         printEmptySeparatorLine(1)
-        printfn " THE INVITATION WITHDRAWAL RESULT"
+        printfn " THE PROVISION INVITATION WITHDRAWAL RESULT"
         printEmptySeparatorLine(1)
         printfn " %A" rs
         printEmptySeparatorLine(1)
 
 | Error error ->
         printfn " %A" error 
+ 
+
+
+
 
 
 

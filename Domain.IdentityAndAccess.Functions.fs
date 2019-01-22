@@ -1462,7 +1462,23 @@ module Group =
 
 
 
+    let createFull (members : GroupMember list) (groupId:GroupId) (tenantId:TenantId) (name:GroupName) (description:GroupDescription)  = 
+        
+        let rsCreateGroup = result {
 
+            return Standard {
+               GroupId = groupId
+               TenantId = tenantId
+               Name = name
+               Description = description
+               Members = members
+            }
+        }
+
+        rsCreateGroup
+
+        
+   
 
 
     let changePassWord aUser aCurrentGivenPassword aNewGivenPassword = 

@@ -12,12 +12,12 @@
     <Compile Include="DataAccess.Interfaces.fs" />
     <Compile Include="DataAccess.Interfaces.Implementation.fs" />
     <Compile Include="Domain.Services.Implementation.fs" />
-    <Compile Include="RestFull.fs" />
     <Compile Include="Test.fsx" />
     <Compile Include="Infrastrure.Services.Implementation.fs" />
-    <Compile Include="Comamd.Types.fs" />
     <Compile Include="ProvisionTenant.PublicTypes.fs" />
     <Compile Include="ProvisionTenantWorflow.Implementation.fs" />
+    <Compile Include="ProvisionGroup.PublicTypes.fs" />
+    <Compile Include="ProvisionGroupWorflow.Implementation.fs" />
     <Compile Include="OffertRegistrationInvitation.PublicTypes.fs" />
     <Compile Include="OffertRegistrationInvitationWorflow.Implementation.fs" />
     <Compile Include="WithdrawRegistrationInvitation.PublicTypes.fs" />
@@ -31,11 +31,12 @@
     <Compile Include="SerializationPlayGround.fs" />
     <Compile Include="EventStorePlayGround.Implementation.fs" />
     <Compile Include="Aggregates.fs" />
+    <Compile Include="Comamd.Types.fs" />
     <Compile Include="Command.Handlers.fs" />
     <Compile Include="Queues.fs" />
+    <Compile Include="RestFull.fs" />
     <Compile Include="Queue.RabbitMq.Implementation.fs" />
     <Compile Include="App.fs" />
-    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />

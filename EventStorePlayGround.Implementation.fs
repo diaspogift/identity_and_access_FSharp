@@ -313,6 +313,7 @@ module EventStorePlayGround =
     let concatStreamId (p1:string) (p2:string) = p1.Trim() + p2.Trim() 
     let concatTenantStreamId = concatStreamId "TENANT_With_ID_=_"
     let concatRoleStreamId = concatStreamId "ROLE_With_ID_=_"
+    let concatGroupStreamId = concatStreamId "GROUP_With_ID_=_"
     let concatUserStreamId = concatStreamId "USER_With_ID_=_"
 
 
