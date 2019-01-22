@@ -132,7 +132,7 @@ module DbHelpers =
                                 | Disabled -> EnablementStatusDto.Disabled
 
         let r:UserDto = {
-            _id = id
+            _id = id.ToString()
             UserId = id.ToString()
             TenantId = TenantId.value aUser.TenantId
             Username = Username.value aUser.Username
@@ -196,7 +196,7 @@ module DbHelpers =
                     let id = new BsonObjectId(new ObjectId(groupId))
 
                     let rsGroupDto:GroupDto ={
-                        _id = id
+                        _id = id.ToString()
                         GroupId = id.ToString()
                         TenantId = TenantId.value standardGroup.TenantId
                         Name = GroupName.value standardGroup.Name
@@ -215,7 +215,7 @@ module DbHelpers =
                     let id = new BsonObjectId(new ObjectId(groupId))
 
                     let rsGroupDto:GroupDto ={
-                        _id = id
+                        _id = id.ToString()
                         GroupId = id.ToString()
                         TenantId = TenantId.value internalGroup.TenantId
                         Name = GroupName.value internalGroup.Name
@@ -242,7 +242,7 @@ module DbHelpers =
         let groupDto = fromGroupDomainToDto  aRole.InternalGroup
 
         {
-            _id = id
+            _id = id.ToString()
             RoleId = id.ToString()
             TenantId = TenantId.value aRole.TenantId
             Name = RoleName.value aRole.Name
@@ -393,7 +393,7 @@ module RoleDb =
 
         try
 
-            aRoleCollection.Find(fun x -> x._id = id).Single()            
+            aRoleCollection.Find(fun x -> x._id = id.ToString()).Single()            
             |> Ok
                 
         with
@@ -410,7 +410,7 @@ module RoleDb =
         try
 
             
-            aRoleCollection.Find(fun x -> (x._id = roleId) && (x.TenantId = tenantId.Value.ToString()) ).Single()
+            aRoleCollection.Find(fun x -> (x._id = roleId.ToString()) && (x.TenantId = tenantId.Value.ToString()) ).Single()
             |> Ok
                 
         with
@@ -528,7 +528,7 @@ module UserDb =
     let loadUserById (aUserCollection : IMongoCollection<UserDto>)  ( id : BsonObjectId ) = 
         
         try
-            aUserCollection.Find(fun x -> x._id = id).Single()        
+            aUserCollection.Find(fun x -> x._id = id.ToString()).Single()        
             |> Ok
 
         with
@@ -548,7 +548,7 @@ module UserDb =
 
         try
 
-            aRoleCollection.Find(fun x -> (x._id = userId) && (x.TenantId = tenantId.Value.ToString()) ).Single()
+            aRoleCollection.Find(fun x -> (x._id = userId.ToString()) && (x.TenantId = tenantId.Value.ToString()) ).Single()
             |> Ok
             
         with
@@ -819,7 +819,7 @@ module GroupDb =
         
         try
 
-        let result = aGroupCollection.Find(fun x -> x._id = id).Single()        
+        let result = aGroupCollection.Find(fun x -> x._id = id.ToString()).Single()        
         
         Ok ()
         
@@ -838,7 +838,7 @@ module GroupDb =
         try
 
             let bsonId = new BsonObjectId (new ObjectId(GroupId.value aGroupId))
-            let result = aGroupCollection.Find(fun x -> x._id = bsonId).Single()        
+            let result = aGroupCollection.Find(fun x -> x._id = bsonId.ToString()).Single()        
         
             result 
             |> DbHelpers.fromDbDtoToGroup
@@ -856,7 +856,7 @@ module GroupDb =
         try
 
             let bsonId = new BsonObjectId (new ObjectId(GroupMemberId.value aGroupMemberId))
-            let result = aGroupCollection.Find(fun x -> x._id = bsonId).Single()        
+            let result = aGroupCollection.Find(fun x -> x._id = bsonId.ToString()).Single()        
             
             result 
             |> DbHelpers.fromDbDtoToGroup
@@ -900,7 +900,7 @@ module GroupDb =
                                        | Internal g -> g 
 
             let bsonId = new BsonObjectId (new ObjectId(GroupId.value aStandardGroup.GroupId))
-            let filter = Builders<GroupDto>.Filter.Eq((fun x -> x._id), bsonId)
+            let filter = Builders<GroupDto>.Filter.Eq((fun x -> x._id), bsonId.ToString())
             let aGroupDto = DbHelpers.fromGroupDomainToDto aGroup
             let updateDefinition = Builders<GroupDto>.Update.Set((fun x -> x.TenantId), aGroupDto.TenantId).Set((fun x -> x.Name), aGroupDto.Name).Set((fun x -> x.Description), aGroupDto.Description)  .Set((fun x -> x.Members), aGroupDto.Members)  
             let result = aGroupCollection.UpdateOne(filter, updateDefinition)

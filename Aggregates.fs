@@ -44,8 +44,8 @@ type TenantEvents =
     | TenantCreated of TenantDto
     | TenantDeactivated of TenantDto
     | TenantReactivated of TenantDto
-    | RegistrationInvitationOfferred of RegistrationInvitationOfferredDto
-    | RegistrationInvitationWithdrawn of RegistrationInvitationDto
+    | RegistrationInvitationOfferred of TenantDto
+    | RegistrationInvitationWithdrawn of TenantDto
 
 
 
@@ -67,7 +67,7 @@ module Tenant =
 
 
 
-
+(*
 
     let apply (aTenantCurrentState:TenantDto option) (aTenantEvent:TenantEvents) : Result<TenantDto, string> =
 
@@ -171,7 +171,7 @@ module Tenant =
             
 
 
-    (* let exec (aTenant:TenantDto) (aCommand:TenantCommand) =
+     let exec (aTenant:TenantDto) (aCommand:TenantCommand) =
 
         match aCommand with  
         | CreateTenant tenant ->

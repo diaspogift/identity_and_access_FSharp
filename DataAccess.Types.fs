@@ -89,7 +89,7 @@ type EnablementStatusDto =
 
 
 type UserDto = {
-    _id : BsonObjectId
+    _id : string
     UserId : string
     TenantId: string
     Username: string
@@ -144,7 +144,7 @@ type GroupMemberDto = {
 }
 
 type GroupDto = {
-    _id : BsonObjectId
+    _id : string
     GroupId : string
     TenantId :String
     Name : string
@@ -175,7 +175,7 @@ type SupportNestingStatusDto =
 
 
 type RoleDto = {
-    _id : BsonObjectId
+    _id : string
     RoleId : string
     TenantId : string
     Name : string

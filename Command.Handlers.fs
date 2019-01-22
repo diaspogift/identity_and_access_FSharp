@@ -28,13 +28,13 @@ open IdentityAndAccess.DatabaseTypes
 
 open System
 open FSharp.Data.Sql
-open FSharp.Data.Sql
-open FSharp.Data.Sql
 open System.Collections.Generic
 open IdentityAndAcccess.Aggregates.Implementation
 open IdentityAndAcccess.DomainTypes.Functions
 open System.Collections.Generic
 open FSharp.Data.Sql
+open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
+open IdentityAndAcccess.DomainTypes.User
 
 
 
@@ -88,7 +88,7 @@ let fromRegInvToDto (aRegInv:RegistrationInvitation) =
 
 
 
-let apply aTenant anEvent = 
+let applyTenantEvent aTenant anEvent = 
 
     match anEvent with 
     | TenantStreamEvent.TenantCreated t ->
@@ -111,40 +111,124 @@ let apply aTenant anEvent =
     
     | TenantStreamEvent.InvitationWithdrawned  t ->  
         let regInDto = t.Invitation
-        
-
         let filteredInvitations = aTenant.RegistrationInvitations
-                                  |> Array.filter ( fun invitation -> not (invitation.RegistrationInvitationId = regInDto.RegistrationInvitationId )) 
-
-        {aTenant with
-             RegistrationInvitations = filteredInvitations}
+                                  |> Array.filter ( fun invitation -> 
+                                                        not ( invitation.RegistrationInvitationId = regInDto.RegistrationInvitationId )) 
+        {aTenant with RegistrationInvitations = filteredInvitations}
         
 
 
+let applyUserEvent aUser anEvent = 
+
+    match anEvent with 
+    | UserStreamEvent.UserRegistered t ->
+      t
+    | UserStreamEvent.PasswordChanged t ->
+        {aUser with Password = t |> Password.value }
+    
+    | UserStreamEvent.PersonalNameChanged t ->
+        {aUser with FirstName = t.First |> FirstName.value ; MiddleName = t.Middle |> MiddleName.value; LastName = t.Last |> LastName.value }
+
+   
 
 
 
+let applyRoleEvent aRole anEvent = 
+
+    match anEvent with 
+    | RoleStreamEvent.RoleCreated t ->
+      t
+    
+
+let applyGroupEvent aGroup anEvent = 
+
+    match anEvent with 
+    | GroupStreamEvent.GroupCreated t ->
+      t
+    
 
 
 let loadTenantWithId tenantStreamId = 
 
     let store = EventStorePlayGround.create tenantStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
-    let foundTenantEventStreamList,lastEventNumber, nextEventNumber = EventStorePlayGround.readStream<TenantStreamEvent> store tenantStreamId 0L 4095  |> Async.RunSynchronously
-   
-
-    printfn " tenantStreamId === %A" tenantStreamId 
-    printfn " tenantStreamId === %A" tenantStreamId 
-    printfn " foundTenantEventStreamList === %A" foundTenantEventStreamList 
-    printfn " foundTenantEventStreamList === %A" foundTenantEventStreamList 
-    printfn " foundTenantEventStreamList === %A" foundTenantEventStreamList 
-    printfn " foundTenantEventStreamList === %A" foundTenantEventStreamList 
+    let foundTenantEventStreamList,lastEventNumber,
+        nextEventNumber = EventStorePlayGround.readStream<TenantStreamEvent> store tenantStreamId 0L 4095  |> Async.RunSynchronously
    
     let zeroTenantDtoStateStream =  foundTenantEventStreamList.[0]
     let tenantZeroState = match zeroTenantDtoStateStream with  TenantStreamEvent.TenantCreated t ->  t
-    let tenant =  foundTenantEventStreamList |>  List.toArray |> Seq.fold apply tenantZeroState
+    let tenant =  foundTenantEventStreamList |>  List.toArray |> Seq.fold applyTenantEvent tenantZeroState
+    let tenantDto:TenantDto= {
+        _id = tenant.TenantId
+        TenantId = tenant.TenantId
+        Name = tenant.Name
+        Description = tenant.Description
+        RegistrationInvitations = tenant.RegistrationInvitations 
+        ActivationStatus = tenant.ActivationStatus 
+    }
+    (tenantStreamId, tenantDto, lastEventNumber)
 
-    (tenantStreamId, tenant, lastEventNumber)
 
+let loadRoleWithId roleStreamId = 
+
+    let store = EventStorePlayGround.create roleStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
+    let foundRoleEventStreamList,lastEventNumber,
+        nextEventNumber = EventStorePlayGround.readStream<RoleStreamEvent> store roleStreamId 0L 4095  |> Async.RunSynchronously
+   
+    let zeroRoleDtoStateStream =  foundRoleEventStreamList.[0]
+    let roleZeroState = match zeroRoleDtoStateStream with  RoleStreamEvent.RoleCreated t ->  t
+    let role =  foundRoleEventStreamList |>  List.toArray |> Seq.fold applyRoleEvent roleZeroState
+    let roleDto:RoleDto= {
+        _id = role.TenantId
+        RoleId = role.RoleId
+        TenantId = role.TenantId
+        Name = role.Name
+        Description = role.Description
+        SupportNesting = role.SupportNesting
+        Group = role.Group 
+    }
+    (roleStreamId, roleDto, lastEventNumber)
+
+
+let loadUserWithId userStreamId = 
+
+    let store = EventStorePlayGround.create userStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
+    let foundUserEventStreamList,lastEventNumber,
+        nextEventNumber = EventStorePlayGround.readStream<UserStreamEvent> store userStreamId 0L 4095  |> Async.RunSynchronously
+   
+    let zeroUserDtoStateStream =  foundUserEventStreamList.[0]
+    let userZeroState = match zeroUserDtoStateStream with  UserStreamEvent.UserRegistered t ->  t
+    let user =  foundUserEventStreamList |>  List.toArray |> Seq.fold applyUserEvent userZeroState
+    let userDto:UserDto = {
+        _id = user._id
+        UserId = user.UserId
+        TenantId = user.TenantId
+        Username = user.Username
+        Password = user.Password
+        EnablementStatus = user.EnablementStatus
+        EnablementStartDate = user.EnablementStartDate
+        EnablementEndDate = user.EnablementEndDate
+        EmailAddress = user.EmailAddress
+        PostalAddress = user.PostalAddress
+        PrimaryTel = user.PrimaryTel
+        SecondaryTel = user.SecondaryTel
+        FirstName = user.FirstName
+        LastName = user.LastName
+        MiddleName = user.MiddleName
+    }
+    (userStreamId, userDto, lastEventNumber)
+
+
+let loadGroupWithId groupStreamId = 
+
+    let store = EventStorePlayGround.create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
+    let foundGroupEventStreamList,lastEventNumber,
+        nextEventNumber = EventStorePlayGround.readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
+   
+    let zeroGroupDtoStateStream =  foundGroupEventStreamList.[0]
+    let groupZeroState = match zeroGroupDtoStateStream with  GroupStreamEvent.GroupCreated t ->  t
+    let groupDto =  foundGroupEventStreamList |>  List.toArray |> Seq.fold applyGroupEvent groupZeroState
+
+    (groupStreamId, groupDto, lastEventNumber)
 
 
 
@@ -181,8 +265,11 @@ let rec recursivePersistEventsStream streamId (position:int64) (eventsToPersist:
         rsAppendToTenantStream 
         |> Async.RunSynchronously
 
+        let nextStreamPostion = position + 1L
+        let remainingEvents = tail |> List.toArray
 
-        recursivePersistEventsStream streamId (position + 1L) (tail |> List.toArray)
+
+        recursivePersistEventsStream streamId nextStreamPostion remainingEvents
 
 
 
@@ -375,11 +462,6 @@ module ProvisionTenant =
 
 
 
-
-
-
-
-
     let handleProvisionTenant (aProvisionTenantCommand:ProvisionTenantCommand) = 
 
 
@@ -391,13 +473,9 @@ module ProvisionTenant =
         match ouput with 
         | Ok tenantProvisionedEventList ->
                     
-            let tenantId, 
-                tenantEventList , 
-                roleId, 
-                roleEventList, 
-                userId, 
-                userEventList = allTenantAggregateEvents tenantProvisionedEventList
-
+            let tenantId, tenantEventList, roleId, 
+                roleEventList, userId, userEventList
+                 = allTenantAggregateEvents tenantProvisionedEventList
 
             let saveTenantStream = async {
                 let events =  tenantEventList |> Array.map toSequence
@@ -450,98 +528,48 @@ module OffertRegistrationInvitationCommand =
 
 
 
-    let handleOfferRegistrationInvitation (aOfferRegistrationInvitationCommand:OfferRegistrationInvitationCommand):Result<RegistrationInvitationOfferredEvent, OfferRegistrationInvitationError> = 
-
-
+    let handleOfferRegistrationInvitation (aOfferRegistrationInvitationCommand:OfferRegistrationInvitationCommand) = 
 
         let aOfferRegistrationInvitationCommandData = aOfferRegistrationInvitationCommand.Data
 
-        let unvalidatedRegistrationInvitationDescription:UnvalidatedRegistrationInvitationDescription = {
+        let unvalidatedRegistrationInvitationDescription = {
             TenantId = aOfferRegistrationInvitationCommandData.TenantId
             Description =  aOfferRegistrationInvitationCommandData.Description 
             }
 
-        let strTenantId =  unvalidatedRegistrationInvitationDescription.TenantId  |> concatTenantStreamId 
-        let tenantStreamId, state, lastEventNumber = loadTenantWithId  strTenantId
-
-        let tenantDto:TenantDto = {
-            _id = state._id
-            TenantId = state.TenantId
-            Name = state.Name
-            Description  = state.Description
-            RegistrationInvitations = state.RegistrationInvitations
-            ActivationStatus = state.ActivationStatus
-            }
-                       
-       
+        let strTenantId =  unvalidatedRegistrationInvitationDescription.TenantId |> concatTenantStreamId 
+        let tenantStreamId, tenantDto, lastEventNumber = strTenantId |> loadTenantWithId  
+            
         let rsOfferRegistrationInvitationWorkflow = result {    
             let! rsTenant = result {      
                 let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
-                let rs = offerRegistrationInvitationWorkflow tenantFound unvalidatedRegistrationInvitationDescription
+                let rs = unvalidatedRegistrationInvitationDescription |> offerRegistrationInvitationWorkflow tenantFound 
                 return rs 
                 }    
             return rsTenant
             }
 
-
-
         match rsOfferRegistrationInvitationWorkflow with  
         | Ok en ->
             match en with  
             | Ok ev ->
-
                 let saveOfferRegistrationInvitationEvent = async {
 
-     
-                        let invs =ev.Tenant.RegistrationInvitations |> List.map fromRegInvToDto|> List.toArray
-
-                        let activationStatus = match ev.Tenant.ActivationStatus with
-                                               | Activated -> ActivationStatusDto.Activated
-                                               | Deactivated -> ActivationStatusDto.Disactivated
-
-                        let tenantDto : TenantDto = {
-                            _id = strTenantId 
-                            TenantId =  strTenantId
-                            Name =  ev.Tenant.Name |> TenantName.value
-                            Description =  ev.Tenant.Description |> TenantDescription.value
-                            RegistrationInvitations =  invs
-                            ActivationStatus =  activationStatus
-                        }
-
-
-                        let registrationInvitationDto : RegistrationInvitationDto = {
-                            RegistrationInvitationId = ev.RegistrationInvitation.RegistrationInvitationId |> RegistrationInvitationId.value
-                            Description = ev.RegistrationInvitation.Description |> RegistrationInvitationDescription.value
-                            TenantId = ev.RegistrationInvitation.TenantId |> TenantId.value
-                            StartingOn = ev.RegistrationInvitation.StartingOn
-                            Until = ev.RegistrationInvitation.Until
-                        }
-                  
-
-                        let registrationInvitationOfferredEventDto : RegistrationInvitationOfferredDto   = {   
-                            TenantId = tenantDto.TenantId
-                            Invitation = registrationInvitationDto
-                        }
-
-                        let registrstionInvitationOfferredEvent = registrationInvitationOfferredEventDto |> RegistrationInvitationOfferred 
+                        let tenant = ev.Tenant
+                        let tenantDto = tenant |> DbHelpers.fromTenantDomainToDto
+  
+                        let registrstionInvitationOfferredEvent = tenantDto |> RegistrationInvitationOfferred 
                         let registrstionInvitationOfferredEvent = registrstionInvitationOfferredEvent |> toSequence |> Array.singleton
 
                         let rsAppendToTenantStream = recursivePersistEventsStream tenantStreamId lastEventNumber registrstionInvitationOfferredEvent
-
-                      
+                     
                         return rsAppendToTenantStream
-
-                    }
-
+                        }
                 saveOfferRegistrationInvitationEvent
                 |> Async.RunSynchronously
-
                 Ok ev
-
             | Error error ->
                 Error  error
-
-
         | Error error ->
             let er = OfferRegistrationInvitationError.OfferInvitationError error
             Error er
@@ -572,12 +600,8 @@ module OffertRegistrationInvitationCommand =
 
 module DeactivateTenantActivationStatus = 
 
-    let handleDeactivateTenantActivationStatus 
-                                                (aDeactivateTenantActivationStatusCommand:DeactivateTenantActivationStatusCommand)
-                                                :Result<TenantActivationStatusDeactivatedEvent, DeactivateTenantActivationStatusError> = 
-
-
-
+    let handleDeactivateTenantActivationStatus (aDeactivateTenantActivationStatusCommand:DeactivateTenantActivationStatusCommand) =
+                                                 
         let aDeactivateTenantActivationStatusCommand = aDeactivateTenantActivationStatusCommand.Data
 
         let unvalidatedTenantActivationStatus:UnvalidatedTenantActivationStatus = {
@@ -586,19 +610,8 @@ module DeactivateTenantActivationStatus =
             Reason = aDeactivateTenantActivationStatusCommand.Reason
             }
 
-
-        let streamId , state, lastEventNumber  =  unvalidatedTenantActivationStatus.TenantId |> concatTenantStreamId  |> loadTenantWithId
-
-
-        let tenantDto:TenantDto = {
-            _id = state._id
-            TenantId = state.TenantId
-            Name = state.Name
-            Description  = state.Description
-            RegistrationInvitations = state.RegistrationInvitations
-            ActivationStatus = state.ActivationStatus   
-        }
-                       
+        let streamId, tenantDto, lastEventNumber  =  unvalidatedTenantActivationStatus.TenantId 
+                                                     |> concatTenantStreamId  |> loadTenantWithId         
 
         let rsDeactivateTenantWorkflow = result {
             let! rsTenant = result {
@@ -617,31 +630,20 @@ module DeactivateTenantActivationStatus =
             | Ok ev ->
                 let saveOfferRegistrationInvitationEvent = async {
                     
-                        let tenantDto : TenantDto = {
-                            _id = ev.Tenant.TenantId 
-                            TenantId =  ev.Tenant.TenantId 
-                            Name =  ev.Tenant.Name 
-                            Description =  ev.Tenant.Description 
-                            RegistrationInvitations =  ev.Tenant.RegistrationInvitations 
-                            ActivationStatus =  ev.Tenant.ActivationStatus
-                            }
+                    let tenantActivationStatusDeactivatedDto : TenantActivationStatusDeactivatedDto   = {   
+                        Tenant = ev.Tenant 
+                        ActivationStatus = ev.Tenant.ActivationStatus
+                        Reason = "FIXTURE FOR NW"
+                        }
 
-                  
-                        let tenantActivationStatusDeactivatedDto : TenantActivationStatusDeactivatedDto   = {   
-                            Tenant = tenantDto 
-                            ActivationStatus = ev.Tenant.ActivationStatus
-                            Reason = "FIXTURE FOR NW"
-                            }
+                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedDto 
+                                                                 |> ActivationStatusDeActivated 
+                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedEvent 
+                                                                 |> toSequence |> Array.singleton 
 
-                        let tenantActivationStatusDeactivatedEvent = ActivationStatusDeActivated tenantActivationStatusDeactivatedDto
-                        let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedEvent |> toSequence |> Array.singleton 
+                    let rsAppendToTenantStream = recursivePersistEventsStream streamId  lastEventNumber tenantActivationStatusDeactivatedEvent
 
-                        
-                        let rsAppendToTenantStream = recursivePersistEventsStream streamId  lastEventNumber tenantActivationStatusDeactivatedEvent
-
-                       
-                        return rsAppendToTenantStream
-
+                    return rsAppendToTenantStream
                     }
 
                 saveOfferRegistrationInvitationEvent
@@ -673,33 +675,18 @@ module DeactivateTenantActivationStatus =
 
 module ReactivateTenantActivationStatus = 
 
-    let handleReactivateTenantActivationStatus (aReactivateTenantActivationStatusCommand:ReactivateTenantActivationStatusCommand)
-                                               :Result<TenantActivationStatusReactivatedEvent, ReactivateTenantActivationStatusError> = 
-
+    let handleReactivateTenantActivationStatus (aReactivateTenantActivationStatusCommand:ReactivateTenantActivationStatusCommand) = 
 
         let aReactivateTenantActivationStatusCommand = aReactivateTenantActivationStatusCommand.Data
-
 
         let unvalidatedTenantActivationStatus:UnvalidatedTenantActivationStatusData = {
             TenantId = aReactivateTenantActivationStatusCommand.TenantId
             ActivationStatus =  aReactivateTenantActivationStatusCommand.ActivationStatus 
             Reason = aReactivateTenantActivationStatusCommand.Reason
             }
-  
 
-        let streamId, state, lastEventNumber  =  unvalidatedTenantActivationStatus.TenantId |> concatTenantStreamId  |> loadTenantWithId
-
-
-        let tenantDto:TenantDto = {
-            _id = state._id
-            TenantId = state.TenantId
-            Name = state.Name
-            Description  = state.Description
-            RegistrationInvitations = state.RegistrationInvitations
-            ActivationStatus = state.ActivationStatus
-            }
-                      
-
+        let streamId, tenantDto, lastEventNumber  =  unvalidatedTenantActivationStatus.TenantId 
+                                                     |> concatTenantStreamId  |> loadTenantWithId            
         let rsReactivateTenantWorkflow = result {
             let! rsTenant = result {
                 let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
@@ -709,50 +696,30 @@ module ReactivateTenantActivationStatus =
             return rsTenant
             }
 
-
-
         match rsReactivateTenantWorkflow with  
         | Ok en ->
             match en with  
             | Ok ev ->
                 let saveTenantActivationStatusReactevatedEvent = async {
 
-                    let tenantDto : TenantDto = {
-                        _id = ev.Tenant.TenantId 
-                        TenantId =  ev.Tenant.TenantId 
-                        Name =  ev.Tenant.Name 
-                        Description =  ev.Tenant.Description 
-                        RegistrationInvitations =  ev.Tenant.RegistrationInvitations 
-                        ActivationStatus =  ev.Tenant.ActivationStatus
-                        }
-
-              
                     let tenantActivationStatusDeactivatedDto : TenantActivationStatusDeactivatedDto   = {   
-                        Tenant = tenantDto 
+                        Tenant = ev.Tenant 
                         ActivationStatus = ev.Tenant.ActivationStatus
                         Reason = "FIXTURE FOR NW"
                         }
 
-                    let tenantActivationStatusDeactivatedEvent = ActivationStatusDeActivated tenantActivationStatusDeactivatedDto
+                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedDto |> ActivationStatusDeActivated 
                     let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedEvent |> toSequence |> Array.singleton 
-
-                    
+    
                     let rsAppendToTenantStream = recursivePersistEventsStream streamId  lastEventNumber tenantActivationStatusDeactivatedEvent
 
-                   
                     return rsAppendToTenantStream
-
                     }
-
                 saveTenantActivationStatusReactevatedEvent
                 |> Async.RunSynchronously
-
                 Ok ev
-
             | Error error ->
                 Error  error
-
-
         | Error error ->
             let er = ReactivateTenantActivationStatusError.ReactivationError error
             Error er
