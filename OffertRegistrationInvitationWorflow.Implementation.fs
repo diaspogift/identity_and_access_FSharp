@@ -13,6 +13,8 @@ open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 
+open IdentityAndAccess.DatabaseTypes
+open IdentityAndAcccess.DomainServices
 
 
 
@@ -125,9 +127,19 @@ let createEvents : CreateEvents =
 
         let tenant, registrationInvitation =  tenantAndInvitation
 
+
+        let regInvDto:RegistrationInvitationDto = {
+
+            RegistrationInvitationId = registrationInvitation.RegistrationInvitationId |> RegistrationInvitationId.value
+            Description = registrationInvitation.Description |> RegistrationInvitationDescription.value
+            TenantId = registrationInvitation.TenantId |> TenantId.value
+            StartingOn = registrationInvitation.StartingOn
+            Until = registrationInvitation.Until
+        }
+
         let registrationInvitationOfferredEvent : RegistrationInvitationOfferredEvent = {
-            Tenant = tenant
-            RegistrationInvitation = registrationInvitation
+            Tenant = (tenant |> DbHelpers.fromTenantDomainToDto)
+            RegistrationInvitation = regInvDto
         }
 
 

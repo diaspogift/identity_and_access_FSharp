@@ -20,6 +20,8 @@
     <Compile Include="ProvisionTenantWorflow.Implementation.fs" />
     <Compile Include="OffertRegistrationInvitation.PublicTypes.fs" />
     <Compile Include="OffertRegistrationInvitationWorflow.Implementation.fs" />
+    <Compile Include="WithdrawRegistrationInvitation.PublicTypes.fs" />
+    <Compile Include="WithdrawRegistrationInvitationWorflow.Implementation.fs" />
     <Compile Include="DeactivateTenantActivationStatusWorflow.PublicTypes.fs" />
     <Compile Include="DeactivateTenantActivationStatusWorflow.Implementation.fs" />
     <Compile Include="ReactivateTenantActivationStatusWorflow.PublicTypes.fs" />
@@ -36,8 +38,6 @@
     
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EventStore.Client" Version="4.1.0" />
-    <PackageReference Include="EventStore.Client.FSharp" Version="4.2.0" />
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.2" />

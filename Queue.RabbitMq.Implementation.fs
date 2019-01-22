@@ -18,11 +18,11 @@ module Client =
 
     let declareQueue (channel:IModel) queueName = channel.QueueDeclare( queueName, false, false, false, null )
 
-    let readFromQueue (consumer:QueueingBasicConsumer) queueName =
+    (* let readFromQueue (consumer:QueueingBasicConsumer) queueName =
         let ea = consumer.Queue.Dequeue()
         let body = ea.Body
         let message = Encoding.UTF8.GetString(body)
-        message
+        message *)
 
     let publishToQueue (channel:IModel) queueName (message:string) =
         let body = Encoding.UTF8.GetBytes(message)

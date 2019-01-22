@@ -25,7 +25,8 @@ open IdentityAndAcccess.DomainApiTypes.Handlers
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
 open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
-open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
+open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes
+open IdentityAndAcccess.WithdrawRegistrationInvitationApiTypes.WithdrawRegistrationInvitationWorflowImplementation
 open Suave.Sockets
 
 open IdentityAndAcccess.DomainApiTypes.Handlers
@@ -105,13 +106,13 @@ let printEmptySeparatorLine(count) =
 
 (*
 
-let unvalidatedTenant : UnvalidatedTenant = {Name = "Mobile Biller"; Description = "Mobile Biller offre les services mobile de transfert d'argent"}
+let unvalidatedTenant : UnvalidatedTenant = {Name = "DiaspoGift"; Description = "Diaspora Gift Platforme"}
 
 let tenantAdministrator : TenantAdministrator = {
-    FirstName = "Didier"
+    FirstName = "Felicien"
     MiddleName = "N/A"
-    LastName = "Nkalla"
-    Email = "didnkallaehawe@gmail.com"
+    LastName = "Fotio"
+    Email = "felicien@gmail.com"
     Address = "Douala, Cameroun"
     PrimPhone = "669262690" 
     SecondPhone = "669262691"
@@ -127,7 +128,7 @@ let provisionTenantCommand : ProvisionTenantCommand = {
         
         Data = unvalidatedTenantProvision
         TimeStamp = DateTime.Now
-        UserId = "Megan"
+        UserId = "Felicien"
 
         } 
 
@@ -152,34 +153,31 @@ match  rsProvisionTenantCommand with
  
 
 
-let unvalidatedRegistrationInvitationDescription : UnvalidatedRegistrationInvitationDescription = {
-        TenantId = "5c464a449c40a87f406780e8"; 
-        Description = "Invitation for Megan"
-        }
 
 
-let offerRegistrationInvitationCommand : OfferRegistrationInvitationCommand = {
-        Data = unvalidatedRegistrationInvitationDescription
-        TimeStamp = DateTime.Now
-        UserId = "Megan"
-        } 
 
 
-let rsOfferRegistrationInvitationCommand = OffertRegistrationInvitationCommand.handleOfferRegistrationInvitation offerRegistrationInvitationCommand
 
 
-match  rsOfferRegistrationInvitationCommand with  
-| Ok rs -> 
-        printEmptySeparatorLine(1)
-        printfn " THE INVITATION RESULT"
-        printEmptySeparatorLine(1)
-        printfn " %A" rs
-        printEmptySeparatorLine(1)
 
-| Error error ->
-        printfn " %A" error 
 
-*)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 let unvalidatedDeactivateTenant : UnvalidatedTenantActivationStatus = {
@@ -213,6 +211,67 @@ match  rsDeactivateTenantActivationStatusCommand with
 
 | Error error ->
         printfn " %A" error
+
+*)
+
+
+(*
+let unvalidatedDescription : UnvalidatedRegistrationInvitationDescription= {
+        Description = "For Diane"
+        TenantId = "5c46f8c65dd81b2405ecd568"; 
+        }
+
+
+let offerRegistrationInvitationCommand : OfferRegistrationInvitationCommand = {
+        Data = unvalidatedDescription
+        TimeStamp = DateTime.Now
+        UserId = "Megan"
+        } 
+
+
+let rsOfferRegistrationInvitationCommand = OfferRegistrationInvitationCommand.handleOfferRegistrationInvitation offerRegistrationInvitationCommand
+
+
+match  rsOfferRegistrationInvitationCommand with  
+| Ok rs -> 
+        printEmptySeparatorLine(1)
+        printfn " THE INVITATION  RESULT"
+        printEmptySeparatorLine(1)
+        printfn " %A" rs
+        printEmptySeparatorLine(1)
+
+| Error error ->
+        printfn " %A" error *)
+
+
+
+
+let unvalidatedRegistrationIdentifier : UnvalidatedRegistrationInvitationIdentifier = {
+        RegistrationInvitationId = "5c46f9effa223d279537c362"
+        TenantId = "5c46f8c65dd81b2405ecd568"; 
+        }
+
+
+let withdrawRegistrationInvitationCommand : WithdrawRegistrationInvitationCommand = {
+        Data = unvalidatedRegistrationIdentifier
+        TimeStamp = DateTime.Now
+        UserId = "Megan"
+        } 
+
+
+let rsWithdrawRegistrationInvitationCommand = WithdrawRegistrationInvitationCommand.handleWithdrawRegistrationInvitation withdrawRegistrationInvitationCommand
+
+
+match  rsWithdrawRegistrationInvitationCommand with  
+| Ok rs -> 
+        printEmptySeparatorLine(1)
+        printfn " THE INVITATION WITHDRAWAL RESULT"
+        printEmptySeparatorLine(1)
+        printfn " %A" rs
+        printEmptySeparatorLine(1)
+
+| Error error ->
+        printfn " %A" error 
 
 
 

@@ -502,16 +502,6 @@ module Tenant =
     let fullCreate id name description activationStatus (regInvDtoList:RegistrationInvitationDtoTemp array) = 
 
 
-        printfn "---------------------------------------------------------------"
-        printfn "---------------------------------------------------------------"
-        
-        printfn " I RECEIVED THIS : %A---------------------------------------------------------------" regInvDtoList
-
-
-        printfn "---------------------------------------------------------------"
-        printfn "---------------------------------------------------------------"
-
-
         let fromRegIncDtoTempToRegInv (aRegIncDtoTemp : RegistrationInvitationDtoTemp) = 
 
             let rsRegistrationInvitation = result {
@@ -865,10 +855,10 @@ module Tenant =
 
 
 
-    let withdrawInvitation 
+    let withdrawRegistrationInvitation 
         (aTenant:Tenant)
         (aRegistrationInvitationId:RegistrationInvitationId)
-        :Result<Tenant, string> =
+        :Result<Tenant * RegistrationInvitation, string> =
 
         let optionalInvitationToWithdraw = 
                                     aTenant.RegistrationInvitations 
@@ -876,12 +866,12 @@ module Tenant =
                                     |> List.first
 
         match optionalInvitationToWithdraw with 
-         | Some _ -> 
+         | Some reg -> 
 
             let otherInvitations = aTenant.RegistrationInvitations 
                                     |> List.filter (fun nextInvitation -> not (nextInvitation.RegistrationInvitationId = aRegistrationInvitationId) )
             
-            Ok {aTenant with RegistrationInvitations = otherInvitations }
+            Ok ({aTenant with RegistrationInvitations = otherInvitations }, reg)
 
          | None ->
             let msg = sprintf "No registration invitation found for identifier: %A" aRegistrationInvitationId

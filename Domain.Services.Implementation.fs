@@ -106,13 +106,13 @@ module Tenant =
                                                           aSecondaryTelephone anAdministorFirstName anAdministorMiddleName anAdministorLastName 
 
                                         
-            let! rsWithdrawInvitation = Tenant.withdrawInvitation tenantWithRegistrationInvitation registrationInvitation.RegistrationInvitationId
+            let! rstenant, invitation = Tenant.withdrawRegistrationInvitation tenantWithRegistrationInvitation registrationInvitation.RegistrationInvitationId
 
 
             let! adminRoleName = "SUPER_ADMINISTRATOR" |> RoleName.create'
             let! adminRoleDescription = "SUPER_ADMINISTRATOR is a role that have access to all tenant'rsources" |> RoleDescription.create'
 
-            let! adminRole = Tenant.provisionRole rsWithdrawInvitation adminRoleName adminRoleDescription
+            let! adminRole = Tenant.provisionRole rstenant adminRoleName adminRoleDescription
 
             let! resultAssignUserToSuperAdminRole = Role.assignUser adminRole adminUser
 

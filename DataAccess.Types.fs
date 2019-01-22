@@ -64,7 +64,7 @@ type RegistrationInvitationOfferredDto = {
 }
 
 
-type RegistrationInvitationWithdrawnedDto = {
+type RegistrationInvitationWithdrawnDto = {
     TenantId : string
     Invitation: RegistrationInvitationDto
 }

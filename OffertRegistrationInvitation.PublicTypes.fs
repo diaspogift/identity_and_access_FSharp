@@ -7,6 +7,7 @@ open System
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainServices
+open IdentityAndAccess.DatabaseTypes
 
 
 
@@ -50,8 +51,8 @@ type OfferRegistrationInvitationCommand =
 
 
 type RegistrationInvitationOfferredEvent = {
-    Tenant : Tenant
-    RegistrationInvitation : RegistrationInvitation
+    Tenant : TenantDto
+    RegistrationInvitation : RegistrationInvitationDto
     
 }
 

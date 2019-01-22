@@ -2,29 +2,6 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.2": {
-      "Aether/6.0.0": {
-        "type": "package",
-        "compile": {
-          "lib/net40/Aether.dll": {}
-        },
-        "runtime": {
-          "lib/net40/Aether.dll": {}
-        }
-      },
-      "Chiron/4.1.0": {
-        "type": "package",
-        "dependencies": {
-          "Aether": "6.0.0",
-          "FParsec": "1.0.1",
-          "FSharp.Core": "3.1.2.1"
-        },
-        "compile": {
-          "lib/net45/Chiron.dll": {}
-        },
-        "runtime": {
-          "lib/net45/Chiron.dll": {}
-        }
-      },
       "DnsClient/1.0.7": {
         "type": "package",
         "dependencies": {
@@ -52,38 +29,6 @@
           "lib/netstandard1.3/DnsClient.dll": {}
         }
       },
-      "EventStore.Client/4.1.0": {
-        "type": "package",
-        "compile": {
-          "lib/net40/EventStore.ClientAPI.dll": {}
-        },
-        "runtime": {
-          "lib/net40/EventStore.ClientAPI.dll": {}
-        }
-      },
-      "EventStore.Client.FSharp/4.2.0": {
-        "type": "package",
-        "dependencies": {
-          "Chiron": "4.1.0",
-          "EventStore.Client.PreRelease": "3.1.0",
-          "FSharp.Core": "4.0.0.1"
-        },
-        "compile": {
-          "lib/net40/EventStore.ClientAPI.FSharp.dll": {}
-        },
-        "runtime": {
-          "lib/net40/EventStore.ClientAPI.FSharp.dll": {}
-        }
-      },
-      "EventStore.Client.PreRelease/3.1.0": {
-        "type": "package",
-        "compile": {
-          "lib/net45/EventStore.ClientAPI.dll": {}
-        },
-        "runtime": {
-          "lib/net45/EventStore.ClientAPI.dll": {}
-        }
-      },
       "EventStore.ClientAPI.NetCore/4.1.0": {
         "type": "package",
         "dependencies": {
@@ -95,17 +40,6 @@
         },
         "runtime": {
           "lib/netstandard2.0/EventStore.ClientAPI.NetCore.dll": {}
-        }
-      },
-      "FParsec/1.0.1": {
-        "type": "package",
-        "compile": {
-          "lib/net40-client/FParsec.dll": {},
-          "lib/net40-client/FParsecCS.dll": {}
-        },
-        "runtime": {
-          "lib/net40-client/FParsec.dll": {},
-          "lib/net40-client/FParsecCS.dll": {}
         }
       },
       "FSharp.Core/4.5.2": {
@@ -2190,32 +2124,6 @@
     }
   },
   "libraries": {
-    "Aether/6.0.0": {
-      "sha512": "xkLckgk4Qz8xA3mKD/s4x4l9poHadwng+gsdmWgRujBU39Y7hVwyF9UCO4N0FtmrJTBTIa4+8+hjAe3ULsxRpA==",
-      "type": "package",
-      "path": "aether/6.0.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "aether.6.0.0.nupkg.sha512",
-        "aether.nuspec",
-        "lib/net40/Aether.dll"
-      ]
-    },
-    "Chiron/4.1.0": {
-      "sha512": "53T45w4L5+wH4XxZRVdJTsCA39AFJGOT6Z3QTTZt6Y09pJ57Ff2l9yJe/UuFPu5Y+E9TYESOso22ZGhIYByJqA==",
-      "type": "package",
-      "path": "chiron/4.1.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "chiron.4.1.0.nupkg.sha512",
-        "chiron.nuspec",
-        "lib/net45/Chiron.XML",
-        "lib/net45/Chiron.dll",
-        "lib/net45/Chiron.pdb"
-      ]
-    },
     "DnsClient/1.0.7": {
       "sha512": "i6Imdyz+dvljMtQh1QtjMzguLEFFJCilecHiaRPIbNX4gK3zluf/3OQWD1XbVy5PXf1u394x5ImB+uu7DNMS1w==",
       "type": "package",
@@ -2231,46 +2139,6 @@
         "lib/netstandard1.3/DnsClient.xml"
       ]
     },
-    "EventStore.Client/4.1.0": {
-      "sha512": "TdjNgc21QF5QlSari/9Wx4e4yFf/5UTiFprrpKb9LhPY3PdGCVWG8g01ajMVeN8HL4VuUSdQPd7+jyKdjHJZYQ==",
-      "type": "package",
-      "path": "eventstore.client/4.1.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "eventstore.client.4.1.0.nupkg.sha512",
-        "eventstore.client.nuspec",
-        "lib/net40/EventStore.ClientAPI.dll",
-        "lib/net40/EventStore.ClientAPI.xml"
-      ]
-    },
-    "EventStore.Client.FSharp/4.2.0": {
-      "sha512": "MOtoy9GPSwoAYrbxZJ0ZLC1LF+G9buxmw/GffAevjtXYLMlFVcskdW3XDwGq+DSRtYBozJGDsP7AQHHiMmbH0Q==",
-      "type": "package",
-      "path": "eventstore.client.fsharp/4.2.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "eventstore.client.fsharp.4.2.0.nupkg.sha512",
-        "eventstore.client.fsharp.nuspec",
-        "lib/net40/EventStore.ClientAPI.FSharp.dll",
-        "lib/net40/EventStore.ClientAPI.FSharp.xml"
-      ]
-    },
-    "EventStore.Client.PreRelease/3.1.0": {
-      "sha512": "xEy9/A7H6pinsRU778sLXfPqExgDVYFptqt/lhcREVHuNBIvZbd280RJwUmy7C25dwuIBVbCeeSMS64T5YCw0A==",
-      "type": "package",
-      "path": "eventstore.client.prerelease/3.1.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "eventstore.client.prerelease.3.1.0.nupkg.sha512",
-        "eventstore.client.prerelease.nuspec",
-        "lib/net45/EventStore.ClientAPI.dll",
-        "lib/net45/EventStore.ClientAPI.dll.mdb",
-        "lib/net45/EventStore.ClientAPI.xml"
-      ]
-    },
     "EventStore.ClientAPI.NetCore/4.1.0": {
       "sha512": "zZFP+WfNKKawA5fASBxiGfkXVJqRKN9Xpt4h3yRqEjbdTvHhkOYjY7MbumUjItp74f253Q9LP4P0z3iuxyJcxg==",
       "type": "package",
@@ -2281,21 +2149,6 @@
         "eventstore.clientapi.netcore.4.1.0.nupkg.sha512",
         "eventstore.clientapi.netcore.nuspec",
         "lib/netstandard2.0/EventStore.ClientAPI.NetCore.dll"
-      ]
-    },
-    "FParsec/1.0.1": {
-      "sha512": "+Gs3pGZesdpT9HmswKGrEm4P7J6B1naGr83dxKhVxq1VwSY/aH+paYV2mBfAGfFJ4Uu0bSTz0LNzpwQDbYHePQ==",
-      "type": "package",
-      "path": "fparsec/1.0.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "fparsec.1.0.1.nupkg.sha512",
-        "fparsec.nuspec",
-        "lib/net40-client/FParsec.XML",
-        "lib/net40-client/FParsec.dll",
-        "lib/net40-client/FParsecCS.XML",
-        "lib/net40-client/FParsecCS.dll"
       ]
     },
     "FSharp.Core/4.5.2": {
@@ -7210,8 +7063,6 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.2": [
-      "EventStore.Client >= 4.1.0",
-      "EventStore.Client.FSharp >= 4.2.0",
       "EventStore.ClientAPI.NetCore >= 4.1.0",
       "FSharp.Core >= 4.5.2",
       "Microsoft.NETCore.App >= 2.2.0",
@@ -7257,14 +7108,6 @@
     "frameworks": {
       "netcoreapp2.2": {
         "dependencies": {
-          "EventStore.Client": {
-            "target": "Package",
-            "version": "[4.1.0, )"
-          },
-          "EventStore.Client.FSharp": {
-            "target": "Package",
-            "version": "[4.2.0, )"
-          },
           "EventStore.ClientAPI.NetCore": {
             "target": "Package",
             "version": "[4.1.0, )"
@@ -7311,67 +7154,5 @@
         "warn": true
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'Aether 6.0.0' was restored using '.NETFramework,Version=v4.6.1' instead of the project target framework '.NETCoreApp,Version=v2.2'. This package may not be fully compatible with your project.",
-      "libraryId": "Aether",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v2.2"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'Chiron 4.1.0' was restored using '.NETFramework,Version=v4.6.1' instead of the project target framework '.NETCoreApp,Version=v2.2'. This package may not be fully compatible with your project.",
-      "libraryId": "Chiron",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v2.2"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'EventStore.Client 4.1.0' was restored using '.NETFramework,Version=v4.6.1' instead of the project target framework '.NETCoreApp,Version=v2.2'. This package may not be fully compatible with your project.",
-      "libraryId": "EventStore.Client",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v2.2"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'EventStore.Client.FSharp 4.2.0' was restored using '.NETFramework,Version=v4.6.1' instead of the project target framework '.NETCoreApp,Version=v2.2'. This package may not be fully compatible with your project.",
-      "libraryId": "EventStore.Client.FSharp",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v2.2"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'EventStore.Client.PreRelease 3.1.0' was restored using '.NETFramework,Version=v4.6.1' instead of the project target framework '.NETCoreApp,Version=v2.2'. This package may not be fully compatible with your project.",
-      "libraryId": "EventStore.Client.PreRelease",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v2.2"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'FParsec 1.0.1' was restored using '.NETFramework,Version=v4.6.1' instead of the project target framework '.NETCoreApp,Version=v2.2'. This package may not be fully compatible with your project.",
-      "libraryId": "FParsec",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v2.2"
-      ]
-    }
-  ]
+  }
 }

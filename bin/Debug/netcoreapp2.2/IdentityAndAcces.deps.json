@@ -1,15 +1,13 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "840fc611775817d3154e32e13829f211008b335c"
+    "signature": "f365e8a2ddbd38f2fe3d203005d1e3454d7716c3"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "IdentityAndAcces/1.0.0": {
         "dependencies": {
-          "EventStore.Client": "4.1.0",
-          "EventStore.Client.FSharp": "4.2.0",
           "EventStore.ClientAPI.NetCore": "4.1.0",
           "FSharp.Core": "4.5.2",
           "MongoDB.Driver": "2.7.2",
@@ -21,27 +19,6 @@
         },
         "runtime": {
           "IdentityAndAcces.dll": {}
-        }
-      },
-      "Aether/6.0.0": {
-        "runtime": {
-          "lib/net40/Aether.dll": {
-            "assemblyVersion": "0.0.0.0",
-            "fileVersion": "0.0.0.0"
-          }
-        }
-      },
-      "Chiron/4.1.0": {
-        "dependencies": {
-          "Aether": "6.0.0",
-          "FParsec": "1.0.1",
-          "FSharp.Core": "4.5.2"
-        },
-        "runtime": {
-          "lib/net45/Chiron.dll": {
-            "assemblyVersion": "0.0.0.0",
-            "fileVersion": "0.0.0.0"
-          }
         }
       },
       "DnsClient/1.0.7": {
@@ -69,28 +46,6 @@
           }
         }
       },
-      "EventStore.Client/4.1.0": {
-        "runtime": {
-          "lib/net40/EventStore.ClientAPI.dll": {
-            "assemblyVersion": "4.1.0.0",
-            "fileVersion": "4.1.0.0"
-          }
-        }
-      },
-      "EventStore.Client.FSharp/4.2.0": {
-        "dependencies": {
-          "Chiron": "4.1.0",
-          "EventStore.Client.PreRelease": "3.1.0",
-          "FSharp.Core": "4.5.2"
-        },
-        "runtime": {
-          "lib/net40/EventStore.ClientAPI.FSharp.dll": {
-            "assemblyVersion": "4.2.0.0",
-            "fileVersion": "4.2.0.0"
-          }
-        }
-      },
-      "EventStore.Client.PreRelease/3.1.0": {},
       "EventStore.ClientAPI.NetCore/4.1.0": {
         "dependencies": {
           "Newtonsoft.Json": "12.0.1",
@@ -100,18 +55,6 @@
           "lib/netstandard2.0/EventStore.ClientAPI.NetCore.dll": {
             "assemblyVersion": "4.1.0.0",
             "fileVersion": "4.1.0.0"
-          }
-        }
-      },
-      "FParsec/1.0.1": {
-        "runtime": {
-          "lib/net40-client/FParsec.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.1.0"
-          },
-          "lib/net40-client/FParsecCS.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.1.0"
           }
         }
       },
@@ -1428,20 +1371,6 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Aether/6.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-xkLckgk4Qz8xA3mKD/s4x4l9poHadwng+gsdmWgRujBU39Y7hVwyF9UCO4N0FtmrJTBTIa4+8+hjAe3ULsxRpA==",
-      "path": "aether/6.0.0",
-      "hashPath": "aether.6.0.0.nupkg.sha512"
-    },
-    "Chiron/4.1.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-53T45w4L5+wH4XxZRVdJTsCA39AFJGOT6Z3QTTZt6Y09pJ57Ff2l9yJe/UuFPu5Y+E9TYESOso22ZGhIYByJqA==",
-      "path": "chiron/4.1.0",
-      "hashPath": "chiron.4.1.0.nupkg.sha512"
-    },
     "DnsClient/1.0.7": {
       "type": "package",
       "serviceable": true,
@@ -1449,40 +1378,12 @@
       "path": "dnsclient/1.0.7",
       "hashPath": "dnsclient.1.0.7.nupkg.sha512"
     },
-    "EventStore.Client/4.1.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-TdjNgc21QF5QlSari/9Wx4e4yFf/5UTiFprrpKb9LhPY3PdGCVWG8g01ajMVeN8HL4VuUSdQPd7+jyKdjHJZYQ==",
-      "path": "eventstore.client/4.1.0",
-      "hashPath": "eventstore.client.4.1.0.nupkg.sha512"
-    },
-    "EventStore.Client.FSharp/4.2.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-MOtoy9GPSwoAYrbxZJ0ZLC1LF+G9buxmw/GffAevjtXYLMlFVcskdW3XDwGq+DSRtYBozJGDsP7AQHHiMmbH0Q==",
-      "path": "eventstore.client.fsharp/4.2.0",
-      "hashPath": "eventstore.client.fsharp.4.2.0.nupkg.sha512"
-    },
-    "EventStore.Client.PreRelease/3.1.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-xEy9/A7H6pinsRU778sLXfPqExgDVYFptqt/lhcREVHuNBIvZbd280RJwUmy7C25dwuIBVbCeeSMS64T5YCw0A==",
-      "path": "eventstore.client.prerelease/3.1.0",
-      "hashPath": "eventstore.client.prerelease.3.1.0.nupkg.sha512"
-    },
     "EventStore.ClientAPI.NetCore/4.1.0": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-zZFP+WfNKKawA5fASBxiGfkXVJqRKN9Xpt4h3yRqEjbdTvHhkOYjY7MbumUjItp74f253Q9LP4P0z3iuxyJcxg==",
       "path": "eventstore.clientapi.netcore/4.1.0",
       "hashPath": "eventstore.clientapi.netcore.4.1.0.nupkg.sha512"
-    },
-    "FParsec/1.0.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-+Gs3pGZesdpT9HmswKGrEm4P7J6B1naGr83dxKhVxq1VwSY/aH+paYV2mBfAGfFJ4Uu0bSTz0LNzpwQDbYHePQ==",
-      "path": "fparsec/1.0.1",
-      "hashPath": "fparsec.1.0.1.nupkg.sha512"
     },
     "FSharp.Core/4.5.2": {
       "type": "package",
