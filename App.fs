@@ -48,6 +48,7 @@ open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
+open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
 
 
 
@@ -241,7 +242,7 @@ match  rsOfferRegistrationInvitationCommand with
         printEmptySeparatorLine(1)
 
 | Error error ->
-        printfn " %A" error *)
+        printfn " %A" error 
 
 
 
@@ -268,7 +269,7 @@ let rsProvisionGroupCommand = ProvisionGroupCommand.handleProvisionGroup provisi
 match  rsProvisionGroupCommand with  
 | Ok rs -> 
         printEmptySeparatorLine(1)
-        printfn " THE PROVISION INVITATION WITHDRAWAL RESULT"
+        printfn " THE PROVISIONED GROUP RESULT"
         printEmptySeparatorLine(1)
         printfn " %A" rs
         printEmptySeparatorLine(1)
@@ -277,6 +278,47 @@ match  rsProvisionGroupCommand with
         printfn " %A" error 
  
 
+
+
+*)
+
+
+
+
+
+
+
+
+
+
+
+let unvalidatedRole:UnvalidatedRole = {
+        TenantId = "5c46f8c65dd81b2405ecd568";
+        Name = "Superviseur"
+        Description = "Superviseur de bons de commandes"       
+} 
+
+let provisionRoleCommand : ProvisionRoleCommand = {
+        Data = unvalidatedRole
+        TimeStamp = DateTime.Now
+        UserId = "Megan"
+        } 
+
+ 
+let rsProvisionRoleCommand = ProvisionRoleCommand.handleProvisionRole provisionRoleCommand
+
+
+match  rsProvisionRoleCommand with  
+| Ok rs -> 
+        printEmptySeparatorLine(1)
+        printfn " THE PROVISIONED ROLE RESULT"
+        printEmptySeparatorLine(1)
+        printfn " %A" rs
+        printEmptySeparatorLine(1)
+
+| Error error ->
+        printfn " %A" error 
+ 
 
 
 

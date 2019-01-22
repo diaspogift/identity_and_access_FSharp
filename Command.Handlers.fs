@@ -6,6 +6,11 @@ open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImplementation
+open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
+open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes.ProvisionRoleWorflowImplementation
+
+open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImplementation
+
 open IdentityAndAcccess.OffertRegistrationInvitationApiTypes.OffertRegistrationInvitationWorflowImplementation
 open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes
 open IdentityAndAcccess.WithdrawRegistrationInvitationApiTypes.WithdrawRegistrationInvitationWorflowImplementation
@@ -525,6 +530,17 @@ module ReactivateTenantActivationStatus =
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 module ProvisionGroupCommand = 
 
 
@@ -573,3 +589,72 @@ module ProvisionGroupCommand =
         | Error error ->
             let er = ProvisionGroupError.DbError error
             Error er
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module ProvisionRoleCommand = 
+
+
+
+
+
+    let handleProvisionRole (aCommad:ProvisionRoleCommand) = 
+
+        let aCommandData = aCommad.Data
+        let unvalidatedRole  = aCommandData
+            
+        let rsProvisionRoleWorkflow = result {  
+            let strTenantId =  unvalidatedRole.TenantId |> concatTenantStreamId 
+            let! tenantStreamId, tenantDto, lastEventNumber = strTenantId |> loadTenantWithId    
+
+            let! rsTenant = result {      
+                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
+                let rs = unvalidatedRole |> provisionRoleWorkflow tenantFound 
+                return rs 
+                }  
+
+            return (rsTenant)
+
+            }
+
+        match rsProvisionRoleWorkflow with  
+        | Ok en ->
+            match en with  
+            | Ok ev -> 
+                let saveProvisionGroupEvent = async {
+
+                        let roleStreamId = ev.Role.RoleId |> concatRoleStreamId 
+                        let roleProvisionedEvent =  ev.Role |> RoleStreamEvent.RoleCreated 
+                        let roleProvisionedEventL = roleProvisionedEvent |> toSequence |> Array.singleton
+                        let rsAppendToTenantStream = recursivePersistEventsStream roleStreamId -1L roleProvisionedEventL
+                     
+                        return rsAppendToTenantStream
+                        }
+                saveProvisionGroupEvent
+                |> Async.RunSynchronously
+                Ok ev
+            | Error error ->
+                Error  error
+        | Error error ->
+            let er = ProvisionRoleError.DbError error
+            Error er
+
+
+
+
+
+
+
