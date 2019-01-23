@@ -38,6 +38,7 @@ type RoleStreamEvent =
 type GroupStreamEvent =
     | GroupCreated of GroupDto
     | UserAddedToGroup of UserAddedToGroupDto
+    | GroupAddedToGroup of GroupAddedToGroupDto
 
 
 
@@ -241,19 +242,14 @@ module EventStorePlayGround =
         match anEvent with 
         | GroupStreamEvent.GroupCreated g ->
           g
-
         | GroupStreamEvent.UserAddedToGroup g ->
-          
-          let groupMemberDto : GroupMemberDto = {
-              MemberId = g.User.UserId
-              TenantId = g.User.TenantId
-              Name = g.User.Username
-              Type = GroupMemberTypeDto.User
-          }
-
-          let groupMemberDtoL = groupMemberDto |> Array.singleton 
+          let groupMemberDtoL = g.GroupMember |> Array.singleton 
           let newMembers = groupMemberDtoL |> Array.append aGroup.Members  
-
+          {aGroup with Members = newMembers}
+        
+        | GroupStreamEvent.GroupAddedToGroup g ->
+          let groupMemberDtoL = g.GroupMember |> Array.singleton 
+          let newMembers = groupMemberDtoL |> Array.append aGroup.Members  
           {aGroup with Members = newMembers}
         
 
@@ -323,6 +319,10 @@ module EventStorePlayGround =
 
 
     let loadGroupWithId groupStreamId = 
+
+        printfn "=========================="
+        printfn "groupStreamId %A" groupStreamId
+        printfn "=========================="
 
         let store = create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
         let foundGroupEventStreamList,lastEventNumber,

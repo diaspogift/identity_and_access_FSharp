@@ -18,13 +18,10 @@
     <Compile Include="ProvisionTenantWorflow.Implementation.fs" />
     <Compile Include="ProvisionGroup.PublicTypes.fs" />
     <Compile Include="ProvisionGroupWorflow.Implementation.fs" />
-
     <Compile Include="AddUserToGroupWorkflow.PublicTypes.fs" />
     <Compile Include="AddUserToGroupWorkflow.Implementation.fs" />
-
-    
-
-    
+    <Compile Include="AddGroupToGroupWorkflow.PublicTypes.fs" />
+    <Compile Include="AddGroupToGroupWorkflow.Implementation.fs" />
     <Compile Include="ProvisionRole.PublicTypes.fs" />
     <Compile Include="ProvisionRoleWorflow.Implementation.fs" />
     <Compile Include="OffertRegistrationInvitation.PublicTypes.fs" />
@@ -46,6 +43,7 @@
     <Compile Include="RestFull.fs" />
     <Compile Include="Queue.RabbitMq.Implementation.fs" />
     <Compile Include="App.fs" />
+    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />

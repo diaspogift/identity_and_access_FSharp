@@ -1,4 +1,4 @@
-module IdentityAndAcccess.DomainServices
+module IdentityAndAcccess.DomainServicesImplementations
 
 open System
 open IdentityAndAcccess.DomainTypes.Group
@@ -51,15 +51,11 @@ module Tenant =
 
 
 
-
     let passwordEncryptionServiceImpl:PasswordEncryptionService = 
         fun aStrongPassword ->
             let unwrappedPassword = StrongPassword.value aStrongPassword
             //some logic go he to generate a strong password
             EncrytedPassword.create' unwrappedPassword
-
-
-
 
 
 
@@ -122,6 +118,7 @@ module Tenant =
 
             return (tenantToProvision, adminUser, resultAssignUserToSuperAdminRole, tenantWithRegistrationInvitation.RegistrationInvitations)
           }
+
 
 
     let provisionTenantServiceImpl' = provisionTenantServiceImpl strongPasswordServiceImpl passwordEncryptionServiceImpl
@@ -221,8 +218,6 @@ module Group =
 
 
 
-
-
     let isUserInNestedGroupServiceLocal : IsUserInNestedGroupService = 
 
         fun loadGroupMemberById  //Database dependency
@@ -280,7 +275,6 @@ module Group =
                 false
 
         
-    
     let isUserInNestedGroupServiceImpl = isUserInNestedGroupServiceLocal loadGroupByGroupMemberIdDbDependencyFunction
 
 
@@ -288,18 +282,12 @@ module Group =
 
 
 
-
-
-
-
     let groupMemberServices: GroupMemberServices = {
-   
         TimeServiceWasCalled = DateTime.Now
         CallerCredentials = CallerCredential "FOTIO"
         isGroupMember = isGroupMemberIsInGroupServiceImpl
         isUserInNestedGroup = isUserInNestedGroupServiceLocal
-
-    }
+        }
 
     
 

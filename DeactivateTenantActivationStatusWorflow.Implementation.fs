@@ -9,7 +9,7 @@ open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
-open IdentityAndAcccess.DomainServices
+open IdentityAndAcccess.DomainServicesImplementations
 
 
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes

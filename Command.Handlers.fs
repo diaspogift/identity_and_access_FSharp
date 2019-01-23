@@ -8,10 +8,15 @@ open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImplementation
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes.ProvisionRoleWorflowImplementation
+open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 
 
 open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
 open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowImplementation
+
+
+open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
+open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes.AddGroupToGroupApiTypes
 
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImplementation
 
@@ -49,6 +54,7 @@ open FSharp.Data.Sql
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.Aggregates.Implementation
+open IdentityAndAcccess.DomainTypes.Group
 
 
 
@@ -340,15 +346,6 @@ module WithdrawRegistrationInvitationCommand =
             let strTenantId =  unvalidatedRegistrationInvitationIdentifier.TenantId |> concatTenantStreamId 
             let! tenantStreamId, tenantDto, lastEventNumber = strTenantId |> loadTenantWithId    
 
-            printfn "-----------------------------------------------------------"
-            printfn "-----------------------------------------------------------"
-            printfn "-----------------------------------------------------------"
-            printfn "------------------- TENANT DTO %A" tenantDto
-            printfn "-----------------------------------------------------------"
-            printfn "-----------------------------------------------------------"
-            printfn "-----------------------------------------------------------"
-
-
             let! rsTenant = result {      
                 let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
                 let rs = unvalidatedRegistrationInvitationIdentifier |> withdrawRegistrationInvitationWorkflow tenantFound 
@@ -510,13 +507,13 @@ module ReactivateTenantActivationStatus =
             | Ok ev, streamId, lastEventNumber->
                 let saveTenantActivationStatusReactevatedEvent = async {
 
-                    let tenantActivationStatusDeactivatedDto : TenantActivationStatusDeactivatedDto   = {   
+                    let tenantActivationStatusReactivatedDto : TenantActivationStatusReactivatedDto   = {   
                         Tenant = ev.Tenant 
                         ActivationStatus = ev.Tenant.ActivationStatus
                         Reason = "FIXTURE FOR NW"
                         }
 
-                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedDto |> ActivationStatusDeActivated 
+                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusReactivatedDto |> ActivationStatusReActivated 
                     let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedEvent |> toSequence |> Array.singleton 
     
                     let rsAppendToTenantStream = recursivePersistEventsStream streamId  lastEventNumber tenantActivationStatusDeactivatedEvent
@@ -701,14 +698,13 @@ module AddUserToGroupCommand =
             | Ok ev, groupStreamId, lastEventNumber -> 
                 let saveUserAddedToGroupEvent = async {
 
-                    let userAddedToGroupEventData = {
-                        Group = ev.Group
-                        User = ev.User
-                    }
+                    let userAddedToGroupEventData : UserAddedToGroupDto = {
+                        Group = ev.GroupAddedTo
+                        GroupMember = ev.GroupMemberAdded
+                        }
                     let userAddedToGroupEvent =  userAddedToGroupEventData |> GroupStreamEvent.UserAddedToGroup 
                     let userAddedToGroupEventL =  userAddedToGroupEvent |> toSequence |> Array.singleton
                     
-
                     let rsAppendToTenantStream = recursivePersistEventsStream groupStreamId lastEventNumber userAddedToGroupEventL
                  
                     return rsAppendToTenantStream
@@ -730,4 +726,63 @@ module AddUserToGroupCommand =
 
 
 
+module AddGroupToGroupCommand = 
 
+
+
+
+
+    let handleAddGroupToGroup (aCommad:AddGroupToGroupCommand) = 
+
+        let aCommandData = aCommad.Data
+            
+        let rsAddGroupToGroupWorkflow = result {  
+
+            let strGroupIdToAddTo =  aCommandData.GroupIdToAddTo |> concatGroupStreamId 
+            let strGroupIdToAdd =  aCommandData.GroupIdToAdd |> concatGroupStreamId 
+
+            let! groupStreamIdToAddTo, groupDtoToAddTo, lastEventNumberToAddTo = strGroupIdToAddTo |> loadGroupWithId    
+            
+            let! _, groupDtoToAdd, _ = strGroupIdToAdd |> loadGroupWithId    
+           
+
+            let! rsAddGroupToGroup = result {
+
+                let! groupDomainToAddTo  =  groupDtoToAddTo |> DbHelpers.fromDbDtoToGroup
+                let! groupDomainToAdd =  groupDtoToAdd |> DbHelpers.fromDbDtoToGroup
+
+                let rs = addGroupToGroupWorkflow groupDomainToAddTo groupDomainToAdd
+                return rs 
+                }  
+
+            return rsAddGroupToGroup, groupStreamIdToAddTo, lastEventNumberToAddTo
+
+            }
+
+        match rsAddGroupToGroupWorkflow with  
+        | Ok en ->
+            match en with  
+            | Ok ev, groupStreamIdMemberWasToAddTo, lastEventNumber -> 
+                let saveUserAddedToGroupEvent = async {
+
+                    let groupAddedToGroupEventData = {
+                        Group = ev.GroupAddedTo
+                        GroupMember = ev.GroupMemberAdded
+                    }
+                    let groupAddedToGroupEvent =  groupAddedToGroupEventData |> GroupStreamEvent.GroupAddedToGroup 
+                    let groupAddedToGroupEventL =  groupAddedToGroupEvent |> toSequence |> Array.singleton
+                    
+
+                    let rsAppendToTenantStream = recursivePersistEventsStream groupStreamIdMemberWasToAddTo lastEventNumber groupAddedToGroupEventL
+                 
+                    return rsAppendToTenantStream
+                    }      
+
+                saveUserAddedToGroupEvent
+                |> Async.RunSynchronously
+                Ok ev
+            | Error error, s, t ->
+                Error  error
+        | Error error ->
+            let er = AddGroupToGroupError.DbError error
+            Error er

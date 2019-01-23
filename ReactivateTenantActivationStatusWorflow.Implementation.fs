@@ -7,7 +7,7 @@ open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
-open IdentityAndAcccess.DomainServices
+open IdentityAndAcccess.DomainServicesImplementations
 
 
 open IdentityAndAccess.DatabaseTypes

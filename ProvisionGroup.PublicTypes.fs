@@ -8,7 +8,7 @@ open IdentityAndAcccess.CommonDomainTypes
 open System
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAccess.DatabaseTypes
-open IdentityAndAcccess.DomainServices
+open IdentityAndAcccess.DomainServicesImplementations
 
 
 

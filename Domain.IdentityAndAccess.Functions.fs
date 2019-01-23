@@ -1503,15 +1503,17 @@ module Group =
 
 
 
-    let addGroupToGroup (aGroupToAddTo:Group)(aGroupToAdd:Group)(isGroupMemberService: IsGroupMemberService) : Result<Group, string> =
+    let addGroupToGroup (aGroupToAddTo:Group)(aGroupToAdd:Group)(isGroupMemberService: IsGroupMemberService) : Result<Group*GroupMember, string> =
 
         let unwrappedGroupToAddTo = match aGroupToAddTo with 
                                         | Standard aStandardGroup -> aStandardGroup
                                         | Internal anInternalGroup -> anInternalGroup
-                                        
+        let unwrappedGroupToAdd = match aGroupToAdd with 
+                                        | Standard aStandardGroup -> aStandardGroup
+                                        | Internal anInternalGroup -> anInternalGroup                                        
 
-        let doBothGroupsHaveSameTenant = (unwrappedGroupToAddTo.TenantId = unwrappedGroupToAddTo.TenantId)
-        let isNotTheSameGroup  = not (unwrappedGroupToAddTo.GroupId = unwrappedGroupToAddTo.GroupId)
+        let doBothGroupsHaveSameTenant = (unwrappedGroupToAddTo.TenantId = unwrappedGroupToAdd.TenantId)
+        let isNotTheSameGroup  = not (unwrappedGroupToAddTo.GroupId = unwrappedGroupToAdd.GroupId)
         let toGroupGroupMember = toMemberOfTypeGroup GroupGroupMember
         let isGroupMemberService' = isGroupMemberService aGroupToAddTo 
         let isGroupToAddToRoleNotInterNalGroup =    aGroupToAddTo 
@@ -1554,7 +1556,7 @@ module Group =
                     match rsIsGrouMemberToAdd with 
                     | Ok groupMember -> 
                         let group = {aStandardGroupToAdd with Members = [groupMember]@newMembers}
-                        Ok (Standard group)
+                        Ok (Standard group, groupMember)
                     | Error error ->
                         Error error
                 else
@@ -1574,7 +1576,7 @@ module Group =
 
 
     
-    let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User)  =
+    let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User) : Result<Group*GroupMember, string>   =
 
 
         let aStandardGroupToAdd =  aGroupToAddTo 
@@ -1626,7 +1628,7 @@ module Group =
                     match groupMemberToAdd with  
                     | Ok grouMember -> 
 
-                        Ok (Standard {aStandardGroupToAdd with Members = aStandardGroupToAdd.Members@[grouMember]}, aUserToAdd)
+                        Ok (Standard {aStandardGroupToAdd with Members = aStandardGroupToAdd.Members@[grouMember]}, grouMember)
 
                     | Error error -> 
                     

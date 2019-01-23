@@ -1,4 +1,4 @@
-module IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowImplementation
+module IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes.AddGroupToGroupApiTypes
 
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User
@@ -6,7 +6,7 @@ open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServicesImplementations.Tenant
-open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
+open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
@@ -16,6 +16,7 @@ open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAccess.DatabaseTypes
 
+open IdentityAndAcccess.DomainServicesImplementations
 
 
 
@@ -34,17 +35,18 @@ open IdentityAndAccess.DatabaseTypes
 
 
 
-//Step 1 - add user to group 
 
-type AddUserToGroup = 
+//Step 1 - add group to group 
 
-    Group -> User -> Result<Group*GroupMember, AddUserToGroupError>
+type AddGroupToGroup = 
+
+    Group -> Group -> Result<Group*GroupMember, AddGroupToGroupError>
 
 
 
 //Step 3 - Create events step
 
-type CreateEvents = Group * GroupMember -> UserAddedToGroupEvent
+type CreateEvents = Group * GroupMember -> GroupAddedToGroupEvent
 
 
 
@@ -62,35 +64,40 @@ type CreateEvents = Group * GroupMember -> UserAddedToGroupEvent
 
 
 ///Step1 adds user to group impl
-let add : AddUserToGroup = 
-    fun groupToAddTo user ->
-       Group.addUserToGroup groupToAddTo user
-       |> Result.mapError AddUserToGroupError.AddError
+
+//Dependencies 
+
+let isGroupMemberService = Group.isGroupMemberIsInGroupServiceImpl
+
+let add : AddGroupToGroup = 
+    fun groupToAddTo groupToAdd ->
+       Group.addGroupToGroup groupToAddTo groupToAdd isGroupMemberService
+       |> Result.mapError AddGroupToGroupError.AddError
 
        
 
 ///Step2 create events impl
 let createEvents : CreateEvents = 
     fun (aGroup, aGroupMember) ->
-       let userAddedToGroupEvent : UserAddedToGroupEvent = {
+       let groupAddedToGroupEvent : GroupAddedToGroupEvent = {
            GroupAddedTo = (aGroup |> DbHelpers.fromGroupDomainToDto)
            GroupMemberAdded =  (aGroupMember |> DbHelpers.fromGroupMemberToGroupMemberDto)         
        }
-       userAddedToGroupEvent
+       groupAddedToGroupEvent
 
         
                     
 
  
 
-///Add user to group workflow implementation
+///Add group to group workflow implementation
 /// 
 /// 
-let addUserToGroupWorkflow: AddUserToGroupWorkflow = 
-    fun group user ->
+let addGroupToGroupWorkflow: AddGroupToGroupWorkflow = 
+    fun groupToAddTo groupToAdd ->
         let createEvents = Result.map createEvents
-        user
-        |> add group 
+        groupToAddTo
+        |> add groupToAdd 
         |> createEvents
         
 

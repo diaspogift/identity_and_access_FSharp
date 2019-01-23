@@ -5,7 +5,7 @@ open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAcccess.DomainServices.Tenant
+open IdentityAndAcccess.DomainServicesImplementations.Tenant
 open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
@@ -14,7 +14,7 @@ open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 
 open IdentityAndAccess.DatabaseTypes
-open IdentityAndAcccess.DomainServices
+open IdentityAndAcccess.DomainServicesImplementations
 
 
 

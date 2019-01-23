@@ -1,4 +1,4 @@
-namespace IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
+namespace IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User
@@ -19,15 +19,15 @@ open IdentityAndAcccess.DomainTypes.Functions
 
 
 
-///Add user to group worflow types
+///Add group to group worflow types
 /// 
 /// 
 
 
-//add user to group workflow input types
-type UnvalidatedGroupAndUserId = {
-        GroupId : string
-        UserId: string
+//add group to group workflow input types
+type UnvalidatedGroupIds = {
+        GroupIdToAddTo : string
+        GroupIdToAdd: string
     }
 
 
@@ -42,17 +42,17 @@ type Command<'data> = {
 
 
 
-type AddUserToGroupCommand =
-        Command<UnvalidatedGroupAndUserId> 
+type AddGroupToGroupCommand =
+        Command<UnvalidatedGroupIds> 
 
 
-///Ouputs of the add user to group worflow 
+///Ouputs of the add group to group worflow 
 //- Sucess types
 
 
 
 
-type UserAddedToGroupEvent = { 
+type GroupAddedToGroupEvent = { 
     GroupAddedTo : GroupDto
     GroupMemberAdded : GroupMemberDto
     }
@@ -60,7 +60,7 @@ type UserAddedToGroupEvent = {
 
 //- Failure types
 
-type AddUserToGroupError = 
+type AddGroupToGroupError = 
     | ValidationError of string
     | AddError of string
     | DbError of string
@@ -68,5 +68,5 @@ type AddUserToGroupError =
 
 //Worflow type 
 
-type AddUserToGroupWorkflow = 
-    Group -> User -> Result<UserAddedToGroupEvent , AddUserToGroupError>
+type AddGroupToGroupWorkflow = 
+    Group -> Group -> Result<GroupAddedToGroupEvent , AddGroupToGroupError>

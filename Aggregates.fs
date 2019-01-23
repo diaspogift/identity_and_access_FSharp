@@ -1,6 +1,6 @@
 namespace IdentityAndAcccess.Aggregates.Implementation
 open IdentityAndAcccess.DomainTypes.Tenant
-open IdentityAndAcccess.DomainServices
+open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAccess.DatabaseTypes
 open FSharp.Data.Sql

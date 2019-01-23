@@ -164,8 +164,14 @@ type GroupEventDto = {
 
 type UserAddedToGroupDto = {
     Group : GroupDto
-    User : UserDto
+    GroupMember : GroupMemberDto
 }
+
+type GroupAddedToGroupDto = {
+    Group : GroupDto
+    GroupMember : GroupMemberDto
+}
+
 
 
 
