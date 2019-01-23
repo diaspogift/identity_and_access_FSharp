@@ -555,7 +555,38 @@ match  AddGroupToGroupCommand.handleAddGroupToGroup addMidDeveloperGroupToAnyDev
 
 
 
-(*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /// PROVISON DEVELOPER ROLE FOR DIASPO-GIFT TENANT
  
 let unvalidatedDeveloperRole:UnvalidatedRole = {
@@ -637,7 +668,7 @@ match  rsOfferRegistrationInvitationCommand with
 
 
 
-*)
+
 
  
 
