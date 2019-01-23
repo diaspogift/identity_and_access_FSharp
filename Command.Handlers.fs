@@ -105,9 +105,9 @@ module ProvisionTenant =
                     let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> DbHelpers.fromRoleDomainToDto
                     let userRegistered = aTenantProvisionCreated.UserRegistered |> DbHelpers.fromUserDomainToDto
 
-                    tenantId <-  concatTenantStreamId tenantProvisioned.TenantId
-                    roleId <- concatRoleStreamId roleProvisioned.RoleId
-                    userId <- concatUserStreamId userRegistered.UserId
+                    tenantId <-   tenantProvisioned.TenantId
+                    roleId <-  roleProvisioned.RoleId
+                    userId <-  userRegistered.UserId
 
                     let tenantCreatedEvent = tenantProvisioned |> TenantStreamEvent.TenantCreated 
                     let tenantCreatedEventL = tenantCreatedEvent |> List.singleton |> List.toArray
@@ -214,8 +214,9 @@ module ProvisionTenant =
                  = allTenantAggregateEvents tenantProvisionedEventList
 
             let saveTenantStream = async {
+                let tenantStreamId = tenantId |> concatTenantStreamId 
                 let events =  tenantEventList |> Array.map toSequence
-                let r = recursivePersistEventsStream tenantId -1L events
+                let r = recursivePersistEventsStream tenantStreamId -1L events
                 return r
                 }
 
@@ -638,16 +639,15 @@ module ProvisionRoleCommand =
         | Ok en ->
             match en with  
             | Ok ev -> 
-                let saveProvisionGroupEvent = async {
+                let saveProvisionRoleEvent = async {
 
-                        let roleStreamId = ev.Role.RoleId |> concatRoleStreamId 
                         let roleProvisionedEvent =  ev.Role |> RoleStreamEvent.RoleCreated 
                         let roleProvisionedEventL = roleProvisionedEvent |> toSequence |> Array.singleton
-                        let rsAppendToTenantStream = recursivePersistEventsStream roleStreamId -1L roleProvisionedEventL
+                        let rsAppendToTenantStream = recursivePersistEventsStream ev.Role.RoleId -1L roleProvisionedEventL
                      
                         return rsAppendToTenantStream
                         }
-                saveProvisionGroupEvent
+                saveProvisionRoleEvent
                 |> Async.RunSynchronously
                 Ok ev
             | Error error ->

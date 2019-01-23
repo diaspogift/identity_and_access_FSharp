@@ -370,9 +370,8 @@ module EventStorePlayGround =
         | [] -> ()
         | head::tail -> 
 
-            let rsAppendToTenantStream = appendToStream store streamId  position head
-           
-            rsAppendToTenantStream 
+            head
+            |> appendToStream store streamId  position 
             |> Async.RunSynchronously
 
             let nextStreamPostion = position + 1L
