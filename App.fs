@@ -50,6 +50,9 @@ open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
 
+open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
+open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowImplementation
+
 
 
 
@@ -244,13 +247,14 @@ match  rsOfferRegistrationInvitationCommand with
 | Error error ->
         printfn " %A" error 
 
+*)
 
 
 
-
+(*
 
 let unvalidatedGroup:UnvalidatedGroup = {
-        TenantId = "5c46f8c65dd81b2405ecd568";
+        TenantId = "5c47d9735849d63f1dc8dc6a";
         Name = "Stagaires"
         Description = "Group Des Stagaires"
         Members = [||]
@@ -280,7 +284,6 @@ match  rsProvisionGroupCommand with
 
 
 
-*)
 
 
 
@@ -291,7 +294,7 @@ match  rsProvisionGroupCommand with
 
 
 
-
+ 
 let unvalidatedRole:UnvalidatedRole = {
         TenantId = "5c46f8c65dd81b2405ecd568";
         Name = "Superviseur"
@@ -319,9 +322,40 @@ match  rsProvisionRoleCommand with
 | Error error ->
         printfn " %A" error 
  
+*)
+ 
 
 
 
+ 
+
+
+let unvalidatedGroupAndUserId:UnvalidatedGroupAndUserId = {
+        GroupId = "5c47da105c7dc64089ced062"
+        UserId = "USER_With_ID_=_5c47d9735849d63f1dc8dc6c"
+        } 
+
+let addUserToGroupCommand : AddUserToGroupCommand = {
+        Data = unvalidatedGroupAndUserId
+        TimeStamp = DateTime.Now
+        UserId = "Megan"
+        } 
+
+ 
+let rsAddUserToGroupCommand = AddUserToGroupCommand.handleAddUserToGroup addUserToGroupCommand
+
+
+match  rsAddUserToGroupCommand with  
+| Ok rs -> 
+        printEmptySeparatorLine(1)
+        printfn " USER ADDED TO GROUP RESULT"
+        printEmptySeparatorLine(1)
+        printfn " %A" rs
+        printEmptySeparatorLine(1)
+
+| Error error ->
+        printfn " %A" error 
+ 
 
 
 

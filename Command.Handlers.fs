@@ -9,6 +9,10 @@ open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImp
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes.ProvisionRoleWorflowImplementation
 
+
+open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
+open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowImplementation
+
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImplementation
 
 open IdentityAndAcccess.OffertRegistrationInvitationApiTypes.OffertRegistrationInvitationWorflowImplementation
@@ -651,6 +655,75 @@ module ProvisionRoleCommand =
         | Error error ->
             let er = ProvisionRoleError.DbError error
             Error er
+
+
+
+
+
+
+
+
+
+module AddUserToGroupCommand = 
+
+
+
+
+
+    let handleAddUserToGroup (aCommad:AddUserToGroupCommand) = 
+
+        let aCommandData = aCommad.Data
+            
+        let rsAddUserToGroupWorkflow = result {  
+
+            let strGroupId =  aCommandData.GroupId |> concatGroupStreamId 
+            let strUserId =  aCommandData.UserId |> concatUserStreamId 
+
+
+            let! groupStreamId, groupDto, lastEventNumber = strGroupId |> loadGroupWithId    
+            let! _, userDto, _ = strUserId |> loadUserWithId    
+
+            let! rsAddUserToGroup = result {      
+                let! groupDomain  =  groupDto |> DbHelpers.fromDbDtoToGroup
+                let! userDomain  =  userDto |> DbHelpers.fromDbDtoToUser
+
+                let rs = addUserToGroupWorkflow groupDomain userDomain
+                return rs 
+                }  
+
+            return rsAddUserToGroup, groupStreamId, lastEventNumber
+
+            }
+
+        match rsAddUserToGroupWorkflow with  
+        | Ok en ->
+            match en with  
+            | Ok ev, groupStreamId, lastEventNumber -> 
+                let saveUserAddedToGroupEvent = async {
+
+                    let userAddedToGroupEventData = {
+                        Group = ev.Group
+                        User = ev.User
+                    }
+                    let userAddedToGroupEvent =  userAddedToGroupEventData |> GroupStreamEvent.UserAddedToGroup 
+                    let userAddedToGroupEventL =  userAddedToGroupEvent |> toSequence |> Array.singleton
+                    
+
+                    let rsAppendToTenantStream = recursivePersistEventsStream groupStreamId lastEventNumber userAddedToGroupEventL
+                 
+                    return rsAppendToTenantStream
+                    }      
+
+                saveUserAddedToGroupEvent
+                |> Async.RunSynchronously
+                Ok ev
+            | Error error, s, t ->
+                Error  error
+        | Error error ->
+            let er = AddUserToGroupError.DbError error
+            Error er
+
+
 
 
 

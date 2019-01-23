@@ -18,6 +18,13 @@
     <Compile Include="ProvisionTenantWorflow.Implementation.fs" />
     <Compile Include="ProvisionGroup.PublicTypes.fs" />
     <Compile Include="ProvisionGroupWorflow.Implementation.fs" />
+
+    <Compile Include="AddUserToGroupWorkflow.PublicTypes.fs" />
+    <Compile Include="AddUserToGroupWorkflow.Implementation.fs" />
+
+    
+
+    
     <Compile Include="ProvisionRole.PublicTypes.fs" />
     <Compile Include="ProvisionRoleWorflow.Implementation.fs" />
     <Compile Include="OffertRegistrationInvitation.PublicTypes.fs" />

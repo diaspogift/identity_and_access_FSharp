@@ -137,7 +137,7 @@ type GroupMemberTypeDto =
 
 
 type GroupMemberDto = {
-    MemberId: BsonObjectId
+    MemberId: string
     TenantId: string
     Name: string
     Type: GroupMemberTypeDto
@@ -162,7 +162,10 @@ type GroupEventDto = {
 }
 
 
-
+type UserAddedToGroupDto = {
+    Group : GroupDto
+    User : UserDto
+}
 
 
 

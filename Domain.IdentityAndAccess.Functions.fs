@@ -1626,7 +1626,7 @@ module Group =
                     match groupMemberToAdd with  
                     | Ok grouMember -> 
 
-                        Ok {aStandardGroupToAdd with Members = aStandardGroupToAdd.Members@[grouMember]}
+                        Ok (Standard {aStandardGroupToAdd with Members = aStandardGroupToAdd.Members@[grouMember]}, aUserToAdd)
 
                     | Error error -> 
                     

@@ -37,6 +37,7 @@ type RoleStreamEvent =
 
 type GroupStreamEvent =
     | GroupCreated of GroupDto
+    | UserAddedToGroup of UserAddedToGroupDto
 
 
 
@@ -226,11 +227,34 @@ module EventStorePlayGround =
         | RoleStreamEvent.RoleRenamed t ->
           t             
 
-    let applyGroupEvent aGroup anEvent = 
+
+
+
+
+
+
+
+
+
+    let applyGroupEvent (aGroup:GroupDto) anEvent = 
 
         match anEvent with 
-        | GroupStreamEvent.GroupCreated t ->
-          t
+        | GroupStreamEvent.GroupCreated g ->
+          g
+
+        | GroupStreamEvent.UserAddedToGroup g ->
+          
+          let groupMemberDto : GroupMemberDto = {
+              MemberId = g.User.UserId
+              TenantId = g.User.TenantId
+              Name = g.User.Username
+              Type = GroupMemberTypeDto.User
+          }
+
+          let groupMemberDtoL = groupMemberDto |> Array.singleton 
+          let newMembers = groupMemberDtoL |> Array.append aGroup.Members  
+
+          {aGroup with Members = newMembers}
         
 
 
@@ -240,13 +264,11 @@ module EventStorePlayGround =
         let foundTenantEventStreamList,lastEventNumber,
             _ = readStream<TenantStreamEvent> store tenantStreamId 0L 4095  |> Async.RunSynchronously
 
-        printfn "------------------------------------------------------------------"
+        printfn "-----------------------------------------------------------------------------"
         printfn " foundTenantEventStreamList = -----------------------------------------------"
-        printfn "---- %A ---------------------------------------------" foundTenantEventStreamList
-        printfn "------------------------------------------------------------------"
-        printfn "------------------------------------------------------------------"
-        printfn "------------------------------------------------------------------"
-        printfn "------------------------------------------------------------------"
+        printfn "---- ---------------------%A ---------------------" foundTenantEventStreamList
+        printfn "-----------------------------------------------------------------------------"
+    
        
         
         match foundTenantEventStreamList.Head with
@@ -279,8 +301,17 @@ module EventStorePlayGround =
     let loadUserWithId userStreamId = 
 
         let store = create userStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
-        let foundUserEventStreamList,lastEventNumber,
+        let foundUserEventStreamList, lastEventNumber,
             _ = readStream<UserStreamEvent> store userStreamId 0L 4095  |> Async.RunSynchronously
+
+        printfn "foundUserEventStreamList = %A" foundUserEventStreamList
+        printfn "userStreamId = %A" userStreamId
+        printfn "foundUserEventStreamList = %A" foundUserEventStreamList
+        printfn "userStreamId = %A" userStreamId
+        printfn "foundUserEventStreamList = %A" foundUserEventStreamList
+        printfn "userStreamId = %A" userStreamId
+        printfn "foundUserEventStreamList = %A" foundUserEventStreamList
+        printfn "userStreamId = %A" userStreamId
 
         match foundUserEventStreamList.Head with
         | UserStreamEvent.UserRegistered userZeroState ->
@@ -299,8 +330,12 @@ module EventStorePlayGround =
        
         match foundGroupEventStreamList.Head with  
         | GroupStreamEvent.GroupCreated groupZeroState ->  
-            let groupDto =  foundGroupEventStreamList |>  List.toArray |> Seq.fold applyGroupEvent groupZeroState
-            (groupStreamId, groupDto, lastEventNumber)
+            let groupDto =  foundGroupEventStreamList 
+                            |>  List.toArray 
+                            |> Seq.fold applyGroupEvent groupZeroState
+            Ok (groupStreamId, groupDto, lastEventNumber)
+        | _ ->      
+            Error "Could not built group initial state"
 
         
 

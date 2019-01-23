@@ -164,10 +164,9 @@ module DbHelpers =
                          | UserGroupMember -> GroupMemberTypeDto.User
         let grouMemberId = aGroupMember.MemberId
                            |> GroupMemberId.value
-        let id = new BsonObjectId(new ObjectId(grouMemberId))
 
         let groupMemberToGroupMemberDto : GroupMemberDto = {
-            MemberId =  id 
+            MemberId =  grouMemberId
             TenantId = TenantId.value aGroupMember.TenantId
             Name = GroupMemberName.value aGroupMember.Name
             Type = memberType
