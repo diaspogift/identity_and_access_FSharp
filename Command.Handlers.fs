@@ -739,9 +739,20 @@ module AddGroupToGroupCommand =
         let rsAddGroupToGroupWorkflow = result {  
 
             let strGroupIdToAddTo =  aCommandData.GroupIdToAddTo |> concatGroupStreamId 
-            let strGroupIdToAdd =  aCommandData.GroupIdToAdd |> concatGroupStreamId 
+            let strGroupIdToAdd =  aCommandData.GroupIdToAdd |> concatGroupStreamId
 
-            let! groupStreamIdToAddTo, groupDtoToAddTo, lastEventNumberToAddTo = strGroupIdToAddTo |> loadGroupWithId    
+            printfn "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
+            printfn "IN handleAddGroupToGroup and strGroupIdToAddTo = %A" strGroupIdToAddTo
+            printfn "IN handleAddGroupToGroup and strGroupIdToAdd = %A" strGroupIdToAdd
+            printfn "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
+
+            let! groupStreamIdToAddTo, groupDtoToAddTo, 
+                 lastEventNumberToAddTo = strGroupIdToAddTo |> loadGroupWithId  
+
+            printfn "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ"
+            printfn "IN handleAddGroupToGroup and groupStreamIdToAddTo,  = %A" groupStreamIdToAddTo
+            printfn "IN handleAddGroupToGroup and groupDtoToAddTo = %A" groupDtoToAddTo
+            printfn "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ"
             
             let! _, groupDtoToAdd, _ = strGroupIdToAdd |> loadGroupWithId    
            
@@ -750,6 +761,12 @@ module AddGroupToGroupCommand =
 
                 let! groupDomainToAddTo  =  groupDtoToAddTo |> DbHelpers.fromDbDtoToGroup
                 let! groupDomainToAdd =  groupDtoToAdd |> DbHelpers.fromDbDtoToGroup
+
+
+                printfn "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+                printfn "IN handleAddGroupToGroup and groupDomainToAddTo,  = %A" groupStreamIdToAddTo
+                printfn "IN handleAddGroupToGroup and groupDomainToAdd = %A" groupDomainToAdd
+                printfn "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 
                 let rs = addGroupToGroupWorkflow groupDomainToAddTo groupDomainToAdd
                 return rs 

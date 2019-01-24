@@ -884,9 +884,6 @@ module Tenant =
 
 
     let activateTenant (aTenant : Tenant) : Result<Tenant, string> =
-
-
-            printfn "Here is the passed tenant ========== %A" aTenant
      
             match aTenant.ActivationStatus with  
             | Deactivated ->
@@ -1516,27 +1513,22 @@ module Group =
         let isNotTheSameGroup  = not (unwrappedGroupToAddTo.GroupId = unwrappedGroupToAdd.GroupId)
         let toGroupGroupMember = toMemberOfTypeGroup GroupGroupMember
         let isGroupMemberService' = isGroupMemberService aGroupToAddTo 
-        let isGroupToAddToRoleNotInterNalGroup =    aGroupToAddTo 
-                                                    |> isInternalGroup 
-                                                    |> not
-
+        let isGroupToAddToRoleNotInterNalGroup =  aGroupToAddTo |> isInternalGroup |> not
 
         match doBothGroupsHaveSameTenant && isNotTheSameGroup && isGroupToAddToRoleNotInterNalGroup with 
         | true -> 
-
             let rsGrouMember = result {
-
-                let! aMemberToAdd = aGroupToAdd 
-                                    |> toGroupGroupMember
-                                    
-                let isTheGroupMemberToAddAlreadyAMember = aMemberToAdd 
-                                                          |> isGroupMemberService' 
-
-                return   isTheGroupMemberToAddAlreadyAMember
-            }
+                let! aMemberToAdd = aGroupToAdd |> toGroupGroupMember                                   
+                let isTheGroupMemberToAddAlreadyAMember = aMemberToAdd |> isGroupMemberService' 
+                return isTheGroupMemberToAddAlreadyAMember
+                }
 
             match rsGrouMember with 
             | Ok isAlreadyGroupMember -> 
+
+                printfn "RESULT isAlreadyGroupMember for aGroupToAddTo ==== %A" aGroupToAddTo
+                printfn "RESULT isAlreadyGroupMember ==== %A" isAlreadyGroupMember
+
 
                 if not isAlreadyGroupMember then
                     
@@ -1556,7 +1548,7 @@ module Group =
                     match rsIsGrouMemberToAdd with 
                     | Ok groupMember -> 
                         let group = {aStandardGroupToAdd with Members = [groupMember]@newMembers}
-                        Ok (Standard group, groupMember)
+                        Ok (aGroupToAddTo, groupMember)
                     | Error error ->
                         Error error
                 else

@@ -72,7 +72,6 @@ let unwrapToStandardGroup aGroupToAddToUnwrapp =
             | Standard aStandardGroup -> aStandardGroup
             | Internal anInternalGroup -> anInternalGroup
 
-
 let printSeparatorLine(count) = 
         
         let countArray = List.init count (fun x -> x )
@@ -85,8 +84,6 @@ let printSeparatorLine(count) =
                         printfn ""
                         printfn ""
                      )
-
-
 
 let printEmptySeparatorLine(count) = 
         
@@ -109,7 +106,7 @@ let printEmptySeparatorLine(count) =
 let mutable diaspoGiftTenantId = ""
 let mutable diaspoGiftAdminUserId = ""
 let mutable diaspoGiftAdminRoleId = ""
-let mutable diaspoGiftGroupIdForAnyDeveloperGroup = ""
+let mutable diaspoGiftGroupIdForDeveloperGroup = ""
 let mutable diaspoGiftGroupIdForJuniorDeveloperGroup = ""
 let mutable diaspoGiftGroupIdForMidDeveloperGroup = ""
 let mutable diaspoGiftGroupIdForSeniorDeveloperGroup = ""
@@ -135,7 +132,6 @@ let unvalidatedDiaspoGiftTenant : UnvalidatedTenant = {
         Name = "DIASPO-GIFT"
         Description = "Diaspora Gift Platforme pour le payement et le suivi des services"
         }
-
 let diaspoGiftTenantAdministrator : TenantAdministrator = {
     FirstName = "Felicien"
     MiddleName = "N/A"
@@ -145,35 +141,27 @@ let diaspoGiftTenantAdministrator : TenantAdministrator = {
     PrimPhone = "669262690" 
     SecondPhone = "669262691"
     }
-
 let unvalidatedDiaspoGiftTenantProvision : UnvalidatedTenantProvision = {
         TenantInfo = unvalidatedDiaspoGiftTenant
         AdiminUserInfo = diaspoGiftTenantAdministrator
         }
-
 type Command<'data> = {
     Data : 'data;
     TimeStamp : DateTime;
-    UserId : string;
-}
+    UserId : string;}
 let provisionTenantCommand : ProvisionTenantCommand = {
-        
         Data = unvalidatedDiaspoGiftTenantProvision
         TimeStamp = DateTime.Now
         UserId = "Felicien"
-
         } 
-
 
 match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
-        printfn " THE PROVISIONING RESULT"
-        printEmptySeparatorLine(1)
-        printfn " %A" rs
-        printEmptySeparatorLine(1)
-
-
+        // printEmptySeparatorLine(2)
+        // printfn " THE PROVISIONING RESULT"
+        // printEmptySeparatorLine(2)
+        // printfn " %A" rs
+        printEmptySeparatorLine(2)
         match rs.Head with 
         | TenantProvisionCreated t ->
 
@@ -189,12 +177,8 @@ match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with
                 printfn " diaspoGiftAdminUserId %A"   diaspoGiftAdminUserId   
                 printfn " diaspoGiftAdminRoleId %A"   diaspoGiftAdminRoleId   
 
-
-           
-
         | _    ->
-               printfn " Not interrested"     
-                                      
+               printfn " Not interrested"                                      
 | Error error ->
         printfn " %A" error
 
@@ -205,7 +189,7 @@ match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with
 
 
 
-printEmptySeparatorLine(5)
+// printEmptySeparatorLine(5)
 
 
 
@@ -221,22 +205,19 @@ let unvalidatedDeactivateDiaspoGiftTenant : UnvalidatedTenantActivationStatus = 
         ActivationStatus = true
         Reason = "Fuck that tenantt ..."
         }
-
-
-let deactivateTenantActivationStatusCommand : DeactivateTenantActivationStatusCommand = {
-        
+let deactivateTenantActivationStatusCommand : DeactivateTenantActivationStatusCommand = {       
         Data = unvalidatedDeactivateDiaspoGiftTenant
         TimeStamp = DateTime.Now
         UserId = "Megan"
-
         } 
+
 match  deactivateTenantActivationStatusCommand |> DeactivateTenantActivationStatus.handleDeactivateTenantActivationStatus  with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
-        printfn " THE DEACTIVATION RESULT"
-        printEmptySeparatorLine(1)
-        printfn " %A" rs
-        printEmptySeparatorLine(1)
+        // printEmptySeparatorLine(2)
+        // printfn " THE DEACTIVATION RESULT"
+        // printEmptySeparatorLine(2)
+        // printfn " %A" rs
+        printEmptySeparatorLine(2)
 
 | Error error ->
         printfn " %A" error
@@ -244,7 +225,7 @@ match  deactivateTenantActivationStatusCommand |> DeactivateTenantActivationStat
 
 
 
-printEmptySeparatorLine(5)
+//printEmptySeparatorLine(5)
 
 
 
@@ -264,13 +245,14 @@ let reactivateTenantActivationStatusCommand : ReactivateTenantActivationStatusCo
         TimeStamp = DateTime.Now
         UserId = "Megan"
         } 
+
 match  reactivateTenantActivationStatusCommand |> ReactivateTenantActivationStatus.handleReactivateTenantActivationStatus  with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
-        printfn " THE DEACTIVATION RESULT"
-        printEmptySeparatorLine(1)
-        printfn " %A" rs
-        printEmptySeparatorLine(1)
+        // printEmptySeparatorLine(2)
+        // printfn " THE DEACTIVATION RESULT"
+        // printEmptySeparatorLine(2)
+        // printfn " %A" rs
+        printEmptySeparatorLine(2)
 
 | Error error ->
         printfn " %A" error
@@ -286,43 +268,36 @@ printEmptySeparatorLine(5)
 
 
  
-/// PROVOSION (ANY_DEVELOPER, JUNIOR_DEVELOPER, MID_DEVELOPER, SENIOR_DEVELOPER) GROUPS FOR DIASPO GIFT TENANT 
+/// PROVOSION (DEVELOPER, JUNIOR_DEVELOPER, MID_DEVELOPER, SENIOR_DEVELOPER) GROUPS FOR DIASPO GIFT TENANT 
 /// 
 /// 
  
 
 
 
-// ANY_DEVELOPER Group
-let unvalidatedAnyDeveloper:UnvalidatedGroup = {
+// DEVELOPER Group
+let unvalidatedDeveloper:UnvalidatedGroup = {
         TenantId = diaspoGiftTenantId;
-        Name = "ANY_DEVELOPER"
+        Name = "DEVELOPER"
         Description = "Groupe comprenant tous les devellopeurs (junior, mid, senior) de la boite "    
-        Members = [||]   
-} 
-
-
-let provisionAnyDeveloperGroupCommand : ProvisionGroupCommand = {
-        Data = unvalidatedAnyDeveloper
+        Members = [||]
+        } 
+let provisionDeveloperGroupCommand : ProvisionGroupCommand = {
+        Data = unvalidatedDeveloper
         TimeStamp = DateTime.Now
         UserId = diaspoGiftAdminUserId
         } 
 
-
-match  ProvisionGroupCommand.handleProvisionGroup provisionAnyDeveloperGroupCommand with  
+match  ProvisionGroupCommand.handleProvisionGroup provisionDeveloperGroupCommand with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
-        printfn " THE PROVISIONED ANY DEVELOPER GROUP RESULT"
-        printEmptySeparatorLine(1)
+        printfn " THE PROVISIONED DEVELOPER GROUP RESULT"
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
 
+        diaspoGiftGroupIdForDeveloperGroup <- rs.Group.GroupId
 
-        diaspoGiftGroupIdForAnyDeveloperGroup <- rs.Group.GroupId
-
-        printfn " diaspoGiftGroupIdForAnyDeveloperGroup %A"   diaspoGiftGroupIdForAnyDeveloperGroup   
-
-
+        printfn " diaspoGiftGroupIdForDeveloperGroup %A"   diaspoGiftGroupIdForDeveloperGroup   
 
 | Error error ->
         printfn " %A" error 
@@ -340,29 +315,24 @@ let unvalidatedJuniorDeveloper:UnvalidatedGroup = {
         TenantId = diaspoGiftTenantId;
         Name = "JUNIOR_DEVELOPER"
         Description = "Groupe comprenant tous les devellopeurs junior de la boite"    
-        Members = [||]   
-} 
-
-
+        Members = [||]
+        } 
 let provisionJuniorDeveloperGroupCommand : ProvisionGroupCommand = {
         Data = unvalidatedJuniorDeveloper
         TimeStamp = DateTime.Now
         UserId = diaspoGiftAdminUserId
         } 
 
-
 match  ProvisionGroupCommand.handleProvisionGroup provisionJuniorDeveloperGroupCommand with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " THE PROVISIONED JUNIOR DEVELOPER GROUP RESULT"
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
 
         diaspoGiftGroupIdForJuniorDeveloperGroup <- rs.Group.GroupId
-
         printfn " diaspoGiftGroupIdForJuniorDeveloperGroup %A"   diaspoGiftGroupIdForJuniorDeveloperGroup   
-
 
 | Error error ->
         printfn " %A" error 
@@ -379,8 +349,8 @@ let unvalidatedMidDeveloper:UnvalidatedGroup = {
         TenantId = diaspoGiftTenantId;
         Name = "MID_DEVELOPER"
         Description = "Groupe comprenant tous les devellopeurs au niveua intermediaire de la boite"    
-        Members = [||]   
-} 
+        Members = [||]
+        } 
 
 let provisionMidDeveloperGroupCommand : ProvisionGroupCommand = {
         Data = unvalidatedMidDeveloper
@@ -388,22 +358,16 @@ let provisionMidDeveloperGroupCommand : ProvisionGroupCommand = {
         UserId = diaspoGiftAdminUserId
         } 
 
-
 match  ProvisionGroupCommand.handleProvisionGroup provisionMidDeveloperGroupCommand with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " THE PROVISIONED MID DEVELOPER GROUP RESULT"
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
-
+        printEmptySeparatorLine(2)
 
         diaspoGiftGroupIdForMidDeveloperGroup <- rs.Group.GroupId
-
-
         printfn " diaspoGiftGroupIdForJuniorDeveloperGroup %A"   diaspoGiftGroupIdForMidDeveloperGroup   
-
-
 
 | Error error ->
         printfn " %A" error 
@@ -421,9 +385,8 @@ let unvalidatedSeniorDeveloper:UnvalidatedGroup = {
         TenantId = diaspoGiftTenantId;
         Name = "SENIOR_DEVELOPER"
         Description = "Groupe comprenant tous les devellopeurs au niveau experimente de la boite"    
-        Members = [||]   
-} 
-
+        Members = [||]
+        } 
 let provisionSeniorDeveloperGroupCommand : ProvisionGroupCommand = {
         Data = unvalidatedSeniorDeveloper
         TimeStamp = DateTime.Now
@@ -433,11 +396,11 @@ let provisionSeniorDeveloperGroupCommand : ProvisionGroupCommand = {
 
 match  ProvisionGroupCommand.handleProvisionGroup provisionSeniorDeveloperGroupCommand with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " THE PROVISIONED SENIOR DEVELOPER GROUP RESULT"
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
 
         diaspoGiftGroupIdForSeniorDeveloperGroup <- rs.Group.GroupId
 
@@ -463,24 +426,31 @@ printEmptySeparatorLine(5)
 
 
 
-/// ADD JUNIOR_DEVELOPER GROUP TO ANY_DEVELOPER GROUP
+/// ADD JUNIOR_DEVELOPER GROUP TO THE DEVELOPER GROUP
 let unvalidatedGroupIds:UnvalidatedGroupIds = {
-        GroupIdToAddTo = diaspoGiftGroupIdForAnyDeveloperGroup
+        GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup
         GroupIdToAdd = diaspoGiftGroupIdForJuniorDeveloperGroup
         } 
+
+
+printSeparatorLine(5)
+printfn " unvalidatedGroupIds ===== %A" unvalidatedGroupIds
+printfn " unvalidatedGroupIds ===== %A" unvalidatedGroupIds
+printSeparatorLine(5)
+
 let addJuniorDeveloperGroupToAnyDeveloperGroupCommand : AddGroupToGroupCommand = {
         Data = unvalidatedGroupIds
         TimeStamp = DateTime.Now
         UserId = diaspoGiftAdminUserId
         } 
 
-match  AddGroupToGroupCommand.handleAddGroupToGroup addJuniorDeveloperGroupToAnyDeveloperGroupCommand with  
+match  addJuniorDeveloperGroupToAnyDeveloperGroupCommand |> AddGroupToGroupCommand.handleAddGroupToGroup  with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " JUNIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP RESULT"
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
 
 | Error error ->
         printfn " %A" error 
@@ -499,10 +469,10 @@ printEmptySeparatorLine(5)
 
 
 
-/// ADD MID_DEVELOPER GROUP TO ANY_DEVELOPER GROUP
+/// ADD MID_DEVELOPER GROUP TO THE DEVELOPER GROUP
 let unvalidatedGroupIds1:UnvalidatedGroupIds = {
-        GroupIdToAddTo = diaspoGiftGroupIdForAnyDeveloperGroup
-        GroupIdToAdd = diaspoGiftGroupIdForMidDeveloperGroup
+        GroupIdToAddTo = diaspoGiftGroupIdForMidDeveloperGroup
+        GroupIdToAdd =  diaspoGiftGroupIdForDeveloperGroup
         } 
 let addMidDeveloperGroupToAnyDeveloperGroupCommand : AddGroupToGroupCommand = {
         Data = unvalidatedGroupIds1
@@ -512,11 +482,11 @@ let addMidDeveloperGroupToAnyDeveloperGroupCommand : AddGroupToGroupCommand = {
 
 match  AddGroupToGroupCommand.handleAddGroupToGroup addMidDeveloperGroupToAnyDeveloperGroupCommand with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " MID DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP RESULT"
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
 
 | Error error ->
         printfn " %A" error 
@@ -530,24 +500,32 @@ match  AddGroupToGroupCommand.handleAddGroupToGroup addMidDeveloperGroupToAnyDev
 
 
 
-/// ADD MID_DEVELOPER GROUP TO ANY_DEVELOPER GROUP
-let unvalidatedGroupIds2:UnvalidatedGroupIds = {
-        GroupIdToAddTo = diaspoGiftGroupIdForAnyDeveloperGroup
-        GroupIdToAdd = diaspoGiftGroupIdForSeniorDeveloperGroup
+printEmptySeparatorLine(5)
+
+
+
+
+
+
+
+/// ADD MID_DEVELOPER GROUP TO THE DEVELOPER GROUP
+let unvalidatedGroupIds4:UnvalidatedGroupIds = {
+        GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup
+        GroupIdToAdd =  diaspoGiftGroupIdForMidDeveloperGroup 
         } 
-let addSeniorDeveloperGroupToAnyDeveloperGroupCommand : AddGroupToGroupCommand = {
-        Data = unvalidatedGroupIds2
+let addMidDeveloperGroupToAnyDeveloperGroupCommand4 : AddGroupToGroupCommand = {
+        Data = unvalidatedGroupIds4
         TimeStamp = DateTime.Now
         UserId = diaspoGiftAdminUserId
         } 
 
-match  AddGroupToGroupCommand.handleAddGroupToGroup addMidDeveloperGroupToAnyDeveloperGroupCommand with  
+match  AddGroupToGroupCommand.handleAddGroupToGroup addMidDeveloperGroupToAnyDeveloperGroupCommand4 with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
-        printfn " SENIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP RESULT"
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
+        printfn " MID DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP RESULT MUST FAILED"
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
 
 | Error error ->
         printfn " %A" error 
@@ -583,6 +561,29 @@ match  AddGroupToGroupCommand.handleAddGroupToGroup addMidDeveloperGroupToAnyDev
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(* 
 
 
 
@@ -603,11 +604,11 @@ let provisionDeveloperRoleCommand : ProvisionRoleCommand = {
 
 match  ProvisionRoleCommand.handleProvisionRole provisionDeveloperRoleCommand with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " THE PROVISIONED DEVELOPER ROLE RESULT"
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
 
 | Error error ->
         printfn " %A" error 
@@ -657,11 +658,11 @@ let rsOfferRegistrationInvitationCommand = OfferRegistrationInvitationCommand.ha
 
 match  rsOfferRegistrationInvitationCommand with  
 | Ok rs -> 
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " THE INVITATION  RESULT"
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
         printfn " %A" rs
-        printEmptySeparatorLine(1)
+        printEmptySeparatorLine(2)
 
 | Error error ->
         printfn " %A" error 
@@ -676,6 +677,39 @@ match  rsOfferRegistrationInvitationCommand with
 
 
 
+/// MUST FAILLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
+/// 
+/// 
+
+
+
+
+
+/// ADD MID_DEVELOPER GROUP TO ANY_DEVELOPER GROUP
+let unvalidatedGroupIds3:UnvalidatedGroupIds = {
+        GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup
+        GroupIdToAdd = diaspoGiftGroupIdForSeniorDeveloperGroup
+        } 
+let addSeniorDeveloperGroupToAnyDeveloperGroupCommand3 : AddGroupToGroupCommand = {
+        Data = unvalidatedGroupIds2
+        TimeStamp = DateTime.Now
+        UserId = diaspoGiftAdminUserId
+        } 
+
+match  AddGroupToGroupCommand.handleAddGroupToGroup addSeniorDeveloperGroupToAnyDeveloperGroupCommand3 with  
+| Ok rs -> 
+        printEmptySeparatorLine(2)
+        printfn " SENIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP RESULT"
+        printEmptySeparatorLine(2)
+        printfn " %A" rs
+        printEmptySeparatorLine(2)
+
+| Error error ->
+        let msg = sprintf "SENIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP ERROR =    %A" error
+        printfn " %A" msg 
+
+
+
 /// ADD USER TO GROUP
 
 
@@ -683,7 +717,7 @@ match  rsOfferRegistrationInvitationCommand with
  
 
 
-
+ *)
 
 
 

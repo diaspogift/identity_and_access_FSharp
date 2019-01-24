@@ -10,6 +10,10 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
+
+open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 
 
 
@@ -156,6 +160,11 @@ module EventStorePlayGround =
 
 
 
+    let concatStreamId (p1:string) (p2:string) = p1.Trim() + p2.Trim() 
+    let concatTenantStreamId = concatStreamId "TENANT_With_ID_=_"
+    let concatRoleStreamId = concatStreamId "ROLE_With_ID_=_"
+    let concatGroupStreamId = concatStreamId "GROUP_With_ID_=_"
+    let concatUserStreamId = concatStreamId "USER_With_ID_=_"
 
 
 
@@ -259,14 +268,7 @@ module EventStorePlayGround =
         let store = create tenantStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
         let foundTenantEventStreamList,lastEventNumber,
             _ = readStream<TenantStreamEvent> store tenantStreamId 0L 4095  |> Async.RunSynchronously
-
-        printfn "-----------------------------------------------------------------------------"
-        printfn " foundTenantEventStreamList = -----------------------------------------------"
-        printfn "---- ---------------------%A ---------------------" foundTenantEventStreamList
-        printfn "-----------------------------------------------------------------------------"
-    
-       
-        
+   
         match foundTenantEventStreamList.Head with
         | TenantStreamEvent.TenantCreated tenantZeroState ->  
             let tenantDto =  foundTenantEventStreamList |>  List.toArray |> Seq.fold applyTenantEvent tenantZeroState
@@ -302,12 +304,6 @@ module EventStorePlayGround =
 
         printfn "foundUserEventStreamList = %A" foundUserEventStreamList
         printfn "userStreamId = %A" userStreamId
-        printfn "foundUserEventStreamList = %A" foundUserEventStreamList
-        printfn "userStreamId = %A" userStreamId
-        printfn "foundUserEventStreamList = %A" foundUserEventStreamList
-        printfn "userStreamId = %A" userStreamId
-        printfn "foundUserEventStreamList = %A" foundUserEventStreamList
-        printfn "userStreamId = %A" userStreamId
 
         match foundUserEventStreamList.Head with
         | UserStreamEvent.UserRegistered userZeroState ->
@@ -320,9 +316,6 @@ module EventStorePlayGround =
 
     let loadGroupWithId groupStreamId = 
 
-        printfn "=========================="
-        printfn "groupStreamId %A" groupStreamId
-        printfn "=========================="
 
         let store = create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
         let foundGroupEventStreamList,lastEventNumber,
@@ -338,18 +331,62 @@ module EventStorePlayGround =
             Error "Could not built group initial state"
 
         
+    let loadGroupWithGroupId (aGroupId:GroupId) : Result<Group, string>  = 
+
+     
+        let groupStreamId = aGroupId |> GroupId.value
+
+        printfn "=========================="
+        printfn "groupStreamId %A" groupStreamId
+        printfn "=========================="
+
+
+        let store = create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
+        let foundGroupEventStreamList,_,_ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
+       
+        match foundGroupEventStreamList.Head with  
+        | GroupStreamEvent.GroupCreated groupZeroState ->  
+            let groupDto =  foundGroupEventStreamList 
+                            |>  List.toArray 
+                            |> Seq.fold applyGroupEvent groupZeroState
+            groupDto 
+            |> DbHelpers.fromDbDtoToGroup
+        | _ ->      
+            Error "Could not built group initial state"
+
+
+
+    let loadGroupWithGroupMemberId : LoadGroupMemberById = 
+        
+        fun (aGroupMemberId:GroupMemberId) ->
+
+     
+        let groupStreamId = aGroupMemberId |> GroupMemberId.value |> concatGroupStreamId
+
+        printfn "=========== IN loadGroupWithGroupMemberId ==============="
+        printfn "=========================="
+        printfn "groupStreamId %A" groupStreamId
+        printfn "=========================="
+        printfn "=========== IN loadGroupWithGroupMemberId ==============="
+
+
+        let store = create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
+        let foundGroupEventStreamList,_,_ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
+       
+        match foundGroupEventStreamList.Head with  
+        | GroupStreamEvent.GroupCreated groupZeroState ->  
+            let groupDto =  foundGroupEventStreamList 
+                            |>  List.toArray 
+                            |> Seq.fold applyGroupEvent groupZeroState
+            groupDto 
+            |> DbHelpers.fromDbDtoToGroup
+        | _ ->      
+            Error "Could not built group initial state"
 
 
 
 
 
-
-
-    let concatStreamId (p1:string) (p2:string) = p1.Trim() + p2.Trim() 
-    let concatTenantStreamId = concatStreamId "TENANT_With_ID_=_"
-    let concatRoleStreamId = concatStreamId "ROLE_With_ID_=_"
-    let concatGroupStreamId = concatStreamId "GROUP_With_ID_=_"
-    let concatUserStreamId = concatStreamId "USER_With_ID_=_"
 
 
 

@@ -5,6 +5,8 @@ open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
+
+open IdentityAndAcccess.EventStorePlayGround.Implementation
 open IdentityAndAcccess.DomainTypes.Functions
 
 open IdentityAndAcccess.CommonDomainTypes.Functions
@@ -35,11 +37,14 @@ let unwrapToStandardGroup aGroupToUnwrapp =
 module Tenant =
 
 
-    ///Database dependecies 
+    ///Mongo Database dependecies 
     
     let saveOneTenantDbDependencyFunction = TenantDb.saveOneTenant
     let saveOneUserDbDependencyFunction = TenantDb.saveOneTenant
     let saveOneRoleDbDependencyFunction = TenantDb.saveOneTenant
+
+
+    
 
     ///Other domain service dependencies 
     
@@ -153,14 +158,20 @@ module Group =
 
 
 
-    ///Database dependecies 
-     
+    ///Mongo Database dependecies 
     
-    let loadGroupByIdDbDependencyFunction = GroupDb.loadOneGroupById
-
+    let loadGroupByIdMongoDependencyFunction = GroupDb.loadOneGroupById
 
     let loadGroupByGroupMemberIdDbDependencyFunction = GroupDb.loadOneGroupMemberById
-     
+
+
+
+    ///Gey Young Event Store Database dependecies 
+    
+    let loadGroupByIdGreyYoungEventStoreDependencyFunction = EventStorePlayGround.loadGroupWithGroupMemberId
+    
+
+   
 
      
                 
@@ -170,48 +181,44 @@ module Group =
     ///services
     
     
-    let isGroupMemberIsInGroupServiceImplLocal  =
+    let isGroupMemberIsInGroupServiceMongoImplLocal  =
 
         fun loadGroupMemberById  // Database dependency function
             aGroup 
             aMember -> 
                 
-            let aStandardGroup = aGroup 
-                                 |> DomainHelpers.unwrapToStandardGroup
+            let aStandardGroup = aGroup |> DomainHelpers.unwrapToStandardGroup
 
 
                     
-            let rec InternalRecursiveIsGroupMemberIsInGroupService  
-                                                                    (aMember : GroupMember)  
-                                                                    (loadGroupMemberById : LoadGroupMemberById) 
-                                                                    (aGroupMemberList : GroupMember list) =
-
+            let rec InternalRecursiveIsGroupMemberIsInGroupService 
+                    (aMember : GroupMember) (loadGroupMemberById : LoadGroupMemberById) (aGroupMemberList : GroupMember list) =
+                                                             
                     match aGroupMemberList with
                     | [] -> 
                         false
                     | head::tail ->
-
-                        if (head.Type = GroupGroupMember) && (head = aMember) then
-                            true
-                        else 
+                        if (head.Type = GroupGroupMember) && (head = aMember) then true
+                        else if (head.Type = GroupGroupMember) && not (head = aMember) then
                         
-                        ///IO operation here. looking for a group member by its group member identifier - START
                             let additionalGroupToSearch = loadGroupMemberById head.MemberId
-                        ///IO operation here. - END
                        
                             match additionalGroupToSearch with
                             | Ok anAdditionalGroupToSearch ->
 
-                                let aStandardAdditionalGroupToSearch = anAdditionalGroupToSearch 
-                                                                       |> DomainHelpers.unwrapToStandardGroup
-                                                                       
-                                let newMembersToAppend =  aStandardAdditionalGroupToSearch.Members
+                                let aStandardAdditionalGroupToSearch = 
+                                        anAdditionalGroupToSearch 
+                                        |> DomainHelpers.unwrapToStandardGroup                                        
+                                let newMembersToAppend = aStandardAdditionalGroupToSearch.Members
                                 let allMembers = tail @ newMembersToAppend
                                 let result = InternalRecursiveIsGroupMemberIsInGroupService aMember loadGroupMemberById allMembers
 
                                 result
 
                             | Error _ -> false
+                        else   
+                            false 
+
 
 
             InternalRecursiveIsGroupMemberIsInGroupService  aMember  loadGroupMemberById   aStandardGroup.Members
@@ -275,17 +282,23 @@ module Group =
                 false
 
         
-    let isUserInNestedGroupServiceImpl = isUserInNestedGroupServiceLocal loadGroupByGroupMemberIdDbDependencyFunction
+    let isUserInNestedGroupServiceImpl = 
+            isUserInNestedGroupServiceLocal loadGroupByGroupMemberIdDbDependencyFunction
 
 
-    let isGroupMemberIsInGroupServiceImpl: IsGroupMemberService = isGroupMemberIsInGroupServiceImplLocal loadGroupByGroupMemberIdDbDependencyFunction
+    let isGroupMemberIsInGroupServiceMongoImpl: IsGroupMemberService = 
+            isGroupMemberIsInGroupServiceMongoImplLocal loadGroupByGroupMemberIdDbDependencyFunction
+
+
+    let isGroupMemberIsInGroupServiceGreyYoungEventStoreImpl: IsGroupMemberService = 
+            isGroupMemberIsInGroupServiceMongoImplLocal loadGroupByIdGreyYoungEventStoreDependencyFunction
 
 
 
     let groupMemberServices: GroupMemberServices = {
         TimeServiceWasCalled = DateTime.Now
         CallerCredentials = CallerCredential "FOTIO"
-        isGroupMember = isGroupMemberIsInGroupServiceImpl
+        isGroupMember = isGroupMemberIsInGroupServiceMongoImpl
         isUserInNestedGroup = isUserInNestedGroupServiceLocal
         }
 

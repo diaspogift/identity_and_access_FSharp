@@ -183,17 +183,12 @@ module DbHelpers =
         match aGroup with
               | Standard standardGroup -> 
 
-                    let allGroupMembers = standardGroup.Members 
-                                          |> List.toArray 
-                                          |> Array.map fromGroupMemberToGroupMemberDto
-                    let groupId = standardGroup.GroupId
-                                  |> GroupId.value
-
-                    printfn "I AM HERRRE AND GROUPID IS : ==== %A" standardGroup
-
-                                  
+                    let allGroupMembers = 
+                            standardGroup.Members 
+                            |> List.toArray 
+                            |> Array.map fromGroupMemberToGroupMemberDto
+                    let groupId = standardGroup.GroupId |> GroupId.value          
                     let id = new BsonObjectId(new ObjectId(groupId))
-
                     let rsGroupDto:GroupDto ={
                         _id = id.ToString()
                         GroupId = id.ToString()
@@ -201,26 +196,24 @@ module DbHelpers =
                         Name = GroupName.value standardGroup.Name
                         Description = GroupDescription.value standardGroup.Description
                         Members = allGroupMembers
-                    }
+                        }
 
                     rsGroupDto  
 
               | Internal internalGroup ->
-                    let allGroupMembers = internalGroup.Members 
-                                          |> List.toArray 
-                                          |> Array.map fromGroupMemberToGroupMemberDto
-                    let groupId = internalGroup.GroupId
-                                  |> GroupId.value
-                    let id = new BsonObjectId(new ObjectId(groupId))
-
+                    let allGroupMembers = 
+                        internalGroup.Members 
+                        |> List.toArray 
+                        |> Array.map fromGroupMemberToGroupMemberDto
+                    let groupId = internalGroup.GroupId |> GroupId.value
                     let rsGroupDto:GroupDto ={
-                        _id = id.ToString()
+                        _id = groupId
                         GroupId = id.ToString()
                         TenantId = TenantId.value internalGroup.TenantId
                         Name = GroupName.value internalGroup.Name
                         Description = GroupDescription.value internalGroup.Description
                         Members = allGroupMembers
-                    }
+                        }
 
                     rsGroupDto
 

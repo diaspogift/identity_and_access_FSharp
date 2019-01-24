@@ -67,7 +67,7 @@ type CreateEvents = Group * GroupMember -> GroupAddedToGroupEvent
 
 //Dependencies 
 
-let isGroupMemberService = Group.isGroupMemberIsInGroupServiceImpl
+let isGroupMemberService = Group.isGroupMemberIsInGroupServiceGreyYoungEventStoreImpl
 
 let add : AddGroupToGroup = 
     fun groupToAddTo groupToAdd ->
@@ -95,9 +95,11 @@ let createEvents : CreateEvents =
 /// 
 let addGroupToGroupWorkflow: AddGroupToGroupWorkflow = 
     fun groupToAddTo groupToAdd ->
+
+        let addGroup = add groupToAddTo 
         let createEvents = Result.map createEvents
-        groupToAddTo
-        |> add groupToAdd 
+        groupToAdd
+        |> addGroup  
         |> createEvents
         
 
