@@ -474,7 +474,7 @@ printEmptySeparatorLine(5)
 
 
 
-
+(*
 
 /// ADD MID_DEVELOPER GROUP TO THE DEVELOPER GROUP
 let unvalidatedGroupIds1:UnvalidatedGroupIds = {
@@ -715,7 +715,7 @@ match  AddGroupToGroupCommand.handleAddGroupToGroup addSeniorDeveloperGroupToAny
         let msg = sprintf "SENIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP ERROR =    %A" error
         printfn " %A" msg 
 
-
+*)
 
 /// ADD USER TO GROUP
 
