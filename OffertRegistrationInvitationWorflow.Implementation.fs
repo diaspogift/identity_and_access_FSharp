@@ -3,6 +3,7 @@ module IdentityAndAcccess.OffertRegistrationInvitationApiTypes.OffertRegistratio
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Role
+open IdentityAndAcccess
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServicesImplementations.Tenant
@@ -15,6 +16,7 @@ open IdentityAndAcccess.DomainTypes
 
 open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainServicesImplementations
+open IdentityAndAcccess.DomainTypes.Functions.Dto
 
 
 
@@ -43,8 +45,8 @@ let updateTenant : UpdateOneTenant = TenantDb.updateOneTenant
 
 type ValidatedRegistrationInvitationDescription = {
 
-   TenantId : TenantId
-   RegistrationInvitationDescription : RegistrationInvitationDescription
+   TenantId : CommonDomainTypes.TenantId
+   RegistrationInvitationDescription : CommonDomainTypes.RegistrationInvitationDescription
 }
 
 
@@ -63,7 +65,7 @@ type ValidateRegistrationInvitationDescription =
 
 type OfferRegistrationInvitation = 
 
-    Tenant -> ValidatedRegistrationInvitationDescription -> Result<(Tenant*RegistrationInvitation), OfferRegistrationInvitationError>
+    Tenant.Tenant -> ValidatedRegistrationInvitationDescription -> Result<(Tenant.Tenant*Tenant.RegistrationInvitation), OfferRegistrationInvitationError>
 
 
 
@@ -84,12 +86,15 @@ let validateRegistrationInvitationDescription : ValidateRegistrationInvitationDe
                 |> Result.mapError OfferRegistrationInvitationError.ValidationError
 
 
-            let! tenantId = 
+            let! tenantId =
                 aUnvalidatedRegistrationInvitationDescription.TenantId
                 |> TenantId.create'
                 |> Result.mapError OfferRegistrationInvitationError.ValidationError
 
-            let validatedRegInv : ValidatedRegistrationInvitationDescription = {TenantId = tenantId; RegistrationInvitationDescription = description}
+            let validatedRegInv : ValidatedRegistrationInvitationDescription = {  
+                TenantId = tenantId
+                RegistrationInvitationDescription = description
+                }
 
             return validatedRegInv
 
@@ -115,7 +120,7 @@ let offerRegistrationInvitation : OfferRegistrationInvitation =
 
 
 
-type CreateEvents = (Tenant*RegistrationInvitation) -> RegistrationInvitationOfferredEvent 
+type CreateEvents = Tenant.Tenant*Tenant.RegistrationInvitation -> RegistrationInvitationOfferredEvent 
 
         
 
@@ -127,21 +132,10 @@ let createEvents : CreateEvents =
 
         let tenant, registrationInvitation =  tenantAndInvitation
 
-
-        let regInvDto:RegistrationInvitationDto = {
-
-            RegistrationInvitationId = registrationInvitation.RegistrationInvitationId |> RegistrationInvitationId.value
-            Description = registrationInvitation.Description |> RegistrationInvitationDescription.value
-            TenantId = registrationInvitation.TenantId |> TenantId.value
-            StartingOn = registrationInvitation.StartingOn
-            Until = registrationInvitation.Until
-        }
-
         let registrationInvitationOfferredEvent : RegistrationInvitationOfferredEvent = {
-            Tenant = (tenant |> DbHelpers.fromTenantDomainToDto)
-            RegistrationInvitation = regInvDto
+            TenantId = tenant.TenantId |> TenantId.value
+            OfferredInvitation = registrationInvitation |> Dto.RegistrationInvitation.fromDomain 
         }
-
 
         registrationInvitationOfferredEvent
 
@@ -159,13 +153,12 @@ let offerRegistrationInvitationWorkflow: OfferRegistrationInvitationWorkflow =
         let offerRegistrationInvitation = Result.bind offerRegistrationInvitation
         let createEvents = Result.map createEvents
 
-
-
-
         anUnvalidatedRegistrationInvitationDescription
         |> validateRegistrationInvitationDescription
         |> offerRegistrationInvitation
         |> createEvents
+
+       
         
 
 

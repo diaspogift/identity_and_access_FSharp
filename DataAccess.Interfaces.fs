@@ -2,10 +2,12 @@ namespace IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 
 
 open IdentityAndAcccess.CommonDomainTypes
+open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Functions
 
  
 
@@ -28,13 +30,13 @@ module RoleDb =
     /// 
     /// 
     /// 
-    type SaveOneRole = Role -> Result<unit, string>
+    type SaveOneRole = Role.Role -> Result<unit, string>
 
-    type LoadOneRoleById =  RoleId -> Result<Role, string> 
+    type LoadOneRoleById =  RoleId -> Result<Dto.Role, string> 
 
-    type LoadOneRoleByRoleIdAndTenantId =   RoleId -> TenantId -> Result<Role, string> 
+    type LoadOneRoleByRoleIdAndTenantId =   RoleId -> TenantId -> Result<Dto.Role, string> 
 
-    type UpdateOneRole = Role -> Result<unit, string> 
+    type UpdateOneRole = Role.Role -> Result<unit, string> 
 
 
 
@@ -56,7 +58,7 @@ module UserDb =
     /// 
     type SaveOneUser = 
 
-        User -> Result<unit, string>
+        User.User -> Result<unit, string>
 
 
 
@@ -65,7 +67,7 @@ module UserDb =
 
     type LoadOneUserById = 
 
-        UserId -> Result<User, string> 
+        UserId -> Result<Dto.User, string> 
 
 
 
@@ -74,7 +76,7 @@ module UserDb =
 
     type LoadOneUserByUserIdAndTenantId = 
          
-         UserId -> TenantId -> Result<unit, string>
+         UserId -> TenantId -> Result<Dto.User, string>
 
 
 
@@ -83,7 +85,7 @@ module UserDb =
 
     type UpdateOneUser = 
         
-        User -> Result<string, string> 
+        User.User -> Result<unit, string> 
 
 
 
@@ -103,7 +105,7 @@ module TenantDb =
     /// 
     type SaveOneTenant = 
         
-        Tenant -> Result<unit, string>
+        Tenant.Tenant -> Result<unit, string>
 
 
 
@@ -111,7 +113,7 @@ module TenantDb =
 
     type LoadOneTenantById = 
     
-        TenantId -> Result<Tenant, string> 
+        TenantId -> Result<Tenant.Tenant, string> 
 
 
 
@@ -120,7 +122,7 @@ module TenantDb =
 
     type UpdateOneTenant = 
     
-        Tenant -> Result<unit, string> 
+        Tenant.Tenant -> Result<unit, string> 
 
 
 
@@ -157,33 +159,33 @@ module GroupDb =
     /// 
     ///  
     type SaveOneGroup = 
-        Group -> Result<unit, string>
+        Group.Group-> Result<unit, string>
 
 
 
     type LoadOneGroupById = 
-        GroupId -> Result<Group, string> 
+        GroupId -> Result<Group.Group, string> 
 
 
 
     type LoadOneGroupByGroupIdAndTenantId =  
-        GroupId -> TenantId -> Result<unit, string>
+        GroupId -> TenantId -> Result<Group.Group, string>
 
 
     
     type LoadOneGroupByGroupMemberId = 
-        GroupMemberId -> Result<Group, string> 
+        GroupMemberId -> Result<Group.Group, string> 
 
 
 
     type LoadOneGroupByGroupMemberIdAndTenantId =  
-       GroupMemberId -> TenantId -> Result<unit, string>
+       GroupMemberId -> TenantId -> Result<Group.Group, string>
 
 
 
 
     type UpdateOneGroup = 
-       Group -> Result<unit,string>
+       Group.Group -> Result<unit,string>
 
 
 

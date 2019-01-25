@@ -1,6 +1,7 @@
 module IdentityAndAcccess.ReactivateTenantActivationStatusApiTypes.ReactivateTenantActivationStatusWorflowImplementation
 
 open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
@@ -60,7 +61,7 @@ type ValidateTenantActivationStatus =
 
 type ReactivateTenantActivationStatus = 
 
-    Tenant -> ValidatedTenantActivationStatus -> Result<Tenant, ReactivateTenantActivationStatusError>
+    Tenant.Tenant -> CommonDomainTypes.Reason  -> ValidatedTenantActivationStatus -> Result<Tenant.Tenant*CommonDomainTypes.Reason, ReactivateTenantActivationStatusError>
 
 
 
@@ -98,10 +99,9 @@ let validateTenantActivationStatus : ValidateTenantActivationStatus =
 ///Step2 reactivate tenant activation status impl
 let reactivateTenantActivationStatus : ReactivateTenantActivationStatus = 
 
-    fun  aTenant validatedTenantStatus ->
-        
-        aTenant
-        |> Tenant.activateTenant 
+    fun  aTenant aReason validatedTenantStatus ->    
+        aReason 
+        |> Tenant.activateTenant aTenant
         |> Result.mapError ReactivateTenantActivationStatusError.ReactivationError 
      
 
@@ -109,7 +109,7 @@ let reactivateTenantActivationStatus : ReactivateTenantActivationStatus =
 
 
 
-type CreateEvents = Tenant -> TenantActivationStatusReactivatedEvent 
+type CreateEvents = Tenant.Tenant*Reason -> TenantActivationStatusReactivatedEvent 
 
         
 
@@ -117,18 +117,24 @@ type CreateEvents = Tenant -> TenantActivationStatusReactivatedEvent
 ///Step4 create events impl
 let createEvents : CreateEvents = 
 
-    fun tenant ->
+    fun (tenant, reason) ->
 
-        
+
+        let dtoReason:Dto.Reason = {
+            Description = reason |> Reason.value
+            }
 
         let tenantActivationStatusReactivatedEvent : TenantActivationStatusReactivatedEvent = {
-            Tenant =  tenant |> DbHelpers.fromTenantDomainToDto
-            ActivationStatus = ActivationStatusDto.Disactivated
-            Reason = "FIXTURE FOR NOW"
-        }
+            TenantId = tenant.TenantId |> TenantId.value
+            Status = Dto.ActivationStatus.Activated
+            Reason = dtoReason
+            }
 
 
         tenantActivationStatusReactivatedEvent
+
+
+
 
 
 
@@ -141,9 +147,10 @@ let createEvents : CreateEvents =
 /// 
 let reactivateTenantActivationStatusWorkflow: ReactivateTenantActivationStatusWorkflow = 
 
-    fun aTenant anUnvalidatedTenantActivationStatus ->
+    fun aTenant aReason anUnvalidatedTenantActivationStatus ->
 
         let  reactivateTenantActivationStatus =  reactivateTenantActivationStatus aTenant
+        let  reactivateTenantActivationStatus =  reactivateTenantActivationStatus aReason
         let  reactivateTenantActivationStatus =  Result.bind reactivateTenantActivationStatus
         let createEvents =   Result.map createEvents
 

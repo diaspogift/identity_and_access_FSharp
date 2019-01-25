@@ -53,6 +53,7 @@ open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
 open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
 open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowImplementation
 open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
+open IdentityAndAcccess.DomainTypes.Functions.Dto
 
 
 
@@ -157,10 +158,10 @@ let provisionTenantCommand : ProvisionTenantCommand = {
 
 match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with  
 | Ok rs -> 
-        // printEmptySeparatorLine(2)
-        // printfn " THE PROVISIONING RESULT"
-        // printEmptySeparatorLine(2)
-        // printfn " %A" rs
+        printEmptySeparatorLine(2)
+        printfn " THE PROVISIONING RESULT"
+        printEmptySeparatorLine(2)
+        printfn " %A" rs
         printEmptySeparatorLine(2)
         match rs.Head with 
         | TenantProvisionCreated t ->
@@ -189,7 +190,7 @@ match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with
 
 
 
-// printEmptySeparatorLine(5)
+printEmptySeparatorLine(5)
 
 
 
@@ -197,7 +198,7 @@ match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with
 
 
 
-
+(*
 /// DEACTIVATE TENANT ACTIVATION STATUS
 
 let unvalidatedDeactivateDiaspoGiftTenant : UnvalidatedTenantActivationStatus = {
@@ -213,10 +214,10 @@ let deactivateTenantActivationStatusCommand : DeactivateTenantActivationStatusCo
 
 match  deactivateTenantActivationStatusCommand |> DeactivateTenantActivationStatus.handleDeactivateTenantActivationStatus  with  
 | Ok rs -> 
-        // printEmptySeparatorLine(2)
-        // printfn " THE DEACTIVATION RESULT"
-        // printEmptySeparatorLine(2)
-        // printfn " %A" rs
+        printEmptySeparatorLine(2)
+        printfn " THE DEACTIVATION RESULT"
+        printEmptySeparatorLine(2)
+        printfn " %A" rs
         printEmptySeparatorLine(2)
 
 | Error error ->
@@ -225,7 +226,7 @@ match  deactivateTenantActivationStatusCommand |> DeactivateTenantActivationStat
 
 
 
-//printEmptySeparatorLine(5)
+printEmptySeparatorLine(5)
 
 
 
@@ -261,11 +262,8 @@ match  reactivateTenantActivationStatusCommand |> ReactivateTenantActivationStat
 
 printEmptySeparatorLine(5)
 
-
-
-
-
-
+*)
+ 
 
  
 /// PROVOSION (DEVELOPER, JUNIOR_DEVELOPER, MID_DEVELOPER, SENIOR_DEVELOPER) GROUPS FOR DIASPO GIFT TENANT 
@@ -295,7 +293,9 @@ match  ProvisionGroupCommand.handleProvisionGroup provisionDeveloperGroupCommand
         printfn " %A" rs
         printEmptySeparatorLine(2)
 
-        diaspoGiftGroupIdForDeveloperGroup <- rs.Group.GroupId
+        //et ug = unwrapGroup rs.Group
+
+        diaspoGiftGroupIdForDeveloperGroup <- rs.GroupId
 
         printfn " diaspoGiftGroupIdForDeveloperGroup %A"   diaspoGiftGroupIdForDeveloperGroup   
 
@@ -331,7 +331,9 @@ match  ProvisionGroupCommand.handleProvisionGroup provisionJuniorDeveloperGroupC
         printfn " %A" rs
         printEmptySeparatorLine(2)
 
-        diaspoGiftGroupIdForJuniorDeveloperGroup <- rs.Group.GroupId
+        //let ugs = unwrapGroup rs.Group
+
+        diaspoGiftGroupIdForJuniorDeveloperGroup <- rs.GroupId
         printfn " diaspoGiftGroupIdForJuniorDeveloperGroup %A"   diaspoGiftGroupIdForJuniorDeveloperGroup   
 
 | Error error ->
@@ -366,7 +368,9 @@ match  ProvisionGroupCommand.handleProvisionGroup provisionMidDeveloperGroupComm
         printfn " %A" rs
         printEmptySeparatorLine(2)
 
-        diaspoGiftGroupIdForMidDeveloperGroup <- rs.Group.GroupId
+        //let ugg = unwrapGroup rs.Group
+
+        diaspoGiftGroupIdForMidDeveloperGroup <- rs.GroupId
         printfn " diaspoGiftGroupIdForJuniorDeveloperGroup %A"   diaspoGiftGroupIdForMidDeveloperGroup   
 
 | Error error ->
@@ -402,7 +406,10 @@ match  ProvisionGroupCommand.handleProvisionGroup provisionSeniorDeveloperGroupC
         printfn " %A" rs
         printEmptySeparatorLine(2)
 
-        diaspoGiftGroupIdForSeniorDeveloperGroup <- rs.Group.GroupId
+
+        //let uuy = unwrapGroup rs.Group
+
+        diaspoGiftGroupIdForSeniorDeveloperGroup <- rs.GroupId
 
         printfn " diaspoGiftGroupIdForSeniorDeveloperGroup %A"   diaspoGiftGroupIdForSeniorDeveloperGroup   
 
@@ -583,7 +590,7 @@ match  AddGroupToGroupCommand.handleAddGroupToGroup addMidDeveloperGroupToAnyDev
 
 
 
-(* 
+
 
 
 
@@ -691,7 +698,7 @@ let unvalidatedGroupIds3:UnvalidatedGroupIds = {
         GroupIdToAdd = diaspoGiftGroupIdForSeniorDeveloperGroup
         } 
 let addSeniorDeveloperGroupToAnyDeveloperGroupCommand3 : AddGroupToGroupCommand = {
-        Data = unvalidatedGroupIds2
+        Data = unvalidatedGroupIds3
         TimeStamp = DateTime.Now
         UserId = diaspoGiftAdminUserId
         } 
@@ -717,7 +724,7 @@ match  AddGroupToGroupCommand.handleAddGroupToGroup addSeniorDeveloperGroupToAny
  
 
 
- *)
+ 
 
 
 

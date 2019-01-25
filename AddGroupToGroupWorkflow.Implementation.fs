@@ -17,6 +17,8 @@ open IdentityAndAcccess.DomainTypes
 open IdentityAndAccess.DatabaseTypes
 
 open IdentityAndAcccess.DomainServicesImplementations
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open System.Text.RegularExpressions
 
 
 
@@ -40,13 +42,13 @@ open IdentityAndAcccess.DomainServicesImplementations
 
 type AddGroupToGroup = 
 
-    Group -> Group -> Result<Group*GroupMember, AddGroupToGroupError>
+    Group.Group -> Group.Group -> Result<Group.Group*GroupMember, AddGroupToGroupError>
 
 
 
 //Step 3 - Create events step
 
-type CreateEvents = Group * GroupMember -> GroupAddedToGroupEvent
+type CreateEvents = Group.Group * Group.GroupMember -> GroupAddedToGroupEvent
 
 
 
@@ -66,12 +68,14 @@ type CreateEvents = Group * GroupMember -> GroupAddedToGroupEvent
 ///Step1 adds user to group impl
 
 //Dependencies 
-
 let isGroupMemberService = Group.isGroupMemberIsInGroupServiceGreyYoungEventStoreImpl
 
-let add : AddGroupToGroup = 
-    fun groupToAddTo groupToAdd ->
-       Group.addGroupToGroup groupToAddTo groupToAdd isGroupMemberService
+
+
+let add  (groupToAddTo:Group.Group) (groupToAdd:Group.Group)   = 
+       
+       let addResult = Group.addGroupToGroup groupToAddTo groupToAdd isGroupMemberService
+       addResult
        |> Result.mapError AddGroupToGroupError.AddError
 
        
@@ -80,26 +84,19 @@ let add : AddGroupToGroup =
 let createEvents : CreateEvents = 
     fun (aGroup, aGroupMember) ->
        let groupAddedToGroupEvent : GroupAddedToGroupEvent = {
-           GroupAddedTo = (aGroup |> DbHelpers.fromGroupDomainToDto)
-           GroupMemberAdded =  (aGroupMember |> DbHelpers.fromGroupMemberToGroupMemberDto)         
+           GroupMemberAdded =  aGroupMember |> Dto.GroupMember.fromDomain   
        }
        groupAddedToGroupEvent
 
-        
-                    
-
- 
-
+                  
 ///Add group to group workflow implementation
 /// 
 /// 
 let addGroupToGroupWorkflow: AddGroupToGroupWorkflow = 
     fun groupToAddTo groupToAdd ->
-
-        let addGroup = add groupToAddTo 
-        let createEvents = Result.map createEvents
+        let createEvents = Result.map createEvents        
         groupToAdd
-        |> addGroup  
+        |> add groupToAddTo
         |> createEvents
         
 

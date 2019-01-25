@@ -10,6 +10,7 @@ open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAccess.DatabaseTypes
 
 
+open IdentityAndAcccess.DomainTypes.Functions
 
 
 
@@ -51,10 +52,9 @@ type OfferRegistrationInvitationCommand =
 
 
 type RegistrationInvitationOfferredEvent = {
-    Tenant : TenantDto
-    RegistrationInvitation : RegistrationInvitationDto
-    
-}
+    TenantId : Dto.TenantId
+    OfferredInvitation : Dto.RegistrationInvitation
+    }
 
 
 
@@ -70,4 +70,4 @@ type OfferRegistrationInvitationError =
 //Worflow type 
 
 type OfferRegistrationInvitationWorkflow = 
-    Tenant -> UnvalidatedRegistrationInvitationDescription -> Result<RegistrationInvitationOfferredEvent, OfferRegistrationInvitationError>
+    Tenant.Tenant -> UnvalidatedRegistrationInvitationDescription -> Result<RegistrationInvitationOfferredEvent, OfferRegistrationInvitationError>

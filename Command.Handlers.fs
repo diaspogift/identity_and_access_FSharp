@@ -32,6 +32,7 @@ open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Functions
 open FSharp.Data.Sql
 
 open IdentityAndAcccess.DomainTypes.Tenant
@@ -55,6 +56,13 @@ open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.Aggregates.Implementation
 open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.Aggregates.Implementation
+open IdentityAndAcccess.DomainServicesImplementations
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Functions.Dto
 
 
 
@@ -101,21 +109,23 @@ module ProvisionTenant =
         |> List.map (
             
             fun event -> 
-
-
                 match event with
                 | TenantProvisionedEvent.TenantProvisionCreated aTenantProvisionCreated ->  
 
-
-                    let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned |> DbHelpers.fromTenantDomainToDto
-                    let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> DbHelpers.fromRoleDomainToDto
-                    let userRegistered = aTenantProvisionCreated.UserRegistered |> DbHelpers.fromUserDomainToDto
+                    let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned |> Dto.Tenant.fromDomain
+                    let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> Dto.Role.fromDomain
+                    let userRegistered = aTenantProvisionCreated.UserRegistered |> Dto.User.fromDomain
 
                     tenantId <-   tenantProvisioned.TenantId
                     roleId <-  roleProvisioned.RoleId
                     userId <-  userRegistered.UserId
 
-                    let tenantCreatedEvent = tenantProvisioned |> TenantStreamEvent.TenantCreated 
+                    let tc : Dto.TenantCreated = {
+                            TenantId = tenantProvisioned.TenantId
+                            Tenant  = tenantProvisioned
+                            }
+                    
+                    let tenantCreatedEvent = tc |> TenantStreamEvent.TenantCreated 
                     let tenantCreatedEventL = tenantCreatedEvent |> List.singleton |> List.toArray
 
 
@@ -138,20 +148,9 @@ module ProvisionTenant =
 
                 | TenantProvisionedEvent.InvitationOffered invitaton ->
 
-
-                        let ridto : RegistrationInvitationDto = {
-                            RegistrationInvitationId = invitaton.Invitation.RegistrationInvitationId
-                            Description = invitaton.Invitation.Description
-                            TenantId = invitaton.TenantId
-                            StartingOn = invitaton.Invitation.StartingOn
-                            Until = invitaton.Invitation.Until
-                        }
-     
-
-                        let invitationOffered : RegistrationInvitationOfferredDto   = {   
-                            TenantId = invitaton.TenantId
-                            Invitation =  ridto 
-
+                        let invitationOffered : Dto.OfferredRegistrationInvitation  = { 
+                            TenantId = invitaton.TenantId  
+                            OfferredInvitation = invitaton.Invitation
                         }
 
                         let invitationOfferedEvent = TenantStreamEvent.InvitationOfferred  invitationOffered
@@ -159,35 +158,17 @@ module ProvisionTenant =
 
                         tenantEventList <- Array.append tenantEventList invitationOfferedEventL
 
-
-
-
                 | TenantProvisionedEvent.InvitationWithdrawn invitation ->
-
-        
-
-                        let ridto : RegistrationInvitationDto = {
-                            RegistrationInvitationId = invitation.Invitation.RegistrationInvitationId
-                            Description = invitation.Invitation.Description
-                            TenantId = invitation.TenantId
-                            StartingOn = invitation.Invitation.StartingOn
-                            Until = invitation.Invitation.Until
-                        }
                       
-                        let registrationInvitationWithdrawnedDto : RegistrationInvitationWithdrawnDto   = {   
-                            TenantId =  invitation.TenantId
-                            Invitation =  ridto
+                        let registrationInvitationWithdrawnedDto : Dto.WithnrawnRegistrationInvitation  = {   
+                            TenantId = invitation.TenantId
+                            WithdrawnInvitation = invitation.Invitation
+                            }
 
-                        }
-
-                        let invitationWithdrawn = InvitationWithdrawn registrationInvitationWithdrawnedDto
+                        let invitationWithdrawn = TenantStreamEvent.InvitationWithdrawn registrationInvitationWithdrawnedDto
                         let invitationWithdrawnL = [invitationWithdrawn] |> List.toArray
 
-
                         tenantEventList <- Array.append tenantEventList invitationWithdrawnL
-
-
-            
                    
                 | ProvisionAcknowledgementSent aProvisionAcknowledgementSent ->
 
@@ -250,19 +231,6 @@ module ProvisionTenant =
             Error error
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 module OfferRegistrationInvitationCommand = 
 
 
@@ -277,19 +245,15 @@ module OfferRegistrationInvitationCommand =
             Description =  aCommandData.Description 
             }
 
-        
-            
-        let rsOfferRegistrationInvitationWorkflow = result {  
-            
+        let rsOfferRegistrationInvitationWorkflow = result {           
             let strTenantId =  unvalidatedRegistrationInvitationDescription.TenantId |> concatTenantStreamId 
             let! tenantStreamId, tenantDto, lastEventNumber = strTenantId |> loadTenantWithId    
 
-
             let! rsTenant = result {      
-                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
+                let! tenantFound =  tenantDto |> Dto.Tenant.toDomain
                 let rs = unvalidatedRegistrationInvitationDescription |> offerRegistrationInvitationWorkflow tenantFound 
                 return rs 
-                }    
+                }   
             return (rsTenant, tenantStreamId, lastEventNumber)
             }
 
@@ -299,32 +263,24 @@ module OfferRegistrationInvitationCommand =
             | Ok ev, tenantStreamId, lastEventNumber -> 
                 let saveOfferRegistrationInvitationEvent = async {
 
-                        let regInvOffDto:RegistrationInvitationOfferredDto = {
-                            TenantId = ev.Tenant.TenantId
-                            Invitation =  ev.RegistrationInvitation
-                            }
-  
-                        let registrstionInvitationOfferredEvent =  regInvOffDto |> TenantStreamEvent.InvitationOfferred 
+                        let offferredInv:Dto.OfferredRegistrationInvitation = {
+                            TenantId = ev.TenantId
+                            OfferredInvitation = ev.OfferredInvitation  
+                        }
+                        let registrstionInvitationOfferredEvent =  offferredInv |> TenantStreamEvent.InvitationOfferred 
                         let registrstionInvitationOfferredEvent = registrstionInvitationOfferredEvent |> toSequence |> Array.singleton
-
-                        let rsAppendToTenantStream = recursivePersistEventsStream tenantStreamId lastEventNumber registrstionInvitationOfferredEvent
-                     
+                        let rsAppendToTenantStream = recursivePersistEventsStream tenantStreamId lastEventNumber registrstionInvitationOfferredEvent 
                         return rsAppendToTenantStream
                         }
                 saveOfferRegistrationInvitationEvent
                 |> Async.RunSynchronously
                 Ok ev
-            | Error error, s, t ->
+            | Error error, _, _ ->
                 Error  error
         | Error error ->
             let er = OfferRegistrationInvitationError.OfferInvitationError error
             Error er
-
             
-                               
-    
-
-
         
 module WithdrawRegistrationInvitationCommand = 
 
@@ -347,7 +303,7 @@ module WithdrawRegistrationInvitationCommand =
             let! tenantStreamId, tenantDto, lastEventNumber = strTenantId |> loadTenantWithId    
 
             let! rsTenant = result {      
-                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
+                let! tenantFound =  tenantDto |> Dto.Tenant.toDomain
                 let rs = unvalidatedRegistrationInvitationIdentifier |> withdrawRegistrationInvitationWorkflow tenantFound 
                 return rs 
                 }    
@@ -358,17 +314,16 @@ module WithdrawRegistrationInvitationCommand =
         | Ok en ->
             match en with  
             | Ok ev, tenantStreamId, lastEventNumber ->
-                let saveWithdrawRegistrationInvitationEvent = async {
+                let saveWithdrawRegistrationInvitationEvent = async { 
 
-                        let regInvWithDto:RegistrationInvitationWithdrawnDto = {
-                            TenantId = ev.Tenant.TenantId
-                            Invitation =  ev.RegistrationInvitation
-                            }  
-                        let registrstionInvitationOfferredEvent = regInvWithDto |> TenantStreamEvent.InvitationWithdrawn 
-                        let registrstionInvitationOfferredEvent = registrstionInvitationOfferredEvent |> toSequence |> Array.singleton
-
-                        let rsAppendToTenantStream = recursivePersistEventsStream tenantStreamId lastEventNumber registrstionInvitationOfferredEvent
-                     
+                        let withnrawnRegistrationInvitation: Dto.WithnrawnRegistrationInvitation = {
+                                TenantId = ev.TenantId
+                                WithdrawnInvitation = ev.WithdrawnInvitation
+                            }
+       
+                        let registrstionInvitationWithdrawnEvent = withnrawnRegistrationInvitation |> TenantStreamEvent.InvitationWithdrawn 
+                        let registrstionInvitationOfferredEvent = registrstionInvitationWithdrawnEvent |> toSequence |> Array.singleton
+                        let rsAppendToTenantStream = recursivePersistEventsStream tenantStreamId lastEventNumber registrstionInvitationOfferredEvent                
                         return rsAppendToTenantStream
                         }
                 saveWithdrawRegistrationInvitationEvent
@@ -381,25 +336,13 @@ module WithdrawRegistrationInvitationCommand =
             Error er
 
             
-          
-       
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
 module DeactivateTenantActivationStatus = 
+
+    type ActivationStatusChangeData = {
+
+        Status :  Dto.ActivationStatus  
+        Reason : Dto.Reason
+    }
 
     let handleDeactivateTenantActivationStatus (aDeactivateTenantActivationStatusCommand:DeactivateTenantActivationStatusCommand) =
                                                  
@@ -417,9 +360,10 @@ module DeactivateTenantActivationStatus =
             let! streamId, tenantDto, lastEventNumber  =  unvalidatedTenantActivationStatus.TenantId |> concatTenantStreamId  |> loadTenantWithId  
 
             let! rsTenant = result {
-                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
+                let! tenantFound =  tenantDto |> Dto.Tenant.toDomain 
+                let! reason = unvalidatedTenantActivationStatus.Reason |> Reason.create'
                 let rs = unvalidatedTenantActivationStatus 
-                         |> deactivateTenantActivationStatusWorkflow tenantFound 
+                         |> deactivateTenantActivationStatusWorkflow tenantFound reason
                 return rs 
                 }               
             return (rsTenant, streamId, lastEventNumber)
@@ -430,25 +374,22 @@ module DeactivateTenantActivationStatus =
         | Ok en ->
             match en with  
             | Ok ev, streamId, lastEventNumber ->
-                let saveOfferRegistrationInvitationEvent = async {
-                    
-                    let tenantActivationStatusDeactivatedDto : TenantActivationStatusDeactivatedDto   = {   
-                        Tenant = ev.Tenant 
-                        ActivationStatus = ev.Tenant.ActivationStatus
-                        Reason = "FIXTURE FOR NW"
-                        }
+                let saveActivationStatusDeactivatedEvent = async {
 
-                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedDto 
-                                                                 |> ActivationStatusDeActivated 
+                    let tenantActivationStatusDeactivatedEvent: Dto.ActivationStatusAndReason = {
+                        TenantId = ev.TenantId 
+                        Status = ev.Status
+                        Reason = ev.Reason
+                    }
+
+                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedEvent |> TenantStreamEvent.ActivationStatusDeActivated 
                     let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedEvent 
                                                                  |> toSequence |> Array.singleton 
-
                     let rsAppendToTenantStream = recursivePersistEventsStream streamId lastEventNumber tenantActivationStatusDeactivatedEvent
-
                     return rsAppendToTenantStream
                     }
 
-                saveOfferRegistrationInvitationEvent
+                saveActivationStatusDeactivatedEvent
                 |> Async.RunSynchronously
 
                 Ok ev
@@ -460,19 +401,6 @@ module DeactivateTenantActivationStatus =
         | Error error ->
             let er = DeactivateTenantActivationStatusError.DeactivationError error
             Error er
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 module ReactivateTenantActivationStatus = 
@@ -490,11 +418,16 @@ module ReactivateTenantActivationStatus =
                    
         let rsReactivateTenantWorkflow = result {
 
-            let! streamId, tenantDto, lastEventNumber  =  unvalidatedTenantActivationStatus.TenantId 
-                                                         |> concatTenantStreamId  |> loadTenantWithId 
+            let! streamId, tenantDto, lastEventNumber  =  
+                    unvalidatedTenantActivationStatus.TenantId 
+                    |> concatTenantStreamId  
+                    |> loadTenantWithId 
+
+
             let! rsTenant = result {
-                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
-                let rs = reactivateTenantActivationStatusWorkflow tenantFound unvalidatedTenantActivationStatus
+                let! tenantFound =  tenantDto |> Dto.Tenant.toDomain 
+                let! reason = unvalidatedTenantActivationStatus.Reason |> Reason.create'
+                let rs = unvalidatedTenantActivationStatus |> reactivateTenantActivationStatusWorkflow tenantFound reason
                 return rs  
                 }
 
@@ -506,21 +439,21 @@ module ReactivateTenantActivationStatus =
             match en with  
             | Ok ev, streamId, lastEventNumber->
                 let saveTenantActivationStatusReactevatedEvent = async {
-
-                    let tenantActivationStatusReactivatedDto : TenantActivationStatusReactivatedDto   = {   
-                        Tenant = ev.Tenant 
-                        ActivationStatus = ev.Tenant.ActivationStatus
-                        Reason = "FIXTURE FOR NW"
-                        }
-
-                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusReactivatedDto |> ActivationStatusReActivated 
-                    let tenantActivationStatusDeactivatedEvent = tenantActivationStatusDeactivatedEvent |> toSequence |> Array.singleton 
-    
-                    let rsAppendToTenantStream = recursivePersistEventsStream streamId  lastEventNumber tenantActivationStatusDeactivatedEvent
-
+                    
+                    let tenantActivationStatusReactivatedEvent: Dto.ActivationStatusAndReason = {
+                        TenantId = ev.TenantId 
+                        Status = ev.Status
+                        Reason = ev.Reason
+                    }
+                    
+                    let tenantActivationStatusReactivatedEvent = tenantActivationStatusReactivatedEvent |> TenantStreamEvent.ActivationStatusReActivated 
+                    let tenantActivationStatusReactivatedEvent = tenantActivationStatusReactivatedEvent |> toSequence |> Array.singleton 
+                    let rsAppendToTenantStream = recursivePersistEventsStream streamId  lastEventNumber tenantActivationStatusReactivatedEvent
                     return rsAppendToTenantStream
                     }
                 saveTenantActivationStatusReactevatedEvent
+
+                
                 |> Async.RunSynchronously
                 Ok ev
             | Error error, s, t ->
@@ -528,19 +461,6 @@ module ReactivateTenantActivationStatus =
         | Error error ->
             let er = ReactivateTenantActivationStatusError.ReactivationError error
             Error er
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 module ProvisionGroupCommand = 
@@ -552,18 +472,15 @@ module ProvisionGroupCommand =
     let handleProvisionGroup (aCommad:ProvisionGroupCommand) = 
 
         let aCommandData = aCommad.Data
-
         let unvalidatedGroup  = aCommandData
-
-            
+       
         let rsProvisionGroupWorkflow = result {  
             
             let strTenantId =  unvalidatedGroup.TenantId |> concatTenantStreamId 
-            let! tenantStreamId, tenantDto, lastEventNumber = strTenantId |> loadTenantWithId    
-
+            let! _, tenantDto, _ = strTenantId |> loadTenantWithId    
 
             let! rsTenant = result {      
-                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
+                let! tenantFound =  tenantDto |> Dto.Tenant.toDomain 
                 let rs = unvalidatedGroup |> provisionGroupWorkflow tenantFound 
                 return rs 
                 }    
@@ -576,13 +493,24 @@ module ProvisionGroupCommand =
             | Ok ev -> 
                 let saveProvisionGroupEvent = async {
 
-                        let groupStreamId = ev.Group.GroupId |> concatGroupStreamId 
-                        let groupProvisionedEvent =  ev.Group |> GroupStreamEvent.GroupCreated 
-                        let groupProvisionedEventL = groupProvisionedEvent |> toSequence |> Array.singleton
-                        let rsAppendToTenantStream = recursivePersistEventsStream groupStreamId -1L groupProvisionedEventL
-                     
-                        return rsAppendToTenantStream
-                        }
+
+                    let groupStreamId = ev.GroupId |> concatGroupStreamId 
+
+                    let stdrGpCreated: Dto.StandardGroupCreated = {
+                         GroupId = ev.GroupId
+                         TenantId = ev.TenantId
+                         Group = ev.Group
+                         }
+                         
+                    let createdGrp = Dto.GroupCreated.Standard stdrGpCreated
+
+
+                    let groupProvisionedEvent =  createdGrp |> GroupStreamEvent.GroupCreated 
+                    let groupProvisionedEventL = groupProvisionedEvent |> toSequence |> Array.singleton
+                    let rsAppendToTenantStream = recursivePersistEventsStream groupStreamId -1L groupProvisionedEventL
+                 
+                    return rsAppendToTenantStream
+                    }
                 saveProvisionGroupEvent
                 |> Async.RunSynchronously
                 Ok ev
@@ -591,20 +519,6 @@ module ProvisionGroupCommand =
         | Error error ->
             let er = ProvisionGroupError.DbError error
             Error er
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 module ProvisionRoleCommand = 
@@ -623,7 +537,7 @@ module ProvisionRoleCommand =
             let! tenantStreamId, tenantDto, lastEventNumber = strTenantId |> loadTenantWithId    
 
             let! rsTenant = result {      
-                let! tenantFound =  tenantDto |> DbHelpers.fromDbDtoToTenant 
+                let! tenantFound =  tenantDto |> Dto.Tenant.toDomain 
                 let rs = unvalidatedRole |> provisionRoleWorkflow tenantFound 
                 return rs 
                 }  
@@ -654,13 +568,6 @@ module ProvisionRoleCommand =
             Error er
 
 
-
-
-
-
-
-
-
 module AddUserToGroupCommand = 
 
 
@@ -680,9 +587,12 @@ module AddUserToGroupCommand =
             let! groupStreamId, groupDto, lastEventNumber = strGroupId |> loadGroupWithId    
             let! _, userDto, _ = strUserId |> loadUserWithId    
 
-            let! rsAddUserToGroup = result {      
-                let! groupDomain  =  groupDto |> DbHelpers.fromDbDtoToGroup
-                let! userDomain  =  userDto |> DbHelpers.fromDbDtoToUser
+            let! rsAddUserToGroup = result {  
+
+                let group = groupDto |> Dto.Group.Standard
+
+                let! groupDomain  =   group |> Dto.Group.toDomain
+                let! userDomain  =  userDto |> Dto.User.toDomain
 
                 let rs = addUserToGroupWorkflow groupDomain userDomain
                 return rs 
@@ -697,16 +607,9 @@ module AddUserToGroupCommand =
             match en with  
             | Ok ev, groupStreamId, lastEventNumber -> 
                 let saveUserAddedToGroupEvent = async {
-
-                    let userAddedToGroupEventData : UserAddedToGroupDto = {
-                        Group = ev.GroupAddedTo
-                        GroupMember = ev.GroupMemberAdded
-                        }
-                    let userAddedToGroupEvent =  userAddedToGroupEventData |> GroupStreamEvent.UserAddedToGroup 
+                    let userAddedToGroupEvent =  ev.GroupMemberAdded |> GroupStreamEvent.UserAddedToGroup 
                     let userAddedToGroupEventL =  userAddedToGroupEvent |> toSequence |> Array.singleton
-                    
                     let rsAppendToTenantStream = recursivePersistEventsStream groupStreamId lastEventNumber userAddedToGroupEventL
-                 
                     return rsAppendToTenantStream
                     }      
 
@@ -718,12 +621,6 @@ module AddUserToGroupCommand =
         | Error error ->
             let er = AddUserToGroupError.DbError error
             Error er
-
-
-
-
-
-
 
 
 module AddGroupToGroupCommand = 
@@ -759,8 +656,11 @@ module AddGroupToGroupCommand =
 
             let! rsAddGroupToGroup = result {
 
-                let! groupDomainToAddTo  =  groupDtoToAddTo |> DbHelpers.fromDbDtoToGroup
-                let! groupDomainToAdd =  groupDtoToAdd |> DbHelpers.fromDbDtoToGroup
+                let grpDtoToAddTo = groupDtoToAddTo |> Dto.Group.Standard
+                let grpDtoToAdd = groupDtoToAdd |> Dto.Group.Standard
+
+                let! groupDomainToAddTo  =  grpDtoToAddTo |> Dto.Group.toDomain
+                let! groupDomainToAdd =  grpDtoToAdd |> Dto.Group.toDomain
 
 
                 printfn "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
@@ -780,13 +680,8 @@ module AddGroupToGroupCommand =
         | Ok en ->
             match en with  
             | Ok ev, groupStreamIdMemberWasToAddTo, lastEventNumber -> 
-                let saveUserAddedToGroupEvent = async {
-
-                    let groupAddedToGroupEventData = {
-                        Group = ev.GroupAddedTo
-                        GroupMember = ev.GroupMemberAdded
-                    }
-                    let groupAddedToGroupEvent =  groupAddedToGroupEventData |> GroupStreamEvent.GroupAddedToGroup 
+                let saveGroupAddedToGroupEvent = async {
+                    let groupAddedToGroupEvent =  ev.GroupMemberAdded |> GroupStreamEvent.GroupAddedToGroup 
                     let groupAddedToGroupEventL =  groupAddedToGroupEvent |> toSequence |> Array.singleton
                     
 
@@ -795,7 +690,7 @@ module AddGroupToGroupCommand =
                     return rsAppendToTenantStream
                     }      
 
-                saveUserAddedToGroupEvent
+                saveGroupAddedToGroupEvent
                 |> Async.RunSynchronously
                 Ok ev
             | Error error, s, t ->

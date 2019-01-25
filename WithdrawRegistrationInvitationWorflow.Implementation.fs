@@ -117,7 +117,7 @@ let withdrawRegistrationInvitation : WithdrawRegistrationInvitation =
 
 
 
-type CreateEvents = (Tenant*RegistrationInvitation) -> RegistrationInvitationWithdrawnEvent 
+type CreateEvents = (Tenant.Tenant*RegistrationInvitation) -> RegistrationInvitationWithdrawnEvent 
 
         
 
@@ -127,20 +127,11 @@ let createEvents : CreateEvents =
 
     fun tenantAndInvitation ->
 
-        let tenant, registrationInvitation =  tenantAndInvitation
-
-        let regInvDto:RegistrationInvitationDto = {
-
-            RegistrationInvitationId = registrationInvitation.RegistrationInvitationId |> RegistrationInvitationId.value
-            Description = registrationInvitation.Description |> RegistrationInvitationDescription.value
-            TenantId = registrationInvitation.TenantId |> TenantId.value
-            StartingOn = registrationInvitation.StartingOn
-            Until = registrationInvitation.Until
-        }
+        let tenant, withdrawnInvitation =  tenantAndInvitation
 
         let registrationInvitationOfferredEvent : RegistrationInvitationWithdrawnEvent = {
-            Tenant = (tenant |> DbHelpers.fromTenantDomainToDto)
-            RegistrationInvitation = regInvDto
+            TenantId = tenant.TenantId |> TenantId.value
+            WithdrawnInvitation = withdrawnInvitation |> Dto.RegistrationInvitation.fromDomain
         }
 
 

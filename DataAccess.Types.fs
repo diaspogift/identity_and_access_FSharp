@@ -36,7 +36,7 @@ type TenantDto = {
     TenantId : string
     Name : string
     Description : string
-    RegistrationInvitations : RegistrationInvitationDtoTemp array
+    RegistrationInvitations : Dto.RegistrationInvitation array
     ActivationStatus : ActivationStatusDto
 }
 
@@ -76,7 +76,7 @@ type TenantCreatedDto = {
     TenantId : string
     Name : string
     Description : string
-    RegistrationInvitations : RegistrationInvitationDtoTemp array
+    RegistrationInvitations : Dto.RegistrationInvitation array
     ActivationStatus : ActivationStatusDto
 }
 

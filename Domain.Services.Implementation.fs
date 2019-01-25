@@ -160,9 +160,9 @@ module Group =
 
     ///Mongo Database dependecies 
     
-    let loadGroupByIdMongoDependencyFunction = GroupDb.loadOneGroupById
+    //let loadGroupByIdMongoDependencyFunction = GroupDb.loadOneGroupById
 
-    let loadGroupByGroupMemberIdDbDependencyFunction = GroupDb.loadOneGroupMemberById
+    //let loadGroupByGroupMemberIdDbDependencyFunction = GroupDb.loadOneGroupMemberById
 
 
 
@@ -170,9 +170,7 @@ module Group =
     
     let loadGroupByIdGreyYoungEventStoreDependencyFunction = EventStorePlayGround.loadGroupWithGroupMemberId
     
-
-   
-
+    let loadGroupByGroupMemberIdGreyYoungEventStoreDependencyFunction = EventStorePlayGround.loadGroupWithGroupMemberId
      
                 
 
@@ -283,11 +281,11 @@ module Group =
 
         
     let isUserInNestedGroupServiceImpl = 
-            isUserInNestedGroupServiceLocal loadGroupByGroupMemberIdDbDependencyFunction
+            isUserInNestedGroupServiceLocal loadGroupByGroupMemberIdGreyYoungEventStoreDependencyFunction
 
 
     let isGroupMemberIsInGroupServiceMongoImpl: IsGroupMemberService = 
-            isGroupMemberIsInGroupServiceMongoImplLocal loadGroupByGroupMemberIdDbDependencyFunction
+            isGroupMemberIsInGroupServiceMongoImplLocal loadGroupByGroupMemberIdGreyYoungEventStoreDependencyFunction
 
 
     let isGroupMemberIsInGroupServiceGreyYoungEventStoreImpl: IsGroupMemberService = 

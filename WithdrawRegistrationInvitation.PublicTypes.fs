@@ -10,7 +10,7 @@ open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAccess.DatabaseTypes
 
 
-
+open IdentityAndAcccess.DomainTypes.Functions
 
 
 
@@ -51,10 +51,9 @@ type WithdrawRegistrationInvitationCommand =
 
 
 type RegistrationInvitationWithdrawnEvent = {
-    Tenant : TenantDto
-    RegistrationInvitation : RegistrationInvitationDto
-    
-}
+    TenantId : Dto.TenantId
+    WithdrawnInvitation : Dto.RegistrationInvitation
+    }
 
 
 

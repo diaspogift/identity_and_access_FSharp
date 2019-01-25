@@ -8,7 +8,10 @@ open IdentityAndAccess.DatabaseTypes
 
 
 
+open IdentityAndAcccess.DomainTypes.Functions
+open IdentityAndAcccess.DomainTypes
 
+open IdentityAndAcccess
 
 
 
@@ -45,7 +48,7 @@ type ReactivateTenantActivationStatusCommand =
         Command<UnvalidatedTenantActivationStatusData> 
 
 
-///Ouputs of the provision tenant worflow 
+///Ouputs of the reactivate tenant worflow 
 //- Sucess types
 
 
@@ -55,10 +58,10 @@ type ReactivateTenantActivationStatusCommand =
 
 
 type TenantActivationStatusReactivatedEvent = {
+    TenantId : Dto.TenantId
+    Status : Dto.ActivationStatus
+    Reason : Dto.Reason
 
-    Tenant : TenantDto
-    ActivationStatus : ActivationStatusDto
-    Reason : string
 }
    
 
@@ -75,4 +78,4 @@ type ReactivateTenantActivationStatusError =
 //Worflow type 
 
 type ReactivateTenantActivationStatusWorkflow = 
-    Tenant -> UnvalidatedTenantActivationStatusData -> Result<TenantActivationStatusReactivatedEvent, ReactivateTenantActivationStatusError>
+    Tenant.Tenant -> CommonDomainTypes.Reason -> UnvalidatedTenantActivationStatusData -> Result<TenantActivationStatusReactivatedEvent, ReactivateTenantActivationStatusError>

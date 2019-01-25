@@ -53,8 +53,7 @@ type AddGroupToGroupCommand =
 
 
 type GroupAddedToGroupEvent = { 
-    GroupAddedTo : GroupDto
-    GroupMemberAdded : GroupMemberDto
+    GroupMemberAdded : Dto.GroupMember
     }
 
 
@@ -69,4 +68,4 @@ type AddGroupToGroupError =
 //Worflow type 
 
 type AddGroupToGroupWorkflow = 
-    Group -> Group -> Result<GroupAddedToGroupEvent , AddGroupToGroupError>
+    Group.Group -> Group.Group -> Result<GroupAddedToGroupEvent , AddGroupToGroupError>

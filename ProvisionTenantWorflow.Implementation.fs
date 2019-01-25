@@ -289,20 +289,12 @@ let createEvents : CreateEvents =
             invs
             |> List.map (
                 
-                fun regInv -> 
+                fun aDomainRegInv -> 
 
-
-                    let regInvDto:RegistrationInvitationDtoTemp = {
-                        RegistrationInvitationId = regInv.RegistrationInvitationId |> RegistrationInvitationId.value
-                        TenantId = regInv.TenantId |> TenantId.value
-                        Description = regInv.Description |> RegistrationInvitationDescription.value
-                        StartingOn = regInv.StartingOn
-                        Until = regInv.Until
-                    }
-
-                    let v : InvitationOffered= {TenantId = tenant.TenantId |> TenantId.value ; Invitation = regInvDto}
+                    let regInvDto = aDomainRegInv |> Dto.RegistrationInvitation.fromDomain 
+                    let invOfferred : InvitationOffered = {TenantId = tenant.TenantId |> TenantId.value ; Invitation = regInvDto}
             
-                    v 
+                    invOfferred 
                     |> TenantProvisionedEvent.InvitationOffered)
                     
 
@@ -310,19 +302,12 @@ let createEvents : CreateEvents =
             invs
             |> List.map (
                 
-                fun regInv -> 
+                fun aDomainWithdrawnRegInv -> 
 
-                    let regInvDto:RegistrationInvitationDtoTemp = {
-                        RegistrationInvitationId = regInv.RegistrationInvitationId |> RegistrationInvitationId.value
-                        TenantId = regInv.TenantId |> TenantId.value
-                        Description = regInv.Description |> RegistrationInvitationDescription.value
-                        StartingOn = regInv.StartingOn
-                        Until = regInv.Until
-                    }
-
-                    let v : InvitationWithdrawn = {TenantId = tenant.TenantId |> TenantId.value ; Invitation = regInvDto}
+                    let regInvDto = aDomainWithdrawnRegInv |> Dto.RegistrationInvitation.fromDomain 
+                    let invitationWithdrawn : InvitationWithdrawn = {TenantId = tenant.TenantId |> TenantId.value ; Invitation = regInvDto}
             
-                    v 
+                    invitationWithdrawn 
                     |> TenantProvisionedEvent.InvitationWithdrawn)
         
         

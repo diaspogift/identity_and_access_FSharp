@@ -10,6 +10,10 @@ open IdentityAndAcccess.DomainTypes
 open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainServicesImplementations
 
+open IdentityAndAcccess.DomainTypes.Functions
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.CommonDomainTypes.Functions
+
 
 
 
@@ -60,7 +64,9 @@ type ProvisionGroupCommand =
 
 
 type GroupProvisionedEvent = { 
-    Group : GroupDto
+    GroupId : Dto.GroupId
+    TenantId :Dto.TenantId
+    Group : Dto.StandardGroup
     }
 
 
@@ -75,4 +81,4 @@ type ProvisionGroupError =
 //Worflow type 
 
 type ProvisionGroupWorkflow = 
-    Tenant -> UnvalidatedGroup -> Result<GroupProvisionedEvent , ProvisionGroupError>
+    Tenant.Tenant -> UnvalidatedGroup -> Result<GroupProvisionedEvent , ProvisionGroupError>

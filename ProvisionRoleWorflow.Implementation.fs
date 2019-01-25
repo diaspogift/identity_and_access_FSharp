@@ -56,13 +56,13 @@ type ValidateRole =
 
 type CreateRole = 
 
-    Tenant -> ValidatedRole -> Result<Role, ProvisionRoleError>
+    Tenant.Tenant -> ValidatedRole -> Result<Role.Role, ProvisionRoleError>
 
 
 
 //Step 3 - Create events step
 
-type CreateEvents = Role -> RoleProvisionedEvent
+type CreateEvents = Role.Role -> RoleProvisionedEvent
 
 
 
@@ -124,7 +124,7 @@ let createEvents : CreateEvents =
     fun aRole ->
 
        let roleCreatedEvent : RoleProvisionedEvent = {
-            Role = (aRole |> DbHelpers.fromRoleDomainToDto)
+            Role = aRole |> Dto.Role.fromDomain
        }
        roleCreatedEvent
 

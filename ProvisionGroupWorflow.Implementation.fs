@@ -1,5 +1,8 @@
 module IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImplementation
 
+
+open IdentityAndAcccess
+
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Role
@@ -15,7 +18,10 @@ open System.Text.RegularExpressions
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes
-
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainServicesImplementations
 
 
 
@@ -34,7 +40,7 @@ open IdentityAndAcccess.DomainTypes
 
 
 type ValidatedGroup = {
-    TenantId : TenantId
+    TenantId : CommonDomainTypes.TenantId
     Name : GroupName
     Description : GroupDescription
     Members : GroupMember  array
@@ -56,13 +62,13 @@ type ValidateGroup =
 
 type CreateGroup = 
 
-    Tenant -> ValidatedGroup -> Result<Group, ProvisionGroupError>
+    Tenant.Tenant -> ValidatedGroup -> Result<Group.Group, ProvisionGroupError>
 
 
 
 //Step 3 - Create events step
 
-type CreateEvents = Group -> GroupProvisionedEvent
+type CreateEvents = Group.Group -> GroupProvisionedEvent
 
 
 
@@ -111,7 +117,6 @@ let validateGroup : ValidateGroup =
 let create : CreateGroup = 
 
     fun tenant tvalidatedGroup ->
-
        Tenant.provisionGroup tenant tvalidatedGroup.Name tvalidatedGroup.Description
        |> Result.mapError ProvisionGroupError.CreateError
 
@@ -123,9 +128,16 @@ let createEvents : CreateEvents =
 
     fun aGroup ->
 
+       let groupDto:Dto.Group = aGroup |> Group.fromDomain
+       let ug = match groupDto with 
+                | Group.Standard s -> s
+                | Group.Internal i -> i
+
        let groupCreatedEvent : GroupProvisionedEvent = {
-            Group = (aGroup |> DbHelpers.fromGroupDomainToDto)
-       }
+            GroupId = ug.GroupId
+            TenantId = ug.TenantId
+            Group = ug
+            }
 
        groupCreatedEvent
 

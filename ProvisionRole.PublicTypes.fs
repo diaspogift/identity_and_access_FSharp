@@ -10,6 +10,8 @@ open IdentityAndAcccess.DomainTypes
 open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainServicesImplementations
 
+open IdentityAndAcccess.DomainTypes.Functions
+
 
 
 
@@ -52,7 +54,7 @@ type ProvisionRoleCommand =
 
 
 type RoleProvisionedEvent = { 
-    Role : RoleDto
+    Role : Dto.Role
     }
 
 

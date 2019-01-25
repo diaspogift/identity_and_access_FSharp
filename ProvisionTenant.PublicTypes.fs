@@ -1,5 +1,8 @@
 namespace IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 
+
+
+open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Role
@@ -72,12 +75,12 @@ type TenantProvisionCreated = {
 
 type InvitationWithdrawn = {
     TenantId : string
-    Invitation : RegistrationInvitationDtoTemp
+    Invitation : Dto.RegistrationInvitation
 }
 
 type InvitationOffered = {
     TenantId : string
-    Invitation : RegistrationInvitationDtoTemp
+    Invitation : Dto.RegistrationInvitation
 }
 
 

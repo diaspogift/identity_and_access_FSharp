@@ -38,13 +38,13 @@ open IdentityAndAccess.DatabaseTypes
 
 type AddUserToGroup = 
 
-    Group -> User -> Result<Group*GroupMember, AddUserToGroupError>
+    Group.Group -> User.User -> Result<Group.Group*GroupMember, AddUserToGroupError>
 
 
 
 //Step 3 - Create events step
 
-type CreateEvents = Group * GroupMember -> UserAddedToGroupEvent
+type CreateEvents = Group.Group * Group.GroupMember -> UserAddedToGroupEvent
 
 
 
@@ -73,8 +73,7 @@ let add : AddUserToGroup =
 let createEvents : CreateEvents = 
     fun (aGroup, aGroupMember) ->
        let userAddedToGroupEvent : UserAddedToGroupEvent = {
-           GroupAddedTo = (aGroup |> DbHelpers.fromGroupDomainToDto)
-           GroupMemberAdded =  (aGroupMember |> DbHelpers.fromGroupMemberToGroupMemberDto)         
+           GroupMemberAdded =  aGroupMember |> Dto.GroupMember.fromDomain       
        }
        userAddedToGroupEvent
 

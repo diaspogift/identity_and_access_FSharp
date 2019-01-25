@@ -8,7 +8,10 @@ open IdentityAndAcccess.DomainTypes
 open IdentityAndAccess.DatabaseTypes
 
 
-
+open IdentityAndAcccess.DomainTypes.Functions
+open IdentityAndAcccess.DomainTypes.Functions.Dto.Other
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess
 
 
 
@@ -52,15 +55,13 @@ type DeactivateTenantActivationStatusCommand =
 
 
 
-type TenantActivationStatusDeactivated = TenantActivationStatusDeactivated  of  Tenant
 
 
 
 type TenantActivationStatusDeactivatedEvent = {
-
-    Tenant : TenantDto
-    ActivationStatus : ActivationStatusDto
-    Reason : string
+    TenantId : Dto.TenantId
+    Status : Dto.ActivationStatus
+    Reason : Dto.Reason
 }
    
 
@@ -81,4 +82,4 @@ type DeactivateTenantActivationStatusError =
 //Worflow type 
 
 type DeactivateTenantActivationStatusWorkflow = 
-    Tenant -> UnvalidatedTenantActivationStatus -> Result<TenantActivationStatusDeactivatedEvent, DeactivateTenantActivationStatusError>
+    Tenant.Tenant -> CommonDomainTypes.Reason -> UnvalidatedTenantActivationStatus -> Result<TenantActivationStatusDeactivatedEvent, DeactivateTenantActivationStatusError>

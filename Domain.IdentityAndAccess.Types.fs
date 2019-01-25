@@ -10,10 +10,6 @@ open System
 
 
 
-type Reason = {
-
-    Description : string
-}
 
 
 
@@ -101,8 +97,8 @@ module User =
 
 
     type EnablementStatus = 
-        |Enabled 
-        |Disabled
+        | Enabled 
+        | Disabled
 
 
     type Enablement = {
@@ -503,21 +499,14 @@ module Tenant =
 
 
 
-
-
-
-
-
-
-
     ///Tenant related types
     /// 
     /// 
     /// 
     /// 
     type ActivationStatus = 
-        |Activated 
-        |Deactivated
+        | Activated 
+        | Deactivated
 
 
     type RegistrationInvitation = {
@@ -527,7 +516,6 @@ module Tenant =
         StartingOn: DateTime
         Until: DateTime
         }
-
 
     type Tenant = {
         TenantId: TenantId
@@ -601,13 +589,6 @@ module Tenant =
 
 
 
-    type RegistrationInvitationDtoTemp = {
-        RegistrationInvitationId : string
-        TenantId : string
-        Description : string
-        StartingOn: DateTime
-        Until : DateTime
-        }
 
 
 

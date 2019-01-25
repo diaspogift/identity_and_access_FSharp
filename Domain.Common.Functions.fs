@@ -517,6 +517,18 @@ module Telephone =
 
 
 
+module Reason = 
+
+    let value (Reason str) = str
+
+    let create fieldName str = 
+        ConstrainedType.createString fieldName Reason 1000 str
+
+    let create' = create  "Reason : "
+
+
+
+
 
 module DateTimeWrapped =
 

@@ -10,11 +10,46 @@ open IdentityAndAcccess.DomainTypes.Role
 open FSharp.Data.Sql
 open IdentityAndAcccess.DomainTypes
 open MongoDB.Bson
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Role
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Tenant
+
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Group
 
 
 
 
 
+/// To be moved to common the namespace
+
+let preppend  firstR restR = 
+    match firstR, restR with
+    | Ok first, Ok rest -> Ok (first::rest)  
+    | Error error1, Ok _ -> Error error1
+    | Ok _, Error error2 -> Error error2  
+    | Error error1, Error _ -> Error error1
+
+let ResultOfSequenceTemp aListOfResults =
+    let initialValue = Ok List.empty
+    List.foldBack preppend aListOfResults initialValue
+///
 
 let unwrapToStandardGroup aGroupToUnwrapp = 
         match aGroupToUnwrapp with 
@@ -115,7 +150,6 @@ module ServiceInterfaces =
     type LoadGroupById = 
             GroupId -> Result<Group, string>
 
-
     type LoadGroupMemberById = 
             GroupMemberId -> Result<Group, string>
 
@@ -152,16 +186,10 @@ module ServiceInterfaces =
                 -> GroupMember  
                 -> Boolean
 
-
-
-
     type IsGroupMemberServiceWithBakedGetGroupMemberByIdDependency = 
             Group 
                 -> GroupMember   
                 -> Boolean
-
-
-
 
     type IsUserInNestedGroupService = 
             LoadGroupMemberById 
@@ -169,15 +197,10 @@ module ServiceInterfaces =
                 -> User 
                 -> Boolean
 
-
-
-
     type IsUserInNestedGroupService' = 
              Group 
                 -> User 
                 -> Boolean
-
-
 
     type ConfirmUserServive = 
             LoadUserByUserIdAndTenantId 
@@ -185,8 +208,6 @@ module ServiceInterfaces =
                 -> User
                 -> Boolean
 
-
-    
     type ConfirmUserServive' = 
              Group 
                 -> User 
@@ -325,38 +346,7 @@ module ServiceInterfaces =
 
 module RegistrationInvitations =
 
-    let fromRegistrationInvitationDtoTempToDomain = 
-        fun (aInvitationDto:RegistrationInvitationDtoTemp) ->                                     
-            result {
-                                
-                let! invitationId = aInvitationDto.RegistrationInvitationId |> RegistrationInvitationId.create "invitation id: " 
-                let! tenantId = aInvitationDto.TenantId |> TenantId.create "tenantId" 
-                let! registrationInvitationDescription = aInvitationDto.Description |> RegistrationInvitationDescription.create "tenant description" 
-                let startingOn =  aInvitationDto.StartingOn
-                let until = aInvitationDto.Until
-
-                let registrationInvitation:RegistrationInvitation = {
-                        RegistrationInvitationId = invitationId
-                        TenantId = tenantId
-                        Description = registrationInvitationDescription
-                        StartingOn = startingOn
-                        Until = until
-                        }  
-
-                return registrationInvitation
-            }
-
-
-
-
-
-    let create fieldName (invitationsDto:RegistrationInvitationDtoTemp list) =  
-        invitationsDto
-        |> List.map fromRegistrationInvitationDtoTempToDomain
-
-
-
-
+    
     let isIdentifiedById (aRegistrationInvitationId : RegistrationInvitationId)(aRegistrationInvitation : RegistrationInvitation) : Boolean = 
         match (aRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId) with 
         | true -> true
@@ -499,65 +489,6 @@ module Tenant =
 
 
 
-    let fullCreate id name description activationStatus (regInvDtoList:RegistrationInvitationDtoTemp array) = 
-
-
-        let fromRegIncDtoTempToRegInv (aRegIncDtoTemp : RegistrationInvitationDtoTemp) = 
-
-            let rsRegistrationInvitation = result {
-
-                let! invId = aRegIncDtoTemp.RegistrationInvitationId |> RegistrationInvitationId.create'
-                let! desc = aRegIncDtoTemp.Description |> RegistrationInvitationDescription.create'
-                let! tenantId = aRegIncDtoTemp.TenantId |> TenantId.create'
-                let startingOn = aRegIncDtoTemp.StartingOn 
-                let until = aRegIncDtoTemp.Until
-
-                let invitation : RegistrationInvitation = {
-
-                    RegistrationInvitationId = invId
-                    Description = desc
-                    TenantId = tenantId
-                    StartingOn = startingOn
-                    Until = until
-                }
-
-                return invitation
-            }
-
-            rsRegistrationInvitation
-
-            
-
-            
-
-
-
-        
-        result {
-
-            let! ids = TenantId.create "tenant id: " id
-            let! names = TenantName.create "tenant name: " name
-            let! descriptions = TenantDescription.create "tenant description: " description
-
-            
-            let! registrationInvitations = 
-                regInvDtoList
-                |> Array.map fromRegIncDtoTempToRegInv
-                |> Array.toList
-                |> ResultOfSequenceTemp
-
-            
-            return {
-                    TenantId = ids
-                    Name = names
-                    Description = descriptions
-                    RegistrationInvitations = registrationInvitations
-                    ActivationStatus = activationStatus
-            }
-        }
-
-
-
 
     let createFullActivatedTenant (name:TenantName) (description:TenantDescription) : Result<Tenant,string> = 
         
@@ -628,7 +559,7 @@ module Tenant =
 
 
 
-    let provisionGroup (aTenant : Tenant)(aGroupName :GroupName) (aGroupDescription: GroupDescription) : Result<Group, string> =
+    let provisionGroup (aTenant : Tenant.Tenant)(aGroupName :GroupName) (aGroupDescription: GroupDescription) : Result<Group.Group, string> =
 
         let id = generateNoEscapeId();
 
@@ -883,11 +814,11 @@ module Tenant =
 
 
 
-    let activateTenant (aTenant : Tenant) : Result<Tenant, string> =
+    let activateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =
      
             match aTenant.ActivationStatus with  
             | Deactivated ->
-                Ok { aTenant with ActivationStatus = ActivationStatus.Activated }  
+                Ok ({ aTenant with ActivationStatus = ActivationStatus.Activated }, aReason)
             | Activated -> 
                 Error "Tenant already has its activation status set to Activated" 
 
@@ -896,13 +827,13 @@ module Tenant =
 
 
 
-    let deactivateTenant (aTenant : Tenant) : Result<Tenant, string> =
+    let deactivateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =
         
         match aTenant.ActivationStatus with  
         | Deactivated ->
             Error "Tenant already has its activation status set to Deactivated"
         | Activated -> 
-            Ok { aTenant with ActivationStatus = Deactivated } 
+            Ok ({ aTenant with ActivationStatus = Deactivated }, aReason) 
 
 
 
@@ -930,7 +861,7 @@ module User =
 
     let create id tenantId first middle last email address primaryPhone secondaryPhone username password = 
         
-        let tenantConstruct = result {
+        let userConstruct = result {
 
             let! ids = UserId.create "userId: " id
             let! tenantIds = TenantId.create "tenantId: " tenantId
@@ -960,7 +891,7 @@ module User =
                }
         }
 
-        tenantConstruct
+        userConstruct
 
 
 
@@ -1205,20 +1136,14 @@ module GroupMember =
 
 
 
-
-        
-    
 module GroupMembers = 
+
 
 
 ///Some global transformer functions
 /// 
 /// 
-/// 
-/// 
-/// 
-/// 
-/// 
+ 
 
     let preppend  firstR restR = 
         match firstR, restR with
@@ -1500,7 +1425,7 @@ module Group =
 
 
 
-    let addGroupToGroup (aGroupToAddTo:Group)(aGroupToAdd:Group)(isGroupMemberService: IsGroupMemberService) : Result<Group*GroupMember, string> =
+    let addGroupToGroup (aGroupToAddTo:Group.Group)(aGroupToAdd:Group.Group)(isGroupMemberService: IsGroupMemberService) : Result<Group.Group*GroupMember, string> =
 
         let unwrappedGroupToAddTo = match aGroupToAddTo with 
                                         | Standard aStandardGroup -> aStandardGroup
@@ -1547,7 +1472,7 @@ module Group =
 
                     match rsIsGrouMemberToAdd with 
                     | Ok groupMember -> 
-                        let group = {aStandardGroupToAdd with Members = [groupMember]@newMembers}
+                        //let group = {aStandardGroupToAdd with Members = [groupMember]@newMembers}
                         Ok (aGroupToAddTo, groupMember)
                     | Error error ->
                         Error error
@@ -2043,3 +1968,913 @@ module Role =
         
 
 
+
+
+
+
+
+
+
+
+module Dto =  
+
+    
+    type TenantId = string
+
+    type GroupId = string
+
+    type Reason = {
+        Description : string
+        }
+    
+    ///User related types
+    /// 
+    /// 
+
+    type FullName = {
+        First: string
+        Middle: string 
+        Last: string
+        }
+
+    type EnablementStatus = 
+        | Enabled = 1
+        | Disabled = 0
+
+    type Enablement = {
+        EnablementStatus: EnablementStatus
+        StartDate: DateTime
+        EndDate: DateTime
+        }
+
+    type ContactInformation = {
+        Email : string
+        Address: string
+        PrimaryTel: string
+        SecondaryTel: string
+        }      
+
+    type ContactInformationChanged = 
+        DomainEvent<ContactInformationChangedEventData>
+    and ContactInformationChangedEventData = {
+        EventVersion: int
+        OccurredOn : DateTime
+        TenantId: string
+        Username: string
+        FirstName: string
+        LastName: string
+        ContactInformation : string
+        }
+
+    type Person =  {
+        Contact: ContactInformation
+        Name: FullName 
+        Tenant: TenantId
+        User: UserId
+        }
+
+    type PersonalNameChanged = 
+        DomainEvent<PersonalNameChangedEventData>
+    and PersonalNameChangedEventData = {
+        EventVersion: int
+        OccurredOn : DateTime
+        TenantId: string
+        Username: string
+        FirstName: string
+        LastName: string
+        }
+
+    type User = {
+        UserId : string
+        TenantId : string
+        Username : string
+        Password : string
+        Enablement : Enablement
+        Person : Person
+        }
+
+    type RoleDescriptor = {
+        RoleId: string
+        TenantId: string
+        Name: string
+        }
+
+    type UserDescriptor = {
+        UserDescriptorId: string
+        TenantId: string
+        Username: string
+        Email: string
+        Roles: RoleDescriptor list 
+        }
+
+    type UserEnablementChanged =
+            DomainEvent<UserEnablementChangedEventData>
+    and UserEnablementChangedEventData = {
+        EventVersion: int
+        OccurredOn : DateTime
+        TenantId: string
+        Username: string
+        }
+
+    type UserPasswordChanged = 
+            DomainEvent<UserPasswordChangedEventData>
+    and UserPasswordChangedEventData = {
+        EventVersion: int
+        OccurredOn : DateTime
+        TenantId: string
+        Username: string
+        }
+
+    type UserRegisteredChanged = 
+        DomainEvent<UserRegisteredChangedEventData>
+    and UserRegisteredChangedEventData = {
+        EventVersion: int
+        OccurredOn : DateTime
+        TenantId: string
+        Username: string
+        FirstName: string
+        LastName: string
+        }
+    
+
+
+
+
+
+
+
+    ///Group related types
+    /// 
+    ///
+     
+    type GroupMemberType = 
+        | UserGroupMember = 1
+        | GroupGroupMember = 2
+
+    type GroupMember = {
+        MemberId: string
+        TenantId: string
+        Name: string
+        Type: GroupMemberType
+        }
+
+    type StandardGroup = {
+        GroupId: string
+        TenantId: string
+        Name: string
+        Description: string
+        Members: GroupMember list
+        }
+
+
+    type StandardGroupCreated = {
+        GroupId: string
+        TenantId: string
+        Group : StandardGroup
+        }
+
+
+    type GroupCreated = 
+        | Standard of StandardGroupCreated
+        | Internal of StandardGroupCreated
+
+
+    type Group = 
+        | Standard of StandardGroup
+        | Internal of StandardGroup
+
+    type UserAddedToGroup = {
+
+        UserAdded : User
+    }
+    
+    type GroupAddedToGroup = {
+
+        GroupAdded : StandardGroup
+    }
+
+    type GroupGroupAdded = 
+            DomainEvent<GroupGroupAddedEventData>
+    and GroupGroupAddedEventData = {
+        GroupId: string
+        NestedGroupId: string
+        TenantId: string
+        }
+
+    type GroupGroupRemoved = 
+        DomainEvent<GroupGroupRemovedEventData>    
+    and GroupGroupRemovedEventData = {
+        GroupId: string
+        RemovedGroupId: string
+        TenantId: string
+        }
+    type GroupProvisioned = 
+        DomainEvent<GroupProvisionedEventData>
+    and GroupProvisionedEventData = {
+        GroupId : string
+        TenantId :string
+        GroupName :string 
+        }
+    type GroupIdOrGroupMemberId = 
+        | GroupId of GroupId
+        | GroupMemberId of GroupMemberId
+
+    type GroupMemberDto = {
+        MemberId : string
+        TenantId : string
+        Name : string
+        Type : string
+        }
+
+
+    ///Temporary types should there be here? let alone should they have been created?
+    type GroupMemberDtoTemp = {
+        MemberId : string
+        TenantId : string
+        Name : string
+        Type : string
+        }
+
+
+
+
+
+
+    ///Role related types
+    /// 
+    ///  
+        
+    type SupportNestingStatus = 
+        | Support = 1
+        | Oppose = 2
+
+    type Role = {
+        RoleId: string
+        TenantId: string
+        Name: string
+        Description: string
+        SupportNesting: SupportNestingStatus
+        InternalGroup: Group
+        }
+        
+    type RoleProvisioned = 
+        DomainEvent<RoleProvisionedEventData>
+    and RoleProvisionedEventData = {
+        RoleId : string
+        TenantId : string
+        }
+
+
+
+    type GroupAssignedToRole = 
+        DomainEvent<GroupAssignedToRoleEventData>
+    and GroupAssignedToRoleEventData = {
+        GroupId : string
+        RoleId : string
+        TenantId : string
+        }
+
+    type GroupUnAssignedToRole = 
+        DomainEvent<GroupUnAssignedToRoleEventData>
+    and GroupUnAssignedToRoleEventData = {
+        GroupId : string
+        RoleId : string
+        TenantId : string
+        }
+
+    type UserAssignedToRole = 
+        DomainEvent<UserAssignedToRoleEventData>
+    and UserAssignedToRoleEventData = {
+        GroupId : string
+        RoleId : string
+        TenantId : string
+        }
+
+    type UserUnAssignedToRole = 
+        DomainEvent<UserUnAssignedToRoleEventData>
+    and UserUnAssignedToRoleEventData = {
+        GroupId : string
+        RoleId : string
+        TenantId : string
+        }
+
+
+
+
+
+
+
+
+
+    ///Tenant related types
+    /// 
+    /// 
+
+    type ActivationStatus = 
+        | Activated = 1
+        | Deactivated = 0
+
+
+    type ActivationStatusAndReason = {
+        TenantId : string
+        Status : ActivationStatus
+        Reason : Reason
+    }
+
+    type RegistrationInvitation = {
+        RegistrationInvitationId: string
+        Description: string
+        TenantId: string
+        StartingOn: DateTime
+        Until: DateTime
+        }
+
+    type OfferredRegistrationInvitation = {
+        TenantId : string
+        OfferredInvitation : RegistrationInvitation
+    }
+
+    type WithnrawnRegistrationInvitation = {
+        TenantId : string
+        WithdrawnInvitation : RegistrationInvitation
+    }
+
+    type Tenant = {
+        TenantId: string
+        Name: string
+        Description: string 
+        RegistrationInvitations: RegistrationInvitation list
+        ActivationStatus : ActivationStatus
+        }
+
+    type TenantCreated = {
+        TenantId: string
+        Tenant : Tenant
+        }
+
+    type TenantActivationStatusActivated = 
+        DomainEvent<TenantActivationStatusActivatedEventData>
+    and TenantActivationStatusActivatedEventData = {
+        TenantId : TenantId
+        UserId : UserId
+        }
+
+    type TenantActivationStatusDiactivated = 
+        DomainEvent<TenantActivationStatusDiactivatedEventData>
+    and TenantActivationStatusDiactivatedEventData = {
+        TenantId : TenantId
+        UserId : UserId 
+        }     
+
+    type TenantAdministratorRegistered = 
+        DomainEvent<TenantAdministratorRegisteredEventData>
+    and TenantAdministratorRegisteredEventData = {
+        TenantId : string
+        FullName : string
+        EmailAddress : string
+        TenantName : string
+        temporaryPassword : string
+        Username : string
+        }
+
+    type TenantProvisioned =        
+        DomainEvent<TenantProvisionedEventData> 
+    and TenantProvisionedEventData = {
+        TenantId : string
+        }
+
+    type RegistrationInvitationDto = {
+        RegistrationInvitationId : RegistrationInvitationId
+        TenantId : TenantId
+        Description : RegistrationInvitationDescription
+        StartingOn: DateTime
+        Until : DateTime
+        }
+
+    type RegistrationInvitationDtoTemp = {
+        RegistrationInvitationId : string
+        TenantId : string
+        Description : string
+        StartingOn: DateTime
+        Until : DateTime
+        }
+
+    type InvitationDescriptor = {
+        RegistrationInvitationId : string
+        TenantId : string
+        RegistrationInvitationDescription : string
+        StartingOn : DateTime
+        Until : DateTime
+        }
+
+    type Provision = (Tenant*User*Role*RegistrationInvitation list)
+
+
+
+
+
+
+
+
+
+
+
+    module User =
+
+
+        let fromDomain (aUser:IdentityAndAcccess.DomainTypes.User.User) : User =
+
+            let enablement = match aUser.Enablement.EnablementStatus with 
+                             | Enabled -> EnablementStatus.Enabled
+                             | Disabled -> EnablementStatus.Enabled
+
+
+            let enablement: Enablement = {
+                EnablementStatus = enablement
+                StartDate = aUser.Enablement.StartDate
+                EndDate  = aUser.Enablement.EndDate
+            }
+
+            let contact : ContactInformation = {
+                Email =  aUser.Person.Contact.Email |> EmailAddress.value
+                Address = aUser.Person.Contact.Address |> PostalAddress.value
+                PrimaryTel = aUser.Person.Contact.PrimaryTel |> Telephone.value
+                SecondaryTel = aUser.Person.Contact.SecondaryTel |> Telephone.value
+                }
+
+            let name : FullName = {
+                First = aUser.Person.Name.First |> FirstName.value
+                Middle = aUser.Person.Name.Middle |> MiddleName.value
+                Last = aUser.Person.Name.Last |> LastName.value
+            } 
+
+            let person : Person = {
+                Contact = contact
+                Name = name
+                Tenant = aUser.Person.Tenant |> TenantId.value
+                User = aUser.Person.User
+                }
+
+            let userDto = {
+                UserId = aUser.UserId |> UserId.value
+                TenantId = aUser.TenantId |> TenantId.value
+                Username = aUser.Username  |> Username.value
+                Password = aUser.Password  |> Password.value
+                Enablement = enablement 
+                Person = person
+                }
+
+            userDto
+        let toDomain (aUserDto:User) : Result<IdentityAndAcccess.DomainTypes.User.User, string> =
+
+            result {
+
+                let! email = (aUserDto.Person.Contact.Email |> EmailAddress.create')
+                let! address = aUserDto.Person.Contact.Address |> PostalAddress.create'
+                let! primaryTel = aUserDto.Person.Contact.PrimaryTel |> Telephone.create'
+                let! secondaryTel = aUserDto.Person.Contact.SecondaryTel |> Telephone.create'
+
+                let status:IdentityAndAcccess.DomainTypes.User.EnablementStatus
+                         = match aUserDto.Enablement.EnablementStatus with
+                           | EnablementStatus.Enabled -> IdentityAndAcccess.DomainTypes.User.EnablementStatus.Enabled
+                           | EnablementStatus.Disabled -> IdentityAndAcccess.DomainTypes.User.EnablementStatus.Disabled
+                           | _ -> IdentityAndAcccess.DomainTypes.User.EnablementStatus.Disabled
+
+                let enablement : IdentityAndAcccess.DomainTypes.User.Enablement = {
+                    EnablementStatus = status
+                    StartDate = aUserDto.Enablement.StartDate
+                    EndDate  = aUserDto.Enablement.EndDate
+                    }
+
+                let contact : IdentityAndAcccess.DomainTypes.User.ContactInformation = {
+                    Email =  email
+                    Address = address
+                    PrimaryTel = primaryTel
+                    SecondaryTel = secondaryTel 
+                    }
+
+
+                let! first = aUserDto.Person.Name.First |> FirstName.create'
+                let! middle = aUserDto.Person.Name.Middle |> MiddleName.create'
+                let! last = aUserDto.Person.Name.Last |> LastName.create'
+
+
+                let name : IdentityAndAcccess.DomainTypes.User.FullName = {
+                    First = first
+                    Middle = middle
+                    Last = last
+                }
+
+                let! tenantId = aUserDto.TenantId |> TenantId.create'
+                let! userId = aUserDto.UserId |> UserId.create' 
+                let! username = aUserDto.Username |> Username.create'
+                let! password = aUserDto.Password |> Password.create' 
+
+
+                let person : IdentityAndAcccess.DomainTypes.User.Person = {
+                    Contact = contact
+                    Name = name
+                    Tenant = tenantId
+                    User = userId
+                    }
+
+                let user: IdentityAndAcccess.DomainTypes.User.User = {
+                    UserId = userId
+                    TenantId = tenantId
+                    Username = username
+                    Password = password
+                    Enablement = enablement
+                    Person = person
+                    }
+                
+                return user
+
+            }
+
+    module GroupMember = 
+
+        let fromDomain (aGroupMember:IdentityAndAcccess.DomainTypes.Group.GroupMember) : GroupMember = 
+
+                let memberType:GroupMemberType = 
+                    match aGroupMember.Type with 
+                    | IdentityAndAcccess.DomainTypes.Group.GroupGroupMember -> GroupMemberType.GroupGroupMember
+                    | IdentityAndAcccess.DomainTypes.Group.UserGroupMember -> GroupMemberType.UserGroupMember
+                        
+                let gmDto : GroupMember = {
+                    MemberId = aGroupMember.MemberId |> GroupMemberId.value
+                    TenantId = aGroupMember.TenantId |> TenantId.value  
+                    Name = aGroupMember.Name |> GroupMemberName.value
+                    Type = memberType
+                    }
+
+                gmDto
+                //Helpers
+
+        
+
+
+    module Group =
+
+
+        let fromDomain (aGroup:IdentityAndAcccess.DomainTypes.Group.Group) : Group =
+
+            let toGoupMemberDto (aGroupMember:IdentityAndAcccess.DomainTypes.Group.GroupMember) : GroupMember = 
+            
+                let memberType:GroupMemberType = 
+                        match aGroupMember.Type with 
+                        | IdentityAndAcccess.DomainTypes.Group.GroupGroupMember -> GroupMemberType.GroupGroupMember
+                        | IdentityAndAcccess.DomainTypes.Group.UserGroupMember -> GroupMemberType.UserGroupMember
+                        
+                let gmDto : GroupMember = {
+                    MemberId = aGroupMember.MemberId |> GroupMemberId.value
+                    TenantId = aGroupMember.TenantId |> TenantId.value  
+                    Name = aGroupMember.Name |> GroupMemberName.value
+                    Type = memberType
+                    }
+
+                gmDto
+
+            let unwrappedGroup = match aGroup with 
+                                 | IdentityAndAcccess.DomainTypes.Group.Standard s ->  s
+                                   | IdentityAndAcccess.DomainTypes.Group.Internal i ->  i
+
+            let toGroupMemberDtoList = unwrappedGroup.Members 
+                                       |> List.map toGoupMemberDto
+      
+            let sg:StandardGroup = {
+                GroupId = unwrappedGroup.GroupId |>  GroupId.value
+                TenantId = unwrappedGroup.TenantId |>  TenantId.value
+                Name = unwrappedGroup.Name |>  GroupName.value
+                Description = unwrappedGroup.Description |>  GroupDescription.value
+                Members = toGroupMemberDtoList
+                }
+
+            Standard sg
+        let toDomain (aGrouDto:Group) : Result<IdentityAndAcccess.DomainTypes.Group.Group, string> =
+
+
+            let fromGoupMemberDomain (aGroupMember:GroupMember) : Result<IdentityAndAcccess.DomainTypes.Group.GroupMember, string> = 
+
+                result {
+
+                    let memberType:IdentityAndAcccess.DomainTypes.Group.GroupMemberType = 
+                        match aGroupMember.Type with 
+                        | GroupMemberType.GroupGroupMember -> IdentityAndAcccess.DomainTypes.Group.GroupMemberType.GroupGroupMember
+                        | GroupMemberType.UserGroupMember -> IdentityAndAcccess.DomainTypes.Group.GroupMemberType.UserGroupMember
+                      
+            
+
+                    let! memberId =  aGroupMember.MemberId |> GroupMemberId.create'
+                    let! tenantId =  aGroupMember.TenantId |> TenantId.create'
+                    let! name =  aGroupMember.Name |> GroupMemberName.create'
+
+                    let gm : IdentityAndAcccess.DomainTypes.Group.GroupMember  = {
+                        MemberId = memberId
+                        TenantId = tenantId 
+                        Name = name
+                        Type = memberType
+                        }
+                    return gm
+                }
+                
+
+                
+
+            result {
+                let unwrapToStandardGroup = match aGrouDto with 
+                                            | Standard s -> s
+                                            | Internal i -> i
+                let! groupId = unwrapToStandardGroup.GroupId |> GroupId.create'
+                let! tenantId = unwrapToStandardGroup.TenantId |> TenantId.create'
+                let! name = unwrapToStandardGroup.Name |> GroupName.create'
+                let! description =  unwrapToStandardGroup.Description |>  GroupDescription.create'
+
+                let! members = unwrapToStandardGroup.Members
+                              |> List.map fromGoupMemberDomain
+                              |> ResultOfSequenceTemp
+                              
+                let standardGroup: IdentityAndAcccess.DomainTypes.Group.StandardGroup = {
+                    GroupId = groupId 
+                    TenantId = tenantId
+                    Name = name 
+                    Description = description
+                    Members = members
+                    }
+
+                let group = match aGrouDto with 
+                            | Standard s ->  IdentityAndAcccess.DomainTypes.Group.Standard standardGroup
+                            | Internal i -> IdentityAndAcccess.DomainTypes.Group.Internal standardGroup
+
+                return group
+                }
+
+            
+
+
+
+
+
+    module Role =
+
+
+ 
+        let fromDomain (aRole:IdentityAndAcccess.DomainTypes.Role.Role) : Role =
+
+           
+            let unwrappedIntenalGroup = 
+                match aRole.InternalGroup with 
+                | IdentityAndAcccess.DomainTypes.Group.Standard s ->  s
+                | IdentityAndAcccess.DomainTypes.Group.Internal i ->  i
+
+            let toGroupMemberDtoList = unwrappedIntenalGroup.Members 
+                                       |> List.map GroupMember.fromDomain
+      
+            let sg:StandardGroup = {
+                GroupId = unwrappedIntenalGroup.GroupId |>  GroupId.value
+                TenantId = unwrappedIntenalGroup.TenantId |>  TenantId.value
+                Name = unwrappedIntenalGroup.Name |>  GroupName.value
+                Description = unwrappedIntenalGroup.Description |>  GroupDescription.value
+                Members = toGroupMemberDtoList
+                }
+
+            let roleInternalGroup = Internal sg
+
+            let supportNest = match aRole.SupportNesting with  
+                              | IdentityAndAcccess.DomainTypes.Role.SupportNestingStatus.Support -> SupportNestingStatus.Support 
+                              | IdentityAndAcccess.DomainTypes.Role.SupportNestingStatus.Oppose -> SupportNestingStatus.Oppose
+
+
+            let role:Role = {
+                RoleId =  aRole.RoleId |> RoleId.value
+                TenantId = aRole.TenantId |>  TenantId.value
+                Name = aRole.Name |>  RoleName.value
+                Description = aRole.Description |>  RoleDescription.value
+                SupportNesting = supportNest
+                InternalGroup = roleInternalGroup
+                }
+
+            role
+        let toDomain (aRoleDto:Role) : Result<IdentityAndAcccess.DomainTypes.Role.Role, string> =
+
+
+            let fromGoupMemberDomain (aGroupMember:GroupMember) : Result<IdentityAndAcccess.DomainTypes.Group.GroupMember, string> = 
+
+                result {
+
+                    let memberType:IdentityAndAcccess.DomainTypes.Group.GroupMemberType = 
+                        match aGroupMember.Type with 
+                        | GroupMemberType.GroupGroupMember -> IdentityAndAcccess.DomainTypes.Group.GroupMemberType.GroupGroupMember
+                        | GroupMemberType.UserGroupMember -> IdentityAndAcccess.DomainTypes.Group.GroupMemberType.UserGroupMember
+            
+
+                    let! memberId =  aGroupMember.MemberId |> GroupMemberId.create'
+                    let! tenantId =  aGroupMember.TenantId |> TenantId.create'
+                    let! name =  aGroupMember.Name |> GroupMemberName.create'
+
+                    let gm : IdentityAndAcccess.DomainTypes.Group.GroupMember  = {
+                        MemberId = memberId
+                        TenantId = tenantId 
+                        Name = name
+                        Type = memberType
+                        }
+                    return gm
+                }
+                
+
+                
+
+            result {
+                let unwrapToStandardGroup = match aRoleDto.InternalGroup with 
+                                            | Standard s -> s
+                                            | Internal i -> i
+
+
+                let! roleId = aRoleDto.RoleId |> RoleId.create'
+                let! roleTenantId = aRoleDto.TenantId |> TenantId.create'
+                let! roleName = aRoleDto.Name |> RoleName.create'
+                let! roleDescription = aRoleDto.Description |> RoleDescription.create'
+                let supportNest  = match aRoleDto.SupportNesting  with  
+                                   | SupportNestingStatus.Support -> IdentityAndAcccess.DomainTypes.Role.SupportNestingStatus.Support
+                                   | SupportNestingStatus.Oppose -> IdentityAndAcccess.DomainTypes.Role.SupportNestingStatus.Oppose
+
+                                     
+                let! groupId = unwrapToStandardGroup.GroupId |> GroupId.create'
+                let! tenantId = unwrapToStandardGroup.TenantId |> TenantId.create'
+                let! name = unwrapToStandardGroup.Name |> GroupName.create'
+                let! description =  unwrapToStandardGroup.Description |>  GroupDescription.create'
+
+
+
+
+                let! members = unwrapToStandardGroup.Members
+                              |> List.map fromGoupMemberDomain
+                              |> ResultOfSequenceTemp
+                              
+                let standardInternalGroup: IdentityAndAcccess.DomainTypes.Group.StandardGroup = {
+                    GroupId = groupId 
+                    TenantId = tenantId
+                    Name = name 
+                    Description = description
+                    Members = members
+                    }
+
+                let role : IdentityAndAcccess.DomainTypes.Role.Role = {
+                    RoleId =  roleId
+                    TenantId = roleTenantId
+                    Name =roleName
+                    Description = roleDescription
+                    SupportNesting = supportNest
+                    InternalGroup =  IdentityAndAcccess.DomainTypes.Group.Internal standardInternalGroup
+                    }
+
+                
+                return role
+                }
+
+            
+
+
+
+
+    module RegistrationInvitation = 
+
+
+          let fromDomain (aRegistrationInvitation:Tenant.RegistrationInvitation) : RegistrationInvitation = 
+            
+            let regInDto:RegistrationInvitation = {
+
+                RegistrationInvitationId = aRegistrationInvitation.RegistrationInvitationId |> RegistrationInvitationId.value
+                Description = aRegistrationInvitation.Description |> RegistrationInvitationDescription.value
+                TenantId = aRegistrationInvitation.TenantId |> TenantId.value
+                StartingOn =  aRegistrationInvitation.StartingOn
+                Until = aRegistrationInvitation.Until
+            }
+            regInDto
+            
+
+
+
+
+
+
+
+      
+    module Tenant =
+
+
+        let fromDomain (aTenant:IdentityAndAcccess.DomainTypes.Tenant.Tenant) : Tenant =
+
+            let toRegistrationIntationDto (aRegistrationInvitation:IdentityAndAcccess.DomainTypes.Tenant.RegistrationInvitation) : RegistrationInvitation = 
+                let rgDto : RegistrationInvitation = {
+                    RegistrationInvitationId = aRegistrationInvitation.RegistrationInvitationId |> RegistrationInvitationId.value
+                    Description = aRegistrationInvitation.Description |> RegistrationInvitationDescription.value
+                    TenantId = aRegistrationInvitation.TenantId |> TenantId.value
+                    StartingOn = aRegistrationInvitation.StartingOn
+                    Until = aRegistrationInvitation.Until
+                    }
+
+                rgDto
+
+            let status = match aTenant.ActivationStatus with 
+                            | IdentityAndAcccess.DomainTypes.Tenant.ActivationStatus.Activated  ->  ActivationStatus.Activated 
+                            | IdentityAndAcccess.DomainTypes.Tenant.ActivationStatus.Deactivated  ->  ActivationStatus.Deactivated 
+
+      
+            let tenant:Tenant = {
+                TenantId = aTenant.TenantId |> TenantId.value
+                Name = aTenant.Name |> TenantName.value
+                Description = aTenant.Description |> TenantDescription.value
+                RegistrationInvitations = aTenant.RegistrationInvitations |> List.map toRegistrationIntationDto
+                ActivationStatus = status
+                }
+               
+
+            tenant
+            
+        let toDomain (aTenantDto:Tenant) : Result<IdentityAndAcccess.DomainTypes.Tenant.Tenant, string> =
+
+
+            let fromtoRegistrationIntationDomain (aRegistrationInvitation:RegistrationInvitation) : Result<IdentityAndAcccess.DomainTypes.Tenant.RegistrationInvitation, string> = 
+
+                result {
+                    let! regInvId = aRegistrationInvitation.RegistrationInvitationId |> RegistrationInvitationId.create'
+                    let! desc =  aRegistrationInvitation.Description |> RegistrationInvitationDescription.create'
+                    let! tenantId =   aRegistrationInvitation.TenantId |> TenantId.create'
+
+                    let regInvTDomain : IdentityAndAcccess.DomainTypes.Tenant.RegistrationInvitation  = {
+                        RegistrationInvitationId = regInvId
+                        Description = desc 
+                        TenantId = tenantId
+                        StartingOn = aRegistrationInvitation.StartingOn
+                        Until = aRegistrationInvitation.Until
+                        }
+
+                    return regInvTDomain
+                } 
+
+            result {
+     
+                let! id = aTenantDto.TenantId |> TenantId.create'
+                let! name = aTenantDto.Name |> TenantName.create'
+                let! description = aTenantDto.Description |> TenantDescription.create'
+                let! id = aTenantDto.TenantId |> TenantId.create'
+                let! fromtoRegistrationIntationDomainList = aTenantDto.RegistrationInvitations |> List.map fromtoRegistrationIntationDomain |> ResultOfSequenceTemp 
+
+                let status = match aTenantDto.ActivationStatus with 
+                              | ActivationStatus.Activated -> IdentityAndAcccess.DomainTypes.Tenant.ActivationStatus.Activated
+                              | ActivationStatus.Deactivated -> IdentityAndAcccess.DomainTypes.Tenant.ActivationStatus.Deactivated
+
+                let tenant : IdentityAndAcccess.DomainTypes.Tenant.Tenant = {
+                    TenantId =  id
+                    Name = name
+                    Description = description
+                    RegistrationInvitations = fromtoRegistrationIntationDomainList                     
+                    ActivationStatus = status
+                    }
+
+                
+                return tenant
+                }
+
+        
+
+
+
+
+
+
+
+
+
+
+    module Other = 
+
+
+
+
+        type Reason = {
+            Description : string
+            }
+
+
+
+
+
+    ///Should be a common domain type 
+    type DateTimeSpan = private {
+        Start: DateTime
+        End: DateTime
+    } 
+
+
+
+
+
+
+
+
+
+
+
+
+    //

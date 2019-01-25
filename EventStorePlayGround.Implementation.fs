@@ -1,12 +1,15 @@
 namespace IdentityAndAcccess.EventStorePlayGround.Implementation
 
 
+open IdentityAndAcccess
 
 open IdentityAndAcccess.SerializationPlayGroung
 open System
 open EventStore.ClientAPI
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
+open IdentityAndAcccess.CommonDomainTypes.Functions
+open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainTypes.Tenant
@@ -14,35 +17,40 @@ open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
+open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes.Tenant
+
+
 
 
 
 type TenantStreamEvent =
-    | TenantCreated of TenantDto
-    | ActivationStatusReActivated of TenantActivationStatusReactivatedDto
-    | ActivationStatusDeActivated of TenantActivationStatusDeactivatedDto 
-    | InvitationOfferred of RegistrationInvitationOfferredDto 
-    | InvitationWithdrawn of RegistrationInvitationWithdrawnDto 
+    | TenantCreated of Dto.TenantCreated
+    | ActivationStatusReActivated of Dto.ActivationStatusAndReason
+    | ActivationStatusDeActivated of Dto.ActivationStatusAndReason
+    | InvitationOfferred of Dto.OfferredRegistrationInvitation
+    | InvitationWithdrawn of Dto.WithnrawnRegistrationInvitation
 
 
 
 type UserStreamEvent =
-    | UserRegistered of UserDto
+    | UserRegistered of Dto.User
     | PasswordChanged of Password
-    | PersonalNameChanged of FullName
+    | PersonalNameChanged of Dto.FullName
 
 
 type RoleStreamEvent =
-    | RoleCreated of RoleDto    
-    | RoleDeleted of RoleDto
-    | RoleRenamed of RoleDto
+    | RoleCreated of Dto.Role  
+    | RoleDeleted of Dto.Role
+    | RoleRenamed of Dto.Role
 
 
 
 type GroupStreamEvent =
-    | GroupCreated of GroupDto
-    | UserAddedToGroup of UserAddedToGroupDto
-    | GroupAddedToGroup of GroupAddedToGroupDto
+    | GroupCreated of Dto.GroupCreated
+    | UserAddedToGroup of Dto.GroupMember
+    | GroupAddedToGroup of Dto.GroupMember
 
 
 
@@ -69,6 +77,57 @@ module EventStorePlayGround =
 
     open EventStore.ClientAPI
     open System
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ///helpers 
+    /// 
+    /// 
+    
+    
+
+
+    let unwrapGroup (aGroup:Dto.Group) : Dto.StandardGroup = 
+
+        let unwrappedGroup = match aGroup with  
+                                     | Dto.Group.Standard s -> s
+                                     | Dto.Group.Internal i -> i
+
+
+        unwrappedGroup
+
+
+    let unwrapGroupCreated (aGroup:Dto.GroupCreated) : Dto.StandardGroup = 
+
+        let unwrappedGroup = match aGroup with  
+                                     | Dto.GroupCreated.Standard s -> s
+                                     | Dto.GroupCreated.Internal i -> i
+
+
+        unwrappedGroup.Group
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -146,19 +205,6 @@ module EventStorePlayGround =
 
 
 
-    let fromDtoToDtoTemp (aRegInvDto:RegistrationInvitationDto):RegistrationInvitationDtoTemp = 
-            let t : RegistrationInvitationDtoTemp = {
-                RegistrationInvitationId = aRegInvDto.RegistrationInvitationId
-                TenantId = aRegInvDto.TenantId
-                Description = aRegInvDto.Description
-                StartingOn = aRegInvDto.StartingOn
-                Until = aRegInvDto.Until
-
-            }
-            t
-
-
-
 
     let concatStreamId (p1:string) (p2:string) = p1.Trim() + p2.Trim() 
     let concatTenantStreamId = concatStreamId "TENANT_With_ID_=_"
@@ -168,15 +214,6 @@ module EventStorePlayGround =
 
 
 
-    let fromRegInvToDto (aRegInv:RegistrationInvitation) =
-            let rs : RegistrationInvitationDtoTemp = {
-                RegistrationInvitationId = aRegInv.RegistrationInvitationId |> RegistrationInvitationId.value
-                Description = aRegInv.Description |> RegistrationInvitationDescription.value
-                TenantId = aRegInv.TenantId |> TenantId.value
-                StartingOn = aRegInv.StartingOn
-                Until = aRegInv.Until
-            } 
-            rs
 
 
 
@@ -185,57 +222,54 @@ module EventStorePlayGround =
 
 
 
-
-
-    let applyTenantEvent aTenant anEvent = 
+    let applyTenantEvent (aTenant: IdentityAndAcccess.DomainTypes.Functions.Dto.Tenant) anEvent : (IdentityAndAcccess.DomainTypes.Functions.Dto.Tenant)= 
 
         match anEvent with 
         | TenantStreamEvent.TenantCreated t ->
-          t
-        | TenantStreamEvent.ActivationStatusDeActivated t ->
-            {aTenant with ActivationStatus = ActivationStatusDto.Disactivated}
-        
-        | TenantStreamEvent.ActivationStatusReActivated t ->
-            {aTenant with ActivationStatus = ActivationStatusDto.Activated}
-                  
-        | TenantStreamEvent.InvitationOfferred  t ->  
-            let regInDto = t.Invitation
-            {aTenant with 
-                RegistrationInvitations = Array.append ([regInDto |> fromDtoToDtoTemp] |> List.toArray)   aTenant.RegistrationInvitations}     
-        
-        | TenantStreamEvent.InvitationWithdrawn  t ->  
-            let regInDto = t.Invitation
-            let filteredInvitations = aTenant.RegistrationInvitations
-                                      |> Array.filter ( fun invitation -> 
-                                                            not ( invitation.RegistrationInvitationId = regInDto.RegistrationInvitationId )) 
-            {aTenant with RegistrationInvitations = filteredInvitations}
+            t.Tenant
+        | TenantStreamEvent.ActivationStatusDeActivated statusAndreason ->
+            { aTenant with ActivationStatus = statusAndreason.Status }
+             
+        | TenantStreamEvent.ActivationStatusReActivated statusAndreason ->
+             { aTenant with ActivationStatus = statusAndreason.Status }
+
+        | TenantStreamEvent.InvitationOfferred  offerredInvitation ->  
+            { aTenant with  RegistrationInvitations = aTenant.RegistrationInvitations @ List.singleton offerredInvitation.OfferredInvitation }
+
+        | TenantStreamEvent.InvitationWithdrawn  withdrawnInvitation ->  
+            { aTenant with  RegistrationInvitations = aTenant.RegistrationInvitations @ List.singleton withdrawnInvitation.WithdrawnInvitation }
+
+            
+            
+            
             
 
 
-    let applyUserEvent aUser anEvent = 
+    let applyUserEvent (aUser:IdentityAndAcccess.DomainTypes.Functions.Dto.User) anEvent = 
 
         match anEvent with 
-        | UserStreamEvent.UserRegistered t ->
-          t
-        | UserStreamEvent.PasswordChanged t ->
-            {aUser with Password = t |> Password.value }
-        
-        | UserStreamEvent.PersonalNameChanged t ->
-            {aUser with FirstName = t.First |> FirstName.value ; MiddleName = t.Middle |> MiddleName.value; LastName = t.Last |> LastName.value }
+        | UserStreamEvent.UserRegistered user ->
+          user
+        | UserStreamEvent.PasswordChanged password ->
+            {aUser with Password = password |> Password.value }
+        | UserStreamEvent.PersonalNameChanged fullName ->
+            let oldPerson = aUser.Person
+            let newPerson = {oldPerson with Name = fullName }
+            {aUser with Person = newPerson }
 
        
 
 
 
-    let applyRoleEvent aRole anEvent = 
+    let applyRoleEvent (aRole:Dto.Role) anEvent = 
 
         match anEvent with 
-        | RoleStreamEvent.RoleCreated t ->
-          t
-        | RoleStreamEvent.RoleDeleted t ->
-          t       
-        | RoleStreamEvent.RoleRenamed t ->
-          t             
+        | RoleStreamEvent.RoleCreated role ->
+          role
+        | RoleStreamEvent.RoleDeleted role ->
+          role
+        | RoleStreamEvent.RoleRenamed role ->
+          role      
 
 
 
@@ -245,22 +279,42 @@ module EventStorePlayGround =
 
 
 
-
-    let applyGroupEvent (aGroup:GroupDto) anEvent = 
+(* 
+    let applyGroupEvent (aGroup:Dto.StandardGroup) anEvent = 
 
         match anEvent with 
-        | GroupStreamEvent.GroupCreated g ->
-          g
-        | GroupStreamEvent.UserAddedToGroup g ->
-          let groupMemberDtoL = g.GroupMember |> Array.singleton 
-          let newMembers = groupMemberDtoL |> Array.append aGroup.Members  
-          {aGroup with Members = newMembers}
+        | GroupStreamEvent.GroupCreated group ->
+            group
+        | GroupStreamEvent.UserAddedToGroup memberAdded ->
+            let newMemberList = memberAdded |> List.singleton 
+            Dto.Standard { aGroup with Members = aGroup.Members @ newMemberList }
         
-        | GroupStreamEvent.GroupAddedToGroup g ->
-          let groupMemberDtoL = g.GroupMember |> Array.singleton 
-          let newMembers = groupMemberDtoL |> Array.append aGroup.Members  
-          {aGroup with Members = newMembers}
+        | GroupStreamEvent.GroupAddedToGroup memberAdded ->
+            let newMemberList = memberAdded |> List.singleton 
+            Dto.Standard { aGroup with Members = aGroup.Members @ newMemberList }
         
+
+ *)
+
+
+
+    let applyGroupEvent (aGroup:Dto.StandardGroup) anEvent = 
+
+        match anEvent with 
+        | GroupStreamEvent.GroupCreated group ->
+            match group with  
+            | Dto.GroupCreated.Standard s -> s.Group
+            | Dto.GroupCreated.Internal i -> i.Group
+        | GroupStreamEvent.UserAddedToGroup memberAdded ->
+            let newMemberList = memberAdded |> List.singleton 
+            { aGroup with Members = aGroup.Members @ newMemberList }
+        
+        | GroupStreamEvent.GroupAddedToGroup memberAdded ->
+            let newMemberList = memberAdded |> List.singleton 
+            { aGroup with Members = aGroup.Members @ newMemberList }
+        
+
+
 
 
     let loadTenantWithId tenantStreamId = 
@@ -271,6 +325,7 @@ module EventStorePlayGround =
    
         match foundTenantEventStreamList.Head with
         | TenantStreamEvent.TenantCreated tenantZeroState ->  
+            let tenantZeroState:IdentityAndAcccess.DomainTypes.Functions.Dto.Tenant = tenantZeroState.Tenant
             let tenantDto =  foundTenantEventStreamList |>  List.toArray |> Seq.fold applyTenantEvent tenantZeroState
             Ok (tenantStreamId, tenantDto, lastEventNumber)
         | _ -> 
@@ -316,6 +371,10 @@ module EventStorePlayGround =
 
     let loadGroupWithId groupStreamId = 
 
+        printfn "=========================="
+        printfn "groupStreamId not found %A" groupStreamId
+        printfn "=========================="
+
 
         let store = create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
         let foundGroupEventStreamList,lastEventNumber,
@@ -323,6 +382,7 @@ module EventStorePlayGround =
        
         match foundGroupEventStreamList.Head with  
         | GroupStreamEvent.GroupCreated groupZeroState ->  
+            let groupZeroState = groupZeroState |> unwrapGroupCreated
             let groupDto =  foundGroupEventStreamList 
                             |>  List.toArray 
                             |> Seq.fold applyGroupEvent groupZeroState
@@ -331,10 +391,10 @@ module EventStorePlayGround =
             Error "Could not built group initial state"
 
         
-    let loadGroupWithGroupId (aGroupId:GroupId) : Result<Group, string>  = 
+    let loadGroupWithGroupId (aGroupId:CommonDomainTypes.GroupId) : Result<Group.Group, string>  = 
 
      
-        let groupStreamId = aGroupId |> GroupId.value
+        let groupStreamId = aGroupId |> GroupId.value |> concatGroupStreamId
 
         printfn "=========================="
         printfn "groupStreamId %A" groupStreamId
@@ -345,12 +405,14 @@ module EventStorePlayGround =
         let foundGroupEventStreamList,_,_ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
        
         match foundGroupEventStreamList.Head with  
-        | GroupStreamEvent.GroupCreated groupZeroState ->  
+        | GroupStreamEvent.GroupCreated groupZeroState -> 
+            let groupZeroState = groupZeroState |> unwrapGroupCreated
             let groupDto =  foundGroupEventStreamList 
                             |>  List.toArray 
                             |> Seq.fold applyGroupEvent groupZeroState
             groupDto 
-            |> DbHelpers.fromDbDtoToGroup
+            |> Dto.Group.Standard
+            |> Group.toDomain
         | _ ->      
             Error "Could not built group initial state"
 
@@ -364,9 +426,7 @@ module EventStorePlayGround =
         let groupStreamId = aGroupMemberId |> GroupMemberId.value |> concatGroupStreamId
 
         printfn "=========== IN loadGroupWithGroupMemberId ==============="
-        printfn "=========================="
         printfn "groupStreamId %A" groupStreamId
-        printfn "=========================="
         printfn "=========== IN loadGroupWithGroupMemberId ==============="
 
 
@@ -375,11 +435,13 @@ module EventStorePlayGround =
        
         match foundGroupEventStreamList.Head with  
         | GroupStreamEvent.GroupCreated groupZeroState ->  
+            let groupZeroState = groupZeroState |> unwrapGroupCreated
             let groupDto =  foundGroupEventStreamList 
                             |>  List.toArray 
                             |> Seq.fold applyGroupEvent groupZeroState
             groupDto 
-            |> DbHelpers.fromDbDtoToGroup
+            |> Dto.Group.Standard
+            |> Group.toDomain
         | _ ->      
             Error "Could not built group initial state"
 
