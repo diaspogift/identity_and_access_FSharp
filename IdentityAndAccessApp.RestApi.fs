@@ -84,133 +84,75 @@ module Rest =
     
 
     let getResourceFromReq<'a> (req : HttpRequest) = 
+        req.rawForm 
+        |> System.Text.Encoding.UTF8.GetString 
+        |> fromJson<'a>
 
-        let data = req.rawForm 
-                   |> System.Text.Encoding.UTF8.GetString 
-                   |> fromJson<'a>
-        data
-
-
-    let toProvisionTenantCommand (up:UnvalidatedTenantProvision) : ProvisionTenantCommand =
-        printfn "-----START-----"
-        printfn " UnvalidatedTenantProvision =  %A " up
-        printfn "-----ENDS-----" 
-        let provisionTenantCommand : ProvisionTenantCommand = {
-            Data = up
-            TimeStamp = DateTime.Now
-            UserId = "Felicien"
-            }
-        provisionTenantCommand
-    
-
-    let toOfferRegistrationInvitationCommand (up:UnvalidatedRegistrationInvitationDescription) : OfferRegistrationInvitationCommand =
-        printfn "-----START-----"
-        printfn " UnvalidatedRegistrationInvitationDescription =  %A " up
-        printfn "-----ENDS-----" 
-        let command : OfferRegistrationInvitationCommand = {
-            Data = up
-            TimeStamp = DateTime.Now
-            UserId = "Felicien"
-            }
-        command
-
-    let toWithdrawRegistrationInvitationCommand (uri:UnvalidatedRegistrationInvitationIdentifier) : WithdrawRegistrationInvitationCommand =
-        printfn "-----START-----"
-        printfn " UnvalidatedRegistrationInvitationIdentifier =  %A " uri
-        printfn "-----ENDS-----" 
-        let commd : WithdrawRegistrationInvitationCommand = {
-            Data = uri
-            TimeStamp = DateTime.Now
-            UserId = "Felicien"
-            }
-        commd
-
-
-    let toDeactivateTenantCommand (uacstat:UnvalidatedTenantActivationStatus) : DeactivateTenantActivationStatusCommand =
-        printfn "-----START-----"
-        printfn " UnvalidatedTenantActivationStatus =  %A " uacstat
-        printfn "-----ENDS-----" 
-        let cmmd : DeactivateTenantActivationStatusCommand = {
-            Data = uacstat
-            TimeStamp = DateTime.Now
-            UserId = "Felicien"
-            }
-        cmmd
-
-
-    let toReactivateTenantCommand (uacstatd:UnvalidatedTenantActivationStatusData) : ReactivateTenantActivationStatusCommand =
-        printfn "-----START-----"
-        printfn " UnvalidatedTenantActivationStatusData =  %A " uacstatd
-        printfn "-----ENDS-----" 
-        let cmmd : ReactivateTenantActivationStatusCommand = {
-            Data = uacstatd
-            TimeStamp = DateTime.Now
-            UserId = "Felicien"
-            }
-        cmmd
-
-
-    let toProvisionGroupCommand (ugpr:UnvalidatedGroup) : ProvisionGroupCommand =
-        printfn "-----START-----"
-        printfn " UnvalidatedGroup =  %A " ugpr
-        printfn "-----ENDS-----" 
-        let provisionTenantCommand : ProvisionGroupCommand = {
-            Data = ugpr
-            TimeStamp = DateTime.Now
-            UserId = "Felicien"
-            }
-        provisionTenantCommand
-
-
-    let toProvisionRoleCommand (ur:UnvalidatedRole) : ProvisionRoleCommand =
-        printfn "-----START-----"
-        printfn " UnvalidatedRole =  %A " ur
-        printfn "-----ENDS-----" 
-        let cmmd : ProvisionRoleCommand = {
-            Data = ur
-            TimeStamp = DateTime.Now
-            UserId = "Felicien"
-            }
-        cmmd
-
- 
 
     let app = choose [
         POST >=> choose [
 
             path "/tenant-provisions" 
                 >=> request (getResourceFromReq<UnvalidatedTenantProvision> 
-                >> toProvisionTenantCommand 
-                >> ProvisionTenant.handleProvisionTenant 
+                >> Command.ProvisionTenant.toCommand 
+                >> Command.ProvisionTenant.handle 
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)
 
             path "/offert-invitations" 
                 >=> request (getResourceFromReq<UnvalidatedRegistrationInvitationDescription> 
-                >> toOfferRegistrationInvitationCommand 
-                >> OfferRegistrationInvitationCommand.handleOfferRegistrationInvitation 
+                >> Command.OfferInvitation.toCommand 
+                >> Command.OfferInvitation.handle
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)
 
             path "/withdraw-invitations" 
                 >=> request (getResourceFromReq<UnvalidatedRegistrationInvitationIdentifier> 
-                >> toWithdrawRegistrationInvitationCommand 
-                >> WithdrawRegistrationInvitationCommand.handleWithdrawRegistrationInvitation 
+                >> Command.WithdrawInvitation.toCommand 
+                >> Command.WithdrawInvitation.handle
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)
 
             path "/activate-tenant" 
                 >=> request (getResourceFromReq<UnvalidatedTenantActivationStatusData> 
-                >> toReactivateTenantCommand 
-                >> ReactivateTenantActivationStatus.handleReactivateTenantActivationStatus 
+                >> Command.ReactivateTenant.toCommand 
+                >> Command.ReactivateTenant.handle
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)
 
             path "/deactivate-tenant" 
                 >=> request (getResourceFromReq<UnvalidatedTenantActivationStatus> 
-                >> toDeactivateTenantCommand
-                >> DeactivateTenantActivationStatus.handleDeactivateTenantActivationStatus 
+                >> Command.DeactivateTenant.toCommand
+                >> Command.DeactivateTenant.handle
                 >> workflowResultToHttpReponse
-                >> toJsonWebPart)           
+                >> toJsonWebPart) 
+
+            path "/provision-group" 
+                >=> request (getResourceFromReq<UnvalidatedGroup> 
+                >> Command.ProvisionGroup.toCommand
+                >> Command.ProvisionGroup.handle
+                >> workflowResultToHttpReponse
+                >> toJsonWebPart)   
+
+            path "/provision-role" 
+                >=> request (getResourceFromReq<UnvalidatedRole> 
+                >> Command.ProvisionRole.toCommand
+                >> Command.ProvisionRole.handle
+                >> workflowResultToHttpReponse
+                >> toJsonWebPart)
+
+            path "/add-user-to-group" 
+                >=> request (getResourceFromReq<UnvalidatedRole> 
+                >> Command.ProvisionRole.toCommand
+                >> Command.ProvisionRole.handle
+                >> workflowResultToHttpReponse
+                >> toJsonWebPart)             
+                   
+            path "/add-group-to-group" 
+                >=> request (getResourceFromReq<UnvalidatedRole> 
+                >> Command.ProvisionRole.toCommand
+                >> Command.ProvisionRole.handle
+                >> workflowResultToHttpReponse
+                >> toJsonWebPart)             
                    ]
                 ]

@@ -2479,10 +2479,11 @@ module Dto =
 
                 result {
 
-                    let memberType:IdentityAndAcccess.DomainTypes.Group.GroupMemberType = 
+                    let! memberType = 
                         match aGroupMember.Type with 
-                        | GroupMemberType.GroupGroupMember -> IdentityAndAcccess.DomainTypes.Group.GroupMemberType.GroupGroupMember
-                        | GroupMemberType.UserGroupMember -> IdentityAndAcccess.DomainTypes.Group.GroupMemberType.UserGroupMember
+                        | GroupMemberType.GroupGroupMember -> Ok IdentityAndAcccess.DomainTypes.Group.GroupMemberType.GroupGroupMember
+                        | GroupMemberType.UserGroupMember -> Ok IdentityAndAcccess.DomainTypes.Group.GroupMemberType.UserGroupMember
+                        | _ -> Error "Unknown group member type"
                       
             
 
@@ -2586,11 +2587,11 @@ module Dto =
 
                 result {
 
-                    let memberType:IdentityAndAcccess.DomainTypes.Group.GroupMemberType = 
+                    let! memberType = 
                         match aGroupMember.Type with 
-                        | GroupMemberType.GroupGroupMember -> IdentityAndAcccess.DomainTypes.Group.GroupMemberType.GroupGroupMember
-                        | GroupMemberType.UserGroupMember -> IdentityAndAcccess.DomainTypes.Group.GroupMemberType.UserGroupMember
-            
+                        | GroupMemberType.GroupGroupMember -> Ok IdentityAndAcccess.DomainTypes.Group.GroupMemberType.GroupGroupMember
+                        | GroupMemberType.UserGroupMember -> Ok IdentityAndAcccess.DomainTypes.Group.GroupMemberType.UserGroupMember
+                        | _ -> Error "Unknown group member type"            
 
                     let! memberId =  aGroupMember.MemberId |> GroupMemberId.create'
                     let! tenantId =  aGroupMember.TenantId |> TenantId.create'
@@ -2618,9 +2619,11 @@ module Dto =
                 let! roleTenantId = aRoleDto.TenantId |> TenantId.create'
                 let! roleName = aRoleDto.Name |> RoleName.create'
                 let! roleDescription = aRoleDto.Description |> RoleDescription.create'
-                let supportNest  = match aRoleDto.SupportNesting  with  
-                                   | SupportNestingStatus.Support -> IdentityAndAcccess.DomainTypes.Role.SupportNestingStatus.Support
-                                   | SupportNestingStatus.Oppose -> IdentityAndAcccess.DomainTypes.Role.SupportNestingStatus.Oppose
+                let! supportNest  = 
+                        match aRoleDto.SupportNesting  with  
+                        | SupportNestingStatus.Support -> Ok IdentityAndAcccess.DomainTypes.Role.SupportNestingStatus.Support
+                        | SupportNestingStatus.Oppose -> Ok IdentityAndAcccess.DomainTypes.Role.SupportNestingStatus.Oppose
+                        | _ -> Error "Unknown group member type"            
 
                                      
                 let! groupId = unwrapToStandardGroup.GroupId |> GroupId.create'
@@ -2740,15 +2743,16 @@ module Dto =
 
             result {
      
-                let! id = aTenantDto.TenantId |> TenantId.create'
                 let! name = aTenantDto.Name |> TenantName.create'
                 let! description = aTenantDto.Description |> TenantDescription.create'
                 let! id = aTenantDto.TenantId |> TenantId.create'
                 let! fromtoRegistrationIntationDomainList = aTenantDto.RegistrationInvitations |> List.map fromtoRegistrationIntationDomain |> ResultOfSequenceTemp 
 
-                let status = match aTenantDto.ActivationStatus with 
-                              | ActivationStatus.Activated -> IdentityAndAcccess.DomainTypes.Tenant.ActivationStatus.Activated
-                              | ActivationStatus.Deactivated -> IdentityAndAcccess.DomainTypes.Tenant.ActivationStatus.Deactivated
+                let! status = 
+                        match aTenantDto.ActivationStatus with 
+                        | ActivationStatus.Activated -> Ok IdentityAndAcccess.DomainTypes.Tenant.ActivationStatus.Activated
+                        | ActivationStatus.Deactivated -> Ok IdentityAndAcccess.DomainTypes.Tenant.ActivationStatus.Deactivated
+                        | _ -> Error "Unknown group member type"            
 
                 let tenant : IdentityAndAcccess.DomainTypes.Tenant.Tenant = {
                     TenantId =  id
