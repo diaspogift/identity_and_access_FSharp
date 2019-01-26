@@ -28,7 +28,7 @@ open IdentityAndAccess.DatabaseTypes
 type UnvalidatedTenantProvision = {
 
     TenantInfo : UnvalidatedTenant
-    AdiminUserInfo : TenantAdministrator
+    AdminUserInfo : TenantAdministrator
 }
 
 and  UnvalidatedTenant = {

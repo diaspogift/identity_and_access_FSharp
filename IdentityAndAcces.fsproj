@@ -40,9 +40,9 @@
     <Compile Include="Comamd.Types.fs" />
     <Compile Include="Command.Handlers.fs" />
     <Compile Include="Queues.fs" />
-    <Compile Include="RestFull.fs" />
+    <Compile Include="IdentityAndAccessApp.RestApi.fs" />
     <Compile Include="Queue.RabbitMq.Implementation.fs" />
-    <Compile Include="App.fs" />
+    <Compile Include="IdentityAndAccessApp.fs" />
     
   </ItemGroup>
   <ItemGroup>

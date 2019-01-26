@@ -1,4 +1,7 @@
 namespace IdentityAndAcces.Infrstructure.Queue.Impl
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+
+
 
 
 
@@ -7,6 +10,7 @@ namespace IdentityAndAcces.Infrstructure.Queue.Impl
 [<AutoOpen>]
 module Queue =
 
+    
     open System.IO
     open System.Runtime.Serialization.Formatters.Binary
 
@@ -16,14 +20,14 @@ module Queue =
     // Named queues
     type Queue =
     | UserCreated
-    | OrderReceived
+    | GroupCreated
     | OrderPaid
     | OrderFulfilled
 
     let private resolve queue =
         match queue with
         | UserCreated -> "users"
-        | OrderReceived -> "orders"
+        | GroupCreated -> "groups"
         | OrderPaid -> "payments"
         | OrderFulfilled -> "fulfillments"
 
@@ -93,3 +97,20 @@ module Queue =
             model.Close()
             connection.Close()
         )
+
+
+    let cancelOrderReceivedQueue = subscribe<string> GroupCreated (fun message -> 
+        printfn "Order received! Id #%A" message 
+    )
+
+
+    let rec loop id =
+        let char = System.Console.ReadLine()
+        match char with
+        | "e" -> cancelOrderReceivedQueue()
+        | _ ->
+            enqueue GroupCreated char
+            loop (id + 1)
+
+    printfn "Press a key to order, [ESC] to exit"
+    loop 0

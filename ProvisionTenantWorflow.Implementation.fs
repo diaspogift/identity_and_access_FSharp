@@ -89,7 +89,14 @@ type SaveTenanProvision = Provision -> unit
 ///Step 1 validate tenant provision impl
 let validateProvision : ValidateTenantProvision =
 
+
+
     fun aUnvalidatedTenantProvision ->
+
+        printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
+        printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
+        printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
+
 
         result {
 
@@ -111,7 +118,7 @@ let validateProvision : ValidateTenantProvision =
 
             let! first = 
 
-                aUnvalidatedTenantProvision.AdiminUserInfo.FirstName 
+                aUnvalidatedTenantProvision.AdminUserInfo.FirstName 
                 |> FirstName.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
 
@@ -121,7 +128,7 @@ let validateProvision : ValidateTenantProvision =
 
             let! middle = 
 
-                aUnvalidatedTenantProvision.AdiminUserInfo.MiddleName 
+                aUnvalidatedTenantProvision.AdminUserInfo.MiddleName 
                 |> MiddleName.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
 
@@ -130,7 +137,7 @@ let validateProvision : ValidateTenantProvision =
 
             let! last = 
 
-                aUnvalidatedTenantProvision.AdiminUserInfo.LastName 
+                aUnvalidatedTenantProvision.AdminUserInfo.LastName 
                 |> LastName.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
 
@@ -139,7 +146,7 @@ let validateProvision : ValidateTenantProvision =
 
             let! email = 
             
-                aUnvalidatedTenantProvision.AdiminUserInfo.Email 
+                aUnvalidatedTenantProvision.AdminUserInfo.Email 
                 |> EmailAddress.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
 
@@ -148,7 +155,7 @@ let validateProvision : ValidateTenantProvision =
 
             let! address = 
 
-                aUnvalidatedTenantProvision.AdiminUserInfo.Address 
+                aUnvalidatedTenantProvision.AdminUserInfo.Address 
                 |> PostalAddress.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
 
@@ -157,7 +164,7 @@ let validateProvision : ValidateTenantProvision =
 
             let! primePhone = 
             
-                aUnvalidatedTenantProvision.AdiminUserInfo.PrimPhone 
+                aUnvalidatedTenantProvision.AdminUserInfo.PrimPhone 
                 |> Telephone.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
 
@@ -166,7 +173,7 @@ let validateProvision : ValidateTenantProvision =
 
             let! secondPhone = 
             
-                aUnvalidatedTenantProvision.AdiminUserInfo.SecondPhone 
+                aUnvalidatedTenantProvision.AdminUserInfo.SecondPhone 
                 |> Telephone.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
 

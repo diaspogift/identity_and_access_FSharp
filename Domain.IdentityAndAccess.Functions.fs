@@ -64,8 +64,16 @@ let generateNoEscapeId () =
 
 
 
-type IsGroupMemberService =  Group -> GroupMember  -> Boolean
+type IsGroupMemberService =  Group -> Group  -> Result<Boolean,string>
 
+
+
+
+let rec remove i l =
+    match i, l with
+    | 0, x::xs -> xs
+    | i, x::xs -> x::remove (i - 1) xs
+    | i, [] -> failwith "index out of range"
 
 ///Helper functionsssss
 /// 
@@ -183,8 +191,8 @@ module ServiceInterfaces =
     
     type IsGroupMemberService = 
             Group 
-                -> GroupMember  
-                -> Boolean
+                -> Group  
+                -> Result<Boolean,string>
 
     type IsGroupMemberServiceWithBakedGetGroupMemberByIdDependency = 
             Group 
@@ -575,6 +583,7 @@ module Tenant =
                     Name = aGroupName
                     Description = aGroupDescription
                     Members = []
+                    GroupIAmMemberInRefs = []
                 }
 
                 return group
@@ -615,6 +624,7 @@ module Tenant =
                         Name = groupName
                         Description = groupDescription
                         Members = []
+                        GroupIAmMemberInRefs = []
                     }
 
 
@@ -1268,8 +1278,6 @@ module Group =
         uG.TenantId = aUser.TenantId   
 
 
-
-
     let toMemberOfTypeGroup (memberType:GroupMemberType) (aGroup:Group) =
 
         let resultOfGroupMember = result {
@@ -1302,15 +1310,6 @@ module Group =
         resultOfGroupMember
 
 
-
-
-
-
-
-
-
-
-
     let toMemberOfTypeUser memberType (aUser:User) =
 
         let resultOfGroupMember = result {
@@ -1339,25 +1338,8 @@ module Group =
 
         resultOfGroupMember
 
-
-
-
     let toMemberOfTypeGroup' =  toMemberOfTypeGroup  GroupMemberType.GroupGroupMember
     let toMemberOfTypeUser' =  toMemberOfTypeUser  GroupMemberType.UserGroupMember
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     let create id tenantId name description members = 
         
@@ -1376,6 +1358,7 @@ module Group =
                Name = name'
                Description = description'
                Members = members
+               GroupIAmMemberInRefs = []
             }
         }
 
@@ -1394,22 +1377,14 @@ module Group =
                Name = name
                Description = description
                Members = members
+               GroupIAmMemberInRefs = []
             }
         }
 
         rsCreateGroup
 
         
-   
-
-
-    let changePassWord aUser aCurrentGivenPassword aNewGivenPassword = 
-        if aUser.Password <> aCurrentGivenPassword then
-            Error "Current Password not confirmed"
-        else
-            Ok {aUser with Password = aNewGivenPassword} 
-
-
+  
 
     let isStandardGroup aGroup = match aGroup with 
                                  | Standard g -> true
@@ -1425,7 +1400,8 @@ module Group =
 
 
 
-    let addGroupToGroup (aGroupToAddTo:Group.Group)(aGroupToAdd:Group.Group)(isGroupMemberService: IsGroupMemberService) : Result<Group.Group*GroupMember, string> =
+    let addGroupToGroup (aGroupToAddTo:Group.Group)(aGroupToAdd:Group.Group)(isGroupMemberService: IsGroupMemberService) 
+        : Result<Group.Group*GroupMember, string> =
 
         let unwrappedGroupToAddTo = match aGroupToAddTo with 
                                         | Standard aStandardGroup -> aStandardGroup
@@ -1437,128 +1413,83 @@ module Group =
         let doBothGroupsHaveSameTenant = (unwrappedGroupToAddTo.TenantId = unwrappedGroupToAdd.TenantId)
         let isNotTheSameGroup  = not (unwrappedGroupToAddTo.GroupId = unwrappedGroupToAdd.GroupId)
         let toGroupGroupMember = toMemberOfTypeGroup GroupGroupMember
-        let isGroupMemberService' = isGroupMemberService aGroupToAddTo 
         let isGroupToAddToRoleNotInterNalGroup =  aGroupToAddTo |> isInternalGroup |> not
 
         match doBothGroupsHaveSameTenant && isNotTheSameGroup && isGroupToAddToRoleNotInterNalGroup with 
         | true -> 
-            let rsGrouMember = result {
-                let! aMemberToAdd = aGroupToAdd |> toGroupGroupMember                                   
-                let isTheGroupMemberToAddAlreadyAMember = aMemberToAdd |> isGroupMemberService' 
+            let rsGroupMember = result {
+                let! isTheGroupMemberToAddAlreadyAMember = aGroupToAdd |> isGroupMemberService aGroupToAddTo
                 return isTheGroupMemberToAddAlreadyAMember
                 }
-
-            match rsGrouMember with 
+            match rsGroupMember with 
             | Ok isAlreadyGroupMember -> 
-
-                printfn "RESULT isAlreadyGroupMember for aGroupToAddTo ==== %A" aGroupToAddTo
                 printfn "RESULT isAlreadyGroupMember ==== %A" isAlreadyGroupMember
-
-
-                if not isAlreadyGroupMember then
-                    
-                    
-                    let aStandardGroupToAdd =  aGroupToAddTo 
-                                               |> DomainHelpers.unwrapToStandardGroup
-
-
-                    let newMembers =  aStandardGroupToAdd.Members
-
+                if not isAlreadyGroupMember then   
                     let rsIsGrouMemberToAdd = result {
-                        let! aMemberToAdd = aGroupToAdd
-                                            |> toGroupGroupMember
+                        let! aMemberToAdd = aGroupToAdd |> toGroupGroupMember
                         return aMemberToAdd
                         }
-
                     match rsIsGrouMemberToAdd with 
                     | Ok groupMember -> 
-                        //let group = {aStandardGroupToAdd with Members = [groupMember]@newMembers}
-                        Ok (aGroupToAddTo, groupMember)
+                        let oneListGrpMember = groupMember |> List.singleton
+                        let newStandardGroupToAddTo = {unwrappedGroupToAddTo with Members = unwrappedGroupToAddTo.Members @ oneListGrpMember }
+                        match aGroupToAddTo with  
+                        | Group.Standard _ -> Ok (Standard newStandardGroupToAddTo, groupMember)
+                        | Group.Internal _ -> Ok (Internal newStandardGroupToAddTo, groupMember)
                     | Error error ->
                         Error error
                 else
                      Error "Group already a member"
-
             | Error isNotGoupMemberYet  -> 
                  Error isNotGoupMemberYet
-           
-
         | false -> 
             let msg = sprintf "Wrong tenant consistency"
             Error msg
 
         
 
-
-
-
-    
     let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User) : Result<Group*GroupMember, string>   =
 
 
-        let aStandardGroupToAdd =  aGroupToAddTo 
-                                               |> DomainHelpers.unwrapToStandardGroup
-
+        let aStandardGroupToAdd =  aGroupToAddTo |> DomainHelpers.unwrapToStandardGroup
         let AreFromSameTenant = (aStandardGroupToAdd.TenantId = aUserToAdd.TenantId)
         let UserIsEnabled = aUserToAdd |> User.isEnabled
-        let isGroupToAddToRoleNotInterNalGroup =    aGroupToAddTo 
-                                                    |> isInternalGroup 
-                                                    |> not        
+        let isGroupToAddToRoleNotInterNalGroup = aGroupToAddTo |> isInternalGroup |> not        
    
         match AreFromSameTenant && UserIsEnabled && isGroupToAddToRoleNotInterNalGroup with  
         | true -> 
-
             let isUseGroupMember = result {
-
                 let! groupMemberToAdd = aUserToAdd |> toMemberOfTypeUser'
-
-                let searchGivenMemberInGroupMembers = aStandardGroupToAdd.Members
-                                                      |> List.filter (
-                                                          fun next -> 
-                                                            groupMemberToAdd.MemberId = next.MemberId
-                                                      )
-
-                let isUseGroupMember = match searchGivenMemberInGroupMembers with 
-                                       | [] -> false
-                                       | [_] -> true
-                                       | head::tail -> false 
-
+                let searchGivenMemberInGroupMembers = 
+                    aStandardGroupToAdd.Members
+                    |> List.filter (
+                      fun next -> 
+                        groupMemberToAdd.MemberId = next.MemberId
+                    )
+                let isUseGroupMember = 
+                    match searchGivenMemberInGroupMembers with 
+                    | [] -> false
+                    | [_] -> true
+                    | head::tail -> false 
                 return   isUseGroupMember
-            }
-
-            
-            
-           
+                }      
             match isUseGroupMember with  
             | Ok rs -> 
-
                 match  rs with 
-                | false ->
-                    
+                | false ->              
                     let groupMemberToAdd = result {
-
                         let! groupMemberToAdd = aUserToAdd |> toMemberOfTypeUser'
-
                         return groupMemberToAdd
-                    }
-
+                        }
                     match groupMemberToAdd with  
-                    | Ok grouMember -> 
-
-                        Ok (Standard {aStandardGroupToAdd with Members = aStandardGroupToAdd.Members@[grouMember]}, grouMember)
-
-                    | Error error -> 
-                    
-                        Error error
+                    | Ok grouMember -> Ok (Standard {aStandardGroupToAdd with Members = aStandardGroupToAdd.Members@[grouMember]}, grouMember)
+                    | Error error -> Error error
                 | true ->
-
                     let msg = sprintf "Already group member" 
                     Error msg
-
             | Error _ -> 
                 let msg = sprintf "Wrong tenant consistency 2" 
                 Error msg
-
         | false ->
             let msg = sprintf "Wrong tenant consistency or disabled user account" 
             Error msg
@@ -1696,13 +1627,6 @@ module Group =
 
             
 
-
-
-
-
-
-
-
     let removeUser (aGroupToRemoveFrom:Group) (aUserToRemove:User) : Result<Group, string> =
 
 
@@ -1770,9 +1694,41 @@ module Group =
             Error msg
 
 
+    let addMemberToGroupRefs(aGroupToAddMembersTo:Group) (aMemberToAdd:GroupMember) : Result<Group,string> =
+        let unwrappedGroupToAddTo = 
+            match aGroupToAddMembersTo with 
+            | Group.Standard aStandardGroup -> aStandardGroup 
+            | Group.Internal anInternalGroup -> anInternalGroup 
+        let groupsThatIAmMemberIn = unwrappedGroupToAddTo.Members
+        if not (groupsThatIAmMemberIn |> List.contains aMemberToAdd) then  
+            let aMemberToAddList = aMemberToAdd |> List.singleton
+            match aGroupToAddMembersTo with  
+            | Group.Standard _ ->  
+                Ok (Group.Standard {unwrappedGroupToAddTo with Members = unwrappedGroupToAddTo.GroupIAmMemberInRefs @ aMemberToAddList})
+            | Group.Internal _ ->  
+                Ok (Group.Internal {unwrappedGroupToAddTo with Members = unwrappedGroupToAddTo.GroupIAmMemberInRefs @ aMemberToAddList})
+        else Error "Already present in the reference group that I am member in"
             
+                                                
+                                                           
 
+    let removeMemberToGroupRefs(aGroupToRemoveMemberFrom:Group) (aMemberToRemove:GroupMember) : Result<Group,string> =
 
+        let unwrappedGroupToRemoveFrom = 
+            match aGroupToRemoveMemberFrom with 
+            | Group.Standard aStandardGroup -> aStandardGroup 
+            | Group.Internal anInternalGroup -> anInternalGroup 
+        let groupsThatIAmMemberIn = unwrappedGroupToRemoveFrom.Members
+        if not (groupsThatIAmMemberIn |> List.contains aMemberToRemove) then  
+          Error "Already present in the reference group that I am member in"  
+        else
+            let newListOGroupMemberRefs =
+                unwrappedGroupToRemoveFrom.GroupIAmMemberInRefs 
+                |> List.filter (fun aGroupIamMemberIn ->  aGroupIamMemberIn = aMemberToRemove)
+            Ok (Group.Standard {unwrappedGroupToRemoveFrom with Members = newListOGroupMemberRefs})
+            
+            
+                                                
 
 
 
@@ -1829,6 +1785,7 @@ module Role =
                 Name = groupName
                 Description = groupDescription
                 Members = []
+                GroupIAmMemberInRefs = []
                 }
             
             let role:Role = {
@@ -1897,55 +1854,24 @@ module Role =
 
         match areBothFromSameTenants with 
         | true ->
-
             let rsGroupMember = result {
-                
-
-                
                 let! userToGroupMember = aUser |> User.toUserGroupMember
-
-                let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup  
-                 
-                let foundGrouMember = roleInternalGroup.Members
-                                      |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
-
-    
-
+                let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup        
+                let foundGrouMember = roleInternalGroup.Members |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
                 return foundGrouMember, userToGroupMember
-            }
-
-
+                }
             match rsGroupMember with 
-            
             | Ok optionGmAndUser->
-
-
                 match optionGmAndUser with
-                | (Some fm, gmToAdd) -> 
-                
-                    Error "User already playing the role"
-
+                | (Some _, _) -> Error "User already playing the role"
                 | (None, gmToAdd) ->
-
-
-
-
                     let roleInternalStandardGroup = aRole.InternalGroup |> unwrapToStandardGroup  
                     let newStandarGroup = {roleInternalStandardGroup with Members = [gmToAdd]@roleInternalStandardGroup.Members}
                     let newRoleInternalGroup = Internal newStandarGroup
                     let newInternalRoleGroup = {aRole with InternalGroup = newRoleInternalGroup}
-
                     Ok newInternalRoleGroup
-
-                           
-
-
             | Error error ->  
-                Error error
-                
-
-
-            
+                Error error     
         | false -> 
             Error "Wrond tenant consistency"
 
@@ -2124,6 +2050,7 @@ module Dto =
         Name: string
         Description: string
         Members: GroupMember list
+        GroupIAmMemberInRefs : GroupMember list
         }
 
 
@@ -2538,8 +2465,9 @@ module Dto =
                                  | IdentityAndAcccess.DomainTypes.Group.Standard s ->  s
                                    | IdentityAndAcccess.DomainTypes.Group.Internal i ->  i
 
-            let toGroupMemberDtoList = unwrappedGroup.Members 
-                                       |> List.map toGoupMemberDto
+            let toGroupMemberDtoList = unwrappedGroup.Members |> List.map toGoupMemberDto
+            let toGroupMemberRefsDtoList = unwrappedGroup.GroupIAmMemberInRefs |> List.map toGoupMemberDto
+           
       
             let sg:StandardGroup = {
                 GroupId = unwrappedGroup.GroupId |>  GroupId.value
@@ -2547,6 +2475,7 @@ module Dto =
                 Name = unwrappedGroup.Name |>  GroupName.value
                 Description = unwrappedGroup.Description |>  GroupDescription.value
                 Members = toGroupMemberDtoList
+                GroupIAmMemberInRefs = toGroupMemberRefsDtoList
                 }
 
             Standard sg
@@ -2599,6 +2528,7 @@ module Dto =
                     Name = name 
                     Description = description
                     Members = members
+                    GroupIAmMemberInRefs = []
                     }
 
                 let group = match aGrouDto with 
@@ -2626,8 +2556,9 @@ module Dto =
                 | IdentityAndAcccess.DomainTypes.Group.Standard s ->  s
                 | IdentityAndAcccess.DomainTypes.Group.Internal i ->  i
 
-            let toGroupMemberDtoList = unwrappedIntenalGroup.Members 
-                                       |> List.map GroupMember.fromDomain
+            let toGroupMemberDtoList = unwrappedIntenalGroup.Members |> List.map GroupMember.fromDomain
+            let toGroupMemberRefsDtoList = unwrappedIntenalGroup.GroupIAmMemberInRefs |> List.map GroupMember.fromDomain
+
       
             let sg:StandardGroup = {
                 GroupId = unwrappedIntenalGroup.GroupId |>  GroupId.value
@@ -2635,6 +2566,7 @@ module Dto =
                 Name = unwrappedIntenalGroup.Name |>  GroupName.value
                 Description = unwrappedIntenalGroup.Description |>  GroupDescription.value
                 Members = toGroupMemberDtoList
+                GroupIAmMemberInRefs = toGroupMemberRefsDtoList
                 }
 
             let roleInternalGroup = Internal sg
@@ -2716,6 +2648,7 @@ module Dto =
                     Name = name 
                     Description = description
                     Members = members
+                    GroupIAmMemberInRefs = []
                     }
 
                 let role : IdentityAndAcccess.DomainTypes.Role.Role = {

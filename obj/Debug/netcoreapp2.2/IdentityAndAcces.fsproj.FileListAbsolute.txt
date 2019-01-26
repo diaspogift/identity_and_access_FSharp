@@ -8,13 +8,13 @@
 /home/el/Documents/app-code/training/felicien-test/test/obj/Debug/netcoreapp2.2/IdentityAndAcces.AssemblyInfo.fs
 /home/el/Documents/app-code/training/felicien-test/test/obj/Debug/netcoreapp2.2/IdentityAndAcces.dll
 /home/el/Documents/app-code/training/felicien-test/test/obj/Debug/netcoreapp2.2/IdentityAndAcces.pdb
+/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/Debug/netcoreapp2.2/IdentityAndAcces.fsprojAssemblyReference.cache
+/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/Debug/netcoreapp2.2/IdentityAndAcces.AssemblyInfoInputs.cache
+/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/Debug/netcoreapp2.2/IdentityAndAcces.AssemblyInfo.fs
 /home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/bin/Debug/netcoreapp2.2/IdentityAndAcces.deps.json
 /home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/bin/Debug/netcoreapp2.2/IdentityAndAcces.runtimeconfig.json
 /home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/bin/Debug/netcoreapp2.2/IdentityAndAcces.runtimeconfig.dev.json
 /home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/bin/Debug/netcoreapp2.2/IdentityAndAcces.dll
 /home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/bin/Debug/netcoreapp2.2/IdentityAndAcces.pdb
-/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/Debug/netcoreapp2.2/IdentityAndAcces.fsprojAssemblyReference.cache
-/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/Debug/netcoreapp2.2/IdentityAndAcces.AssemblyInfoInputs.cache
-/home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/Debug/netcoreapp2.2/IdentityAndAcces.AssemblyInfo.fs
 /home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/Debug/netcoreapp2.2/IdentityAndAcces.dll
 /home/el/Documents/app-code/training/felicien-test/IdentityAndAccess/obj/Debug/netcoreapp2.2/IdentityAndAcces.pdb

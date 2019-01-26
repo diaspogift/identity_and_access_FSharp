@@ -15,6 +15,7 @@ open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Role
 open FSharp.Data.Sql
+open System.Text.RegularExpressions
 
 
 
@@ -179,47 +180,60 @@ module Group =
     ///services
     
     
-    let isGroupMemberIsInGroupServiceMongoImplLocal  =
+    let isGroupMemberIsInGroupServiceLocalImpl  =
 
-        fun loadGroupMemberById  // Database dependency function
-            aGroup 
-            aMember -> 
-                
-            let aStandardGroup = aGroup |> DomainHelpers.unwrapToStandardGroup
+        fun aGroupToAddTo aGroupToAdd -> 
+
+            let unwrappedGroupToAddTo = aGroupToAddTo |> DomainHelpers.unwrapToStandardGroup
+            let unwrappedGroupToAdd = aGroupToAdd |> DomainHelpers.unwrapToStandardGroup
+            let groupsThatGroupToAddToIsMemberInList = unwrappedGroupToAddTo.GroupIAmMemberInRefs 
+            let groupsThatGroupToAddIsMemberInList = unwrappedGroupToAdd.GroupIAmMemberInRefs 
+
+            //check that the groupGroupMemberToAdd does not contains the GoupToAddto as a member aka group recursion
+            let rsIsGroupTangleRecursion = result {
+                let! groupMemberToAdd = (aGroupToAdd |> Group.toMemberOfTypeGroup')
+                let rsIsGroupTangleRecursion = groupsThatGroupToAddToIsMemberInList |> List.contains groupMemberToAdd
+                return rsIsGroupTangleRecursion
+                }
+            match rsIsGroupTangleRecursion with 
+            | Ok rsIsGroupTangleRecursion ->          
+                if rsIsGroupTangleRecursion then Error "Group Tangulature !"   
+                else 
+                    //Check that the groupMember is not already member
+                    let rsIsGroupToAddArealdyMember = result {
+                            let! groupMemberToAdd = aGroupToAdd |> Group.toMemberOfTypeGroup'
+                            let rsIsGroupToAddArealdyMember = unwrappedGroupToAddTo.Members |> List.contains groupMemberToAdd
+                            return rsIsGroupToAddArealdyMember
+                        }
+                    match rsIsGroupToAddArealdyMember with 
+                    | Ok rsIsGroupToAddArealdyMember ->
+                        if rsIsGroupToAddArealdyMember then Error "The group you are trying to add is already a member!" 
+                        else
+                            //check that the groupToAddTo is not already referenced in the group member we are trying to add
+                            let check1 = result {
+                                let! groupMemberToAddTo = aGroupToAddTo |> Group.toMemberOfTypeGroup'
+                                let check1 = groupsThatGroupToAddIsMemberInList |> List.contains groupMemberToAddTo                               
+                                return check1 
+                                }
+                            match check1 with 
+                            | Ok aCheck1 ->
+                                if aCheck1 then Error "The group you are trying to add is already a member!" 
+                                else Ok false
+                            | Error error ->
+                                Error error  
+                    | Error error ->                       
+                        Error error
+            | Error error ->
+                Error error
+
+           
 
 
                     
-            let rec InternalRecursiveIsGroupMemberIsInGroupService 
-                    (aMember : GroupMember) (loadGroupMemberById : LoadGroupMemberById) (aGroupMemberList : GroupMember list) =
-                                                             
-                    match aGroupMemberList with
-                    | [] -> 
-                        false
-                    | head::tail ->
-                        if (head.Type = GroupGroupMember) && (head = aMember) then true
-                        else if (head.Type = GroupGroupMember) && not (head = aMember) then
-                        
-                            let additionalGroupToSearch = loadGroupMemberById head.MemberId
-                       
-                            match additionalGroupToSearch with
-                            | Ok anAdditionalGroupToSearch ->
-
-                                let aStandardAdditionalGroupToSearch = 
-                                        anAdditionalGroupToSearch 
-                                        |> DomainHelpers.unwrapToStandardGroup                                        
-                                let newMembersToAppend = aStandardAdditionalGroupToSearch.Members
-                                let allMembers = tail @ newMembersToAppend
-                                let result = InternalRecursiveIsGroupMemberIsInGroupService aMember loadGroupMemberById allMembers
-
-                                result
-
-                            | Error _ -> false
-                        else   
-                            false 
+            
 
 
 
-            InternalRecursiveIsGroupMemberIsInGroupService  aMember  loadGroupMemberById   aStandardGroup.Members
 
 
 
@@ -284,19 +298,13 @@ module Group =
             isUserInNestedGroupServiceLocal loadGroupByGroupMemberIdGreyYoungEventStoreDependencyFunction
 
 
-    let isGroupMemberIsInGroupServiceMongoImpl: IsGroupMemberService = 
-            isGroupMemberIsInGroupServiceMongoImplLocal loadGroupByGroupMemberIdGreyYoungEventStoreDependencyFunction
-
-
-    let isGroupMemberIsInGroupServiceGreyYoungEventStoreImpl: IsGroupMemberService = 
-            isGroupMemberIsInGroupServiceMongoImplLocal loadGroupByIdGreyYoungEventStoreDependencyFunction
-
+   
 
 
     let groupMemberServices: GroupMemberServices = {
         TimeServiceWasCalled = DateTime.Now
         CallerCredentials = CallerCredential "FOTIO"
-        isGroupMember = isGroupMemberIsInGroupServiceMongoImpl
+        isGroupMember = isGroupMemberIsInGroupServiceLocalImpl
         isUserInNestedGroup = isUserInNestedGroupServiceLocal
         }
 

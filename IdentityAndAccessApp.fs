@@ -54,9 +54,13 @@ open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
 open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowImplementation
 open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.Dto
+open System.Collections
+open IdentityAndAcces.Infrstructure.Queue.Impl.Queue
+open IdentityAndAcces.Infrstructure.Queue.Impl
+open IdentityAndAccess.RabbitMQ.FSharp.Client
 
 
-
+open IdentityAndAcccess.ReastApi
 
 
 
@@ -104,6 +108,7 @@ let printEmptySeparatorLine(count) =
 
 
 
+
 let mutable diaspoGiftTenantId = ""
 let mutable diaspoGiftAdminUserId = ""
 let mutable diaspoGiftAdminRoleId = ""
@@ -121,7 +126,7 @@ let mutable diaspoGiftRoleIdForDeveloper = ""
 
 
 
-
+(*
 
 
 /// PROVISION THE DIASPO-GIFT TENANT
@@ -158,9 +163,9 @@ let provisionTenantCommand : ProvisionTenantCommand = {
 
 match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with  
 | Ok rs -> 
-        printEmptySeparatorLine(2)
+        printEmptySeparatorLine(1)
         printfn " THE PROVISIONING RESULT"
-        printEmptySeparatorLine(2)
+        printEmptySeparatorLine(1)
         printfn " %A" rs
         printEmptySeparatorLine(2)
         match rs.Head with 
@@ -178,6 +183,9 @@ match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with
                 printfn " diaspoGiftAdminUserId %A"   diaspoGiftAdminUserId   
                 printfn " diaspoGiftAdminRoleId %A"   diaspoGiftAdminRoleId   
 
+
+
+
         | _    ->
                printfn " Not interrested"                                      
 | Error error ->
@@ -190,15 +198,66 @@ match  provisionTenantCommand |> ProvisionTenant.handleProvisionTenant  with
 
 
 
+printEmptySeparatorLine(3)
+
+
+
+
+// JUNIOR_DEVELOPER Group
+let unvalidatedJuniorDeveloper:UnvalidatedGroup = {
+        TenantId = diaspoGiftTenantId;
+        Name = "JUNIOR_DEVELOPER"
+        Description = "Groupe comprenant tous les devellopeurs junior de la boite"    
+        Members = [||]
+        } 
+let provisionJuniorDeveloperGroupCommand : ProvisionGroupCommand = {
+        Data = unvalidatedJuniorDeveloper
+        TimeStamp = DateTime.Now
+        UserId = diaspoGiftAdminUserId
+        } 
+
+match  ProvisionGroupCommand.handleProvisionGroup provisionJuniorDeveloperGroupCommand with  
+| Ok rs -> 
+        printEmptySeparatorLine(1)
+        printfn " THE PROVISIONED JUNIOR DEVELOPER GROUP RESULT"
+        printEmptySeparatorLine(1)
+        printfn " %A" rs
+        printEmptySeparatorLine(2)
+
+        //let ugs = unwrapGroup rs.Group
+
+        diaspoGiftGroupIdForJuniorDeveloperGroup <- rs.GroupId
+
+
+       
+
+        printfn " diaspoGiftGroupIdForJuniorDeveloperGroup %A"   diaspoGiftGroupIdForJuniorDeveloperGroup   
+
+| Error error ->
+        printfn " %A" error 
+
+
+
+
 printEmptySeparatorLine(5)
 
 
+Queue.subscribe<string> Queue.Queue.GroupCreated (
+                        fun str -> 
+                                printfn "-----------IN subscribe ------------"
+                                printfn "-----------------------"
+                                printfn "-----------------------"
+                                printfn " = ----------- %A ------------= " str
+                                printfn "-----------------------"
+                                printfn "-----------------------"
+                                printfn "-----------IN subscribe ------------"
+                        )()
+
+
+Queue.enqueue Queue.Queue.GroupCreated "diaspoGiftGroupIdForJuniorDeveloperGroup"
 
 
 
-
-
-(*
 /// DEACTIVATE TENANT ACTIVATION STATUS
 
 let unvalidatedDeactivateDiaspoGiftTenant : UnvalidatedTenantActivationStatus = {
@@ -262,8 +321,7 @@ match  reactivateTenantActivationStatusCommand |> ReactivateTenantActivationStat
 
 printEmptySeparatorLine(5)
 
-*)
- 
+
 
  
 /// PROVOSION (DEVELOPER, JUNIOR_DEVELOPER, MID_DEVELOPER, SENIOR_DEVELOPER) GROUPS FOR DIASPO GIFT TENANT 
@@ -474,7 +532,7 @@ printEmptySeparatorLine(5)
 
 
 
-(*
+
 
 /// ADD MID_DEVELOPER GROUP TO THE DEVELOPER GROUP
 let unvalidatedGroupIds1:UnvalidatedGroupIds = {
@@ -512,7 +570,9 @@ printEmptySeparatorLine(5)
 
 
 
-
+printEmptySeparatorLine(2)
+printfn " MID DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP RESULT MUST FAILED"
+printEmptySeparatorLine(2)
 
 
 /// ADD MID_DEVELOPER GROUP TO THE DEVELOPER GROUP
@@ -734,7 +794,8 @@ match  AddGroupToGroupCommand.handleAddGroupToGroup addSeniorDeveloperGroupToAny
 [<EntryPoint>]
 let main argv =
 
-   //startWebServer defaultConfig (OK "hello")
+   //Queue.loop 0
+   startWebServer defaultConfig Rest.app
    0
 
 

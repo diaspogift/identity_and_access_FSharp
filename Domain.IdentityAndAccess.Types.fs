@@ -267,7 +267,7 @@ module Group =
         | UserGroupMember
         | GroupGroupMember
 
-
+    
     type GroupMember = {
         MemberId: GroupMemberId
         TenantId: TenantId
@@ -282,6 +282,7 @@ module Group =
         Name: GroupName
         Description: GroupDescription
         Members: GroupMember list
+        GroupIAmMemberInRefs : GroupMember list
         }
 
 

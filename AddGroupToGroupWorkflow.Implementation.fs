@@ -68,7 +68,7 @@ type CreateEvents = Group.Group * Group.GroupMember -> GroupAddedToGroupEvent
 ///Step1 adds user to group impl
 
 //Dependencies 
-let isGroupMemberService = Group.isGroupMemberIsInGroupServiceGreyYoungEventStoreImpl
+let isGroupMemberService = Group.isGroupMemberIsInGroupServiceLocalImpl
 
 
 
