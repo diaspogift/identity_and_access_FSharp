@@ -16,7 +16,6 @@
     <Compile Include="SerializationPlayGround.fs" />
     <Compile Include="EventStorePlayGround.Implementation.fs" />
     <Compile Include="Domain.Services.Implementation.fs" />
-    <Compile Include="Test.fsx" />
     <Compile Include="Infrastrure.Services.Implementation.fs" />
     <Compile Include="ProvisionTenant.PublicTypes.fs" />
     <Compile Include="ProvisionTenantWorflow.Implementation.fs" />
@@ -42,6 +41,7 @@
     <Compile Include="Queues.fs" />
     <Compile Include="IdentityAndAccessApp.RestApi.fs" />
     <Compile Include="Queue.RabbitMq.Implementation.fs" />
+    <Compile Include="ProvisionTenant.Dto.fs"/>
     <Compile Include="IdentityAndAccessApp.fs" />
     
   </ItemGroup>

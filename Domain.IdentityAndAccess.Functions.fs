@@ -732,28 +732,9 @@ module Tenant =
 
 
 
-    let registerUserForTenant
-        (aTenant:Tenant)
-        (anInvitationId:RegistrationInvitationId)
-        (aUSerName:Username)
-        (aPassword:Password)
-        (anEnablement:Enablement)
-
-        (anEmailAddress:EmailAddress)
-        (aPostalAddress:PostalAddress)
-        (aPrimaryTel:Telephone)
-        (aSecondaryTel:Telephone)
-
-        (aFirstName:FirstName)
-        (aMiddleNAme:MiddleName)
-        (aLastName:LastName)
-
-
-        : Result<User,string> =
-
-
-
-               
+    let registerUserForTenant (aTenant:Tenant) (anInvitationId:RegistrationInvitationId) (aUSerName:Username) (aPassword:Password)
+        (anEnablement:Enablement) (anEmailAddress:EmailAddress) (aPostalAddress:PostalAddress) (aPrimaryTel:Telephone) 
+        (aSecondaryTel:Telephone) (aFirstName:FirstName) (aMiddleNAme:MiddleName)(aLastName:LastName) :Result<User,string> =
 
         match aTenant.ActivationStatus with 
         | Activated ->
@@ -761,33 +742,31 @@ module Tenant =
             match (isRegistrationInvitationAvailableThrough aTenant anInvitationId) with 
             | true ->
 
-                    let rsCreateUser = result{
-
-
-                        let contactInfo = ContactInformation.fullCreate anEmailAddress aPostalAddress aPrimaryTel aSecondaryTel
-                        let strUseId = generateNoEscapeId()
-                        let! userId = UserId.create' strUseId
-                        let fullName = {First = aFirstName; Middle =  aMiddleNAme; Last = aLastName}
-
-                        let person = {Contact = contactInfo; Name = fullName; Tenant = aTenant.TenantId; User = userId}
-
-
-                        ///TODO make sure I build a constructor in the way that they will always be consistency between the userid in user and person
-                        let user = {UserId = userId; TenantId = aTenant.TenantId; Username = aUSerName; Password = aPassword; Enablement = anEnablement; Person = person}
-
-                        return user
+                let rsCreateUser = result{
+                    let contactInfo = ContactInformation.fullCreate anEmailAddress aPostalAddress aPrimaryTel aSecondaryTel
+                    let strUseId = generateNoEscapeId()
+                    let! userId = UserId.create' strUseId
+                    let fullName = {First = aFirstName; Middle =  aMiddleNAme; Last = aLastName}
+                    let person = {Contact = contactInfo; Name = fullName; Tenant = aTenant.TenantId; User = userId}
+                    ///TODO make sure I build a constructor in the way that they will always be consistency between the userid in user and person
+                    let user = {
+                        UserId = userId 
+                        TenantId = aTenant.TenantId 
+                        Username = aUSerName 
+                        Password = aPassword 
+                        Enablement = anEnablement
+                        Person = person
+                        }
+                    return user
                     }
-
-                    match rsCreateUser with 
-                    | Ok user -> 
-                        Ok user
-                    | Error error -> 
-                        let msg = sprintf "Error occurred"
-                        Error error
+                match rsCreateUser with 
+                | Ok user -> 
+                    Ok user
+                | Error error -> 
+                    Error error
             | false ->
-                let msg = sprintf "Registration expired/not available "
-                Error msg
-            
+                let msg = sprintf "Registration expired/notavailable "
+                Error msg   
         | Deactivated ->
             let msg = sprintf "Tenant deactivated"
             Error msg
@@ -796,26 +775,40 @@ module Tenant =
 
 
 
-    let withdrawRegistrationInvitation 
-        (aTenant:Tenant)
-        (aRegistrationInvitationId:RegistrationInvitationId)
-        :Result<Tenant * RegistrationInvitation, string> =
+    let withdrawRegistrationInvitation (aTenant:Tenant) (invitation:RegistrationInvitationId) :Result<Tenant * RegistrationInvitation, string> =
+
+        printfn "TENANT: === "
+        printfn "TENANT: === "
+        printfn "TENANT: === %A" aTenant
+        printfn "INVITATION TO REMOVE: === " 
+        printfn "INVITATION TO REMOVE: === " 
+        printfn "INVITATION TO REMOVE: === %A" invitation
+
 
         let optionalInvitationToWithdraw = 
-                                    aTenant.RegistrationInvitations 
-                                    |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId = aRegistrationInvitationId )
-                                    |> List.first
+            aTenant.RegistrationInvitations 
+            |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId = invitation )
+            |> List.first
+
+        printfn "INVITATION TO REMOVE FOUND: === " 
+        printfn "INVITATION TO REMOVE FOUND: === " 
+        printfn "INVITATION TO REMOVE FOUND: === %A" optionalInvitationToWithdraw
 
         match optionalInvitationToWithdraw with 
-         | Some reg -> 
+        | Some reg -> 
 
-            let otherInvitations = aTenant.RegistrationInvitations 
-                                    |> List.filter (fun nextInvitation -> not (nextInvitation.RegistrationInvitationId = aRegistrationInvitationId) )
-            
+            let otherInvitations = 
+                aTenant.RegistrationInvitations 
+                |> List.filter (fun nextInvitation -> not (nextInvitation.RegistrationInvitationId = invitation) )
+
+            printfn "otherInvitations: === " 
+            printfn "otherInvitations: === " 
+            printfn "otherInvitations: === %A" otherInvitations
+                    
             Ok ({aTenant with RegistrationInvitations = otherInvitations }, reg)
 
          | None ->
-            let msg = sprintf "No registration invitation found for identifier: %A" aRegistrationInvitationId
+            let msg = sprintf "No registration invitation found for identifier: %A" invitation
             Error msg
 
 

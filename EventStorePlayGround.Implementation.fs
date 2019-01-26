@@ -226,18 +226,28 @@ module EventStorePlayGround =
 
         match anEvent with 
         | TenantStreamEvent.TenantCreated t ->
+
             t.Tenant
+
         | TenantStreamEvent.ActivationStatusDeActivated statusAndreason ->
+
             { aTenant with ActivationStatus = statusAndreason.Status }
              
         | TenantStreamEvent.ActivationStatusReActivated statusAndreason ->
+
              { aTenant with ActivationStatus = statusAndreason.Status }
 
         | TenantStreamEvent.InvitationOfferred  offerredInvitation ->  
+
             { aTenant with  RegistrationInvitations = aTenant.RegistrationInvitations @ List.singleton offerredInvitation.OfferredInvitation }
 
-        | TenantStreamEvent.InvitationWithdrawn  withdrawnInvitation ->  
-            { aTenant with  RegistrationInvitations = aTenant.RegistrationInvitations @ List.singleton withdrawnInvitation.WithdrawnInvitation }
+        | TenantStreamEvent.InvitationWithdrawn  withdrawnInvitation ->
+
+            let newInvitationList = 
+                aTenant.RegistrationInvitations 
+                |> List.filter (fun reginv -> 
+                    not (reginv.RegistrationInvitationId = withdrawnInvitation.WithdrawnInvitation.RegistrationInvitationId))
+            { aTenant with  RegistrationInvitations = newInvitationList }
 
             
             

@@ -188,6 +188,121 @@ module ProvisionTenant =
 
 
 
+
+
+
+
+
+
+
+    let allTenantAggregateDtoEvents 
+
+        (tenantProvisionedEventLis) 
+        : (string * TenantStreamEvent array * string * RoleStreamEvent array * string * UserStreamEvent array) = 
+
+        let mutable tenantEventList = Array.Empty()
+        let mutable userEventList = Array.Empty()
+        let mutable roleEventList = Array.Empty()
+        let mutable tenantId = ""
+        let mutable roleId = ""
+        let mutable userId = ""
+       
+
+        tenantProvisionedEventLis
+        |> List.map (
+            
+            fun event -> 
+                match event with
+                | TenantProvisionedEvent.TenantProvisionCreated aTenantProvisionCreated ->  
+
+                    let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned |> Dto.Tenant.fromDomain
+                    let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> Dto.Role.fromDomain
+                    let userRegistered = aTenantProvisionCreated.UserRegistered |> Dto.User.fromDomain
+
+                    tenantId <-   tenantProvisioned.TenantId
+                    roleId <-  roleProvisioned.RoleId
+                    userId <-  userRegistered.UserId
+
+                    let tc : Dto.TenantCreated = {
+                            TenantId = tenantProvisioned.TenantId
+                            Tenant  = tenantProvisioned
+                            }
+                    
+                    let tenantCreatedEvent = tc |> TenantStreamEvent.TenantCreated 
+                    let tenantCreatedEventL = tenantCreatedEvent |> List.singleton |> List.toArray
+
+
+                    tenantEventList <- Array.append tenantEventList tenantCreatedEventL
+           
+
+                    let roleCreatedEvent = roleProvisioned |> RoleCreated 
+                    let roleCreatedEventL = [roleCreatedEvent] |> List.toArray
+
+
+                    roleEventList <- Array.append roleEventList roleCreatedEventL
+
+
+                    let userRegisteredEvent = userRegistered |> UserRegistered
+                    let userRegisteredEventL = [userRegisteredEvent] |> List.toArray
+
+      
+                    userEventList <- Array.append userEventList userRegisteredEventL
+
+
+                | TenantProvisionedEvent.InvitationOffered invitaton ->
+
+                        let invitationOffered : Dto.OfferredRegistrationInvitation  = { 
+                            TenantId = invitaton.TenantId  
+                            OfferredInvitation = invitaton.Invitation
+                        }
+
+                        let invitationOfferedEvent = TenantStreamEvent.InvitationOfferred  invitationOffered
+                        let invitationOfferedEventL = [invitationOfferedEvent] |> List.toArray
+
+                        tenantEventList <- Array.append tenantEventList invitationOfferedEventL
+
+                | TenantProvisionedEvent.InvitationWithdrawn invitation ->
+                      
+                        let registrationInvitationWithdrawnedDto : Dto.WithnrawnRegistrationInvitation  = {   
+                            TenantId = invitation.TenantId
+                            WithdrawnInvitation = invitation.Invitation
+                            }
+
+                        let invitationWithdrawn = TenantStreamEvent.InvitationWithdrawn registrationInvitationWithdrawnedDto
+                        let invitationWithdrawnL = [invitationWithdrawn] |> List.toArray
+
+                        tenantEventList <- Array.append tenantEventList invitationWithdrawnL
+                   
+                | ProvisionAcknowledgementSent aProvisionAcknowledgementSent ->
+
+                    printfn "aProvisionAcknowledgementSent = %A " aProvisionAcknowledgementSent
+
+        )|>ignore
+
+
+        let tId:string = tenantId
+        let rId:string = roleId
+        let uId:string = userId
+               
+
+        (tId, tenantEventList , rId, roleEventList , uId, userEventList)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     let handleProvisionTenant (aCommand:ProvisionTenantCommand) = 
 
         let data = aCommand.Data
@@ -240,7 +355,7 @@ module OfferRegistrationInvitationCommand =
 
         let aCommandData = aCommad.Data
 
-        let unvalidatedRegistrationInvitationDescription = {
+        let unvalidatedRegistrationInvitationDescription:UnvalidatedRegistrationInvitationDescription = {
             TenantId = aCommandData.TenantId
             Description =  aCommandData.Description 
             }

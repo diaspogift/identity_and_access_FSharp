@@ -89,100 +89,47 @@ type SaveTenanProvision = Provision -> unit
 ///Step 1 validate tenant provision impl
 let validateProvision : ValidateTenantProvision =
 
-
-
     fun aUnvalidatedTenantProvision ->
-
         printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
-        printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
-        printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
-
-
         result {
-
             let! name = 
-
                 aUnvalidatedTenantProvision.TenantInfo.Name 
                 |> TenantName.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
-
-
-
             let! description = 
-
                 aUnvalidatedTenantProvision.TenantInfo.Description 
                 |> TenantDescription.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
-
-
-
             let! first = 
-
                 aUnvalidatedTenantProvision.AdminUserInfo.FirstName 
                 |> FirstName.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
-
-
-
-
-
             let! middle = 
-
                 aUnvalidatedTenantProvision.AdminUserInfo.MiddleName 
                 |> MiddleName.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
-
-
-
-
             let! last = 
-
                 aUnvalidatedTenantProvision.AdminUserInfo.LastName 
                 |> LastName.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
-
-
-
-
             let! email = 
-            
                 aUnvalidatedTenantProvision.AdminUserInfo.Email 
                 |> EmailAddress.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
-
-
-
-
             let! address = 
-
                 aUnvalidatedTenantProvision.AdminUserInfo.Address 
                 |> PostalAddress.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
-
-
-
-
             let! primePhone = 
-            
                 aUnvalidatedTenantProvision.AdminUserInfo.PrimPhone 
                 |> Telephone.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
-
-
-
-
             let! secondPhone = 
-            
                 aUnvalidatedTenantProvision.AdminUserInfo.SecondPhone 
                 |> Telephone.create' 
                 |> Result.mapError ProvisionTenantError.ValidationError
 
-
-
-
-
             let validTenantProvision = {
-
                 TenanName = name
                 TenantDescription = description
                 TenantAdministratorFirsTName = first
@@ -192,14 +139,11 @@ let validateProvision : ValidateTenantProvision =
                 AdministratorAddress = address
                 AdministratorPrimTel = primePhone
                 AdministratorSecondTel = secondPhone
-    
-            }
-
+                }
 
             return validTenantProvision
 
-
-        }
+            }
 
 
 
@@ -210,115 +154,45 @@ let provision : ProvisionTenant =
 
     fun  validatedProvision ->
         provisionTenantServiceImpl' validatedProvision.TenanName validatedProvision.TenantDescription validatedProvision.TenantAdministratorFirsTName  
-                                                    validatedProvision.AdministratorMiddleName validatedProvision.AdministratorLastName validatedProvision.AdministratorEmail 
-                                                    validatedProvision.AdministratorAddress validatedProvision.AdministratorPrimTel validatedProvision.AdministratorSecondTel
-        |> Result.mapError (ProvisionTenantError.ProvisioningError)
+            validatedProvision.AdministratorMiddleName validatedProvision.AdministratorLastName validatedProvision.AdministratorEmail 
+                validatedProvision.AdministratorAddress validatedProvision.AdministratorPrimTel validatedProvision.AdministratorSecondTel
+                |> Result.mapError (ProvisionTenantError.ProvisioningError)
 
 
         
-
-///Step3 persist the provision data Tenant, Administrator User and Adminitrative Role 
-
-let saveProvisionInfoLocal 
-    (saveOneTenant:SaveOneTenant)
-    (saveOneUser:SaveOneUser)
-    (saveOneRole:SaveOneRole)
-    (aProvision:Provision) = 
-
-
-    let tenant, user, role =  aProvision
-
-
-
-    let rsSaveOneTenant = 
-        tenant 
-        |> saveOneTenant 
-        |> Result.mapError ProvisionTenantError.DbError
-
-    let rsSaveOneRole = 
-        role 
-        |> saveOneRole    
-        |> Result.mapError ProvisionTenantError.DbError 
-
-    let rsSaveOneUser = 
-        user 
-        |> saveOneUser 
-        |> Result.mapError ProvisionTenantError.DbError
-
-    match rsSaveOneTenant with  
-    | Ok () -> 
-        match rsSaveOneRole with  
-        | Ok () -> 
-             match rsSaveOneUser with  
-             | Ok () -> 
-                Ok aProvision
-             | Error error ->
-                Error error
-        | Error error ->
-            Error error
-    | Error error ->
-        Error error
-
-
-    
-
-let saveProvisionInfo = saveProvisionInfoLocal saveOneTenant saveOneUser saveOneRole
-        
-
-
-        
-
-
-
-
-
-
 
 ///Step4 create events impl
 let createEvents : CreateEvents = 
 
     fun aProvision ->
-
         let tenant, user, role, invs =  aProvision
-
         let tenantProvisionCreatedEvent = {
             TenantProvisioned = tenant
             RoleProvisioned = role
             UserRegistered = user
-        }
-
-
+            }
         let tenantProvisionedEvent = TenantProvisionCreated tenantProvisionCreatedEvent
-
-
-
         let listOfOfferedRegInv = 
             invs
-            |> List.map (
-                
-                fun aDomainRegInv -> 
+            |> List.map (  
 
+                fun aDomainRegInv -> 
                     let regInvDto = aDomainRegInv |> Dto.RegistrationInvitation.fromDomain 
                     let invOfferred : InvitationOffered = {TenantId = tenant.TenantId |> TenantId.value ; Invitation = regInvDto}
-            
                     invOfferred 
-                    |> TenantProvisionedEvent.InvitationOffered)
-                    
+                    |> TenantProvisionedEvent.InvitationOffered
+                    )
 
         let listOfWithdrawnRegInv = 
             invs
             |> List.map (
                 
                 fun aDomainWithdrawnRegInv -> 
-
                     let regInvDto = aDomainWithdrawnRegInv |> Dto.RegistrationInvitation.fromDomain 
                     let invitationWithdrawn : InvitationWithdrawn = {TenantId = tenant.TenantId |> TenantId.value ; Invitation = regInvDto}
-            
                     invitationWithdrawn 
                     |> TenantProvisionedEvent.InvitationWithdrawn)
         
-        
-
         let r = List.append [tenantProvisionedEvent]  listOfOfferedRegInv  
         
         List.append r listOfWithdrawnRegInv
