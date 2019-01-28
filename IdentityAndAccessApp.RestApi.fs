@@ -25,6 +25,7 @@ open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
+open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 
 
 
@@ -141,17 +142,17 @@ module Rest =
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)
 
-            path "/add-user-to-group" 
+            (* path "/add-user-to-group" 
                 >=> request (getResourceFromReq<UnvalidatedRole> 
                 >> Command.ProvisionRole.toCommand
                 >> Command.ProvisionRole.handle
                 >> workflowResultToHttpReponse
-                >> toJsonWebPart)             
+                >> toJsonWebPart)  *)            
                    
             path "/add-group-to-group" 
-                >=> request (getResourceFromReq<UnvalidatedRole> 
-                >> Command.ProvisionRole.toCommand
-                >> Command.ProvisionRole.handle
+                >=> request (getResourceFromReq<UnvalidatedGroupIds> 
+                >> Command.AddGroupToGroup.toCommand
+                >> Command.AddGroupToGroup.handle
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)             
                    ]

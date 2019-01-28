@@ -21,7 +21,7 @@ open System
 module Events =
 
 
-
+    
 
 
     ///Useful types
@@ -30,13 +30,11 @@ module Events =
     /// 
     /// 
     /// 
-    type DomainEvent<'EventData> = {
-
+    type Event<'Data, 'Type> = {
         EventVersion : int
         OccurredOn : DateTime
-        Data : 'EventData
-
-    }
+        Data : 'Data
+        }
 
 
 
@@ -122,9 +120,9 @@ module User =
 
     type ContactInformationChanged = 
 
-        DomainEvent<ContactInformationChangedEventData>
+        Event<ContactInformationChangedData>
 
-    and ContactInformationChangedEventData = {
+    and ContactInformationChangedData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -143,15 +141,11 @@ module User =
         }
 
 
-    
-
-
-
     type PersonalNameChanged = 
 
-        DomainEvent<PersonalNameChangedEventData>
+        Event<PersonalNameChangedData>
 
-    and PersonalNameChangedEventData = {
+    and PersonalNameChangedData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -170,6 +164,15 @@ module User =
         Person: Person
         }
 
+    type UserRegisteredChangedEventData = {
+        UserId: string
+        TenantId: string
+        Username: string
+        Password: string
+        Enablement: string
+        Person: string
+        BirthDate : string
+        }
 
 
     type RoleDescriptor = {
@@ -193,7 +196,7 @@ module User =
 
     type UserEnablementChanged =
 
-            DomainEvent<UserEnablementChangedEventData>
+            Event<UserEnablementChangedEventData>
 
     and UserEnablementChangedEventData = {
         EventVersion: int
@@ -211,7 +214,7 @@ module User =
 
     type UserPasswordChanged = 
 
-            DomainEvent<UserPasswordChangedEventData>
+            Event<UserPasswordChangedEventData>
 
     and UserPasswordChangedEventData = {
         EventVersion: int
@@ -226,11 +229,11 @@ module User =
  
 
 
-    type UserRegisteredChanged = 
+    type UserRegistered = 
 
-        DomainEvent<UserRegisteredChangedEventData>
+        Event<UserRegisteredData>
 
-    and UserRegisteredChangedEventData = {
+    and UserRegisteredData = {
         EventVersion: int
         OccurredOn : DateTime
         TenantId: string
@@ -294,46 +297,9 @@ module Group =
 
 
      
-
-
-
-    type GroupGroupAdded = 
-
-            DomainEvent<GroupGroupAddedEventData>
-
-    and GroupGroupAddedEventData = {
-
-        GroupId: string
-        NestedGroupId: string
-        TenantId: string
-
-    }
-
-    
-
-
-
-    type GroupGroupRemoved = 
-
-        DomainEvent<GroupGroupRemovedEventData>
-    
-    and GroupGroupRemovedEventData = {
-
-        GroupId: string
-        RemovedGroupId: string
-        TenantId: string
-
-    }
-
-
-
-
- 
-
-
     type GroupProvisioned = 
 
-        DomainEvent<GroupProvisionedEventData>
+        Event<GroupProvisionedEventData>
 
     and GroupProvisionedEventData = {
         GroupId : string
@@ -342,27 +308,43 @@ module Group =
         }
 
 
+    type GroupGroupAdded = 
+
+        Event<GroupGroupAddedData>
+
+    and GroupGroupAddedData = {
+
+        GroupId: string
+        NestedGroupId: string
+        TenantId: string
+
+    }
+
+    type GroupGroupInAdded = 
+
+        Event<GroupGroupInAddedData>
+
+    and GroupGroupInAddedData = {
+
+        GroupId: string
+        NestedGroupId: string
+        TenantId: string
+
+    }  
 
 
-    type GroupIdOrGroupMemberId = 
-        | GroupId of GroupId
-        | GroupMemberId of GroupMemberId
 
+    type GroupGroupRemoved = 
 
+        Event<GroupGroupRemovedData>
+    
+    and GroupGroupRemovedData = {
 
-    ///Temporary types should there be here? let alone should they have been created?
-    type GroupMemberDtoTemp = {
-        MemberId : string
-        TenantId : string
-        Name : string
-        Type : string
-        }
+        GroupId: string
+        RemovedGroupId: string
+        TenantId: string
 
-
-
-
-
-
+    }
 
 
 
@@ -411,16 +393,12 @@ module Role =
 
 
 
-    
-
-
-
 
     type RoleProvisioned = 
 
-        DomainEvent<RoleProvisionedEventData>
+        Event<RoleProvisionedData>
 
-    and RoleProvisionedEventData = {
+    and RoleProvisionedData = {
         RoleId : string
         TenantId : string;
     }
@@ -429,7 +407,7 @@ module Role =
 
     type GroupAssignedToRole = 
 
-        DomainEvent<GroupAssignedToRoleEventData>
+        Event<GroupAssignedToRoleEventData>
 
     and GroupAssignedToRoleEventData = {
         GroupId : string
@@ -442,7 +420,7 @@ module Role =
 
     type GroupUnAssignedToRole = 
 
-        DomainEvent<GroupUnAssignedToRoleEventData>
+        Event<GroupUnAssignedToRoleEventData>
 
     and GroupUnAssignedToRoleEventData = {
         GroupId : string
@@ -456,7 +434,7 @@ module Role =
 
     type UserAssignedToRole = 
 
-        DomainEvent<UserAssignedToRoleEventData>
+        Event<UserAssignedToRoleEventData>
 
     and UserAssignedToRoleEventData = {
         GroupId : string
@@ -469,7 +447,7 @@ module Role =
 
     type UserUnAssignedToRole = 
 
-        DomainEvent<UserUnAssignedToRoleEventData>
+        Event<UserUnAssignedToRoleEventData>
 
     and UserUnAssignedToRoleEventData = {
         GroupId : string
@@ -527,13 +505,19 @@ module Tenant =
         }
 
 
- 
+    type TenantProvisioned = 
+        Event<TenantProvisionedData>
+    and TenantProvisionedData = {
+        TenantId : string; 
+        GroupId : string
+        RoleId : string
+    }
 
 
 
     type TenantActivationStatusActivated = 
 
-        DomainEvent<TenantActivationStatusActivatedEventData>
+        Event<TenantActivationStatusActivatedEventData>
 
     and TenantActivationStatusActivatedEventData = {
         TenantId : TenantId
@@ -550,7 +534,7 @@ module Tenant =
 
     type TenantActivationStatusDiactivated = 
 
-        DomainEvent<TenantActivationStatusDiactivatedEventData>
+        Event<TenantActivationStatusDiactivatedEventData>
 
     and TenantActivationStatusDiactivatedEventData = {
         TenantId : TenantId
@@ -563,7 +547,7 @@ module Tenant =
 
     type TenantAdministratorRegistered = 
 
-        DomainEvent<TenantAdministratorRegisteredEventData>
+        Event<TenantAdministratorRegisteredEventData>
 
     and TenantAdministratorRegisteredEventData = {
         TenantId : string
@@ -577,16 +561,6 @@ module Tenant =
 
 
 
-
-
-    type TenantProvisioned = 
-        
-        DomainEvent<TenantProvisionedEventData> 
-    
-    and TenantProvisionedEventData = {
-        TenantId : string
-        }
-      
 
 
 

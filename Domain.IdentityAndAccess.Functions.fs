@@ -26,6 +26,7 @@ open IdentityAndAcccess.DomainTypes.Group
 
 
 
+
 /// To be moved to common the namespace
 
 let preppend  firstR restR = 
@@ -74,8 +75,8 @@ let rec remove i l =
 module DomainHelpers =
     let unwrapToStandardGroup aGroupToAddToUnwrapp = 
         match aGroupToAddToUnwrapp with 
-            | Standard aStandardGroup -> aStandardGroup
-            | Internal anInternalGroup -> anInternalGroup
+        | Standard aStandardGroup -> aStandardGroup
+        | Internal anInternalGroup -> anInternalGroup
 
 
 ///Services that act on domain types
@@ -738,7 +739,7 @@ module Tenant =
                     let fullName = {First = aFirstName; Middle =  aMiddleNAme; Last = aLastName}
                     let person = {Contact = contactInfo; Name = fullName; Tenant = aTenant.TenantId; User = userId}
                     ///TODO make sure I build a constructor in the way that they will always be consistency between the userid in user and person
-                    let user = {
+                    let user:User = {
                         UserId = userId 
                         TenantId = aTenant.TenantId 
                         Username = aUSerName 
@@ -849,43 +850,7 @@ module Tenant =
 
 module User = 
 
-    let create id tenantId first middle last email address primaryPhone secondaryPhone username password = 
-        
-        let userConstruct = result {
-
-            let! ids = UserId.create "userId: " id
-            let! tenantIds = TenantId.create "tenantId: " tenantId
-            let! middleNames = MiddleName.create "middleName" middle
-            let! firstNames = FirstName.create "FirstName" first
-            let! lastNames = LastName.create "lastName" last
-            let! emails = EmailAddress.create "email" email
-            let! address = PostalAddress.create "address" address
-            let! primaryPhone  = Telephone.create "primaryPhone" primaryPhone
-            let! secondaryPhone  = Telephone.create "secondaryPhone" secondaryPhone
-            let! username  = Username.create "username" username
-            let! password  = Password.create "password" password
-
-            let name = {First = firstNames; Middle =  middleNames; Last = lastNames}
-            let contactInfo = {Email = emails; Address = address; PrimaryTel = primaryPhone; SecondaryTel = secondaryPhone}
-            let person = {Contact = contactInfo; Name = name; Tenant = tenantIds; User = ids}
-            let enablement = {EnablementStatus = EnablementStatus.Enabled; StartDate = DateTime.Now; EndDate = DateTime.Now}
-               
- 
-            return {
-               UserId = ids
-               TenantId = tenantIds
-               Username = username
-               Password = password
-               Enablement = enablement
-               Person = person
-               }
-        }
-
-        userConstruct
-
-
-
-
+    
 
 
     let changePassWord aUser aCurrentGivenPassword aNewGivenPassword = 
@@ -900,7 +865,7 @@ module User =
 
 
 
-    let changePersonalContactInformation aUser aContactInformation = 
+    let changePersonalContactInformation (aUser:User) (aContactInformation:ContactInformation) = 
         let personWithNewContact = {aUser.Person with Contact = aContactInformation}
         {aUser with Person = personWithNewContact}
 
@@ -909,7 +874,7 @@ module User =
 
 
 
-    let changePersonalName aUser aFullName = 
+    let changePersonalName (aUser:User) (aFullName:FullName) = 
         let personWithNewName = {aUser.Person with Name = aFullName}
         {aUser with Person = personWithNewName}
 
@@ -918,7 +883,7 @@ module User =
 
 
 
-    let defineEnablement aUser anEnablement = 
+    let defineEnablement (aUser:User) anEnablement = 
         let userWithNewEnablement = {aUser with Enablement = anEnablement}
         userWithNewEnablement
 
@@ -927,7 +892,7 @@ module User =
 
 
 
-    let isEnabled aUser  = 
+    let isEnabled (aUser:User)  = 
         match aUser.Enablement.EnablementStatus with  
         | Enabled -> true
         | Disabled -> false
@@ -937,7 +902,7 @@ module User =
 
 
 
-    let isDisabled aUser  = 
+    let isDisabled (aUser:User)   = 
         match aUser.Enablement.EnablementStatus with  
         | Enabled -> false
         | Disabled -> true
@@ -1156,38 +1121,6 @@ module GroupMembers =
 
 
 
-    ///Dependency function for the create one                    
-    let transformGroupMemberDtoTo (nextGroupMemberDtoTemp:GroupMemberDtoTemp):Result<GroupMember,string> =
-        
-       let rsTransfromation = result {
-
-          let! tenantId = TenantId.create' nextGroupMemberDtoTemp.TenantId
-          let! name = GroupMemberName.create' nextGroupMemberDtoTemp.Name
-          let! memberId = GroupMemberId.create' nextGroupMemberDtoTemp.MemberId
-
-          let rsGroupMember:GroupMember =  {
-              MemberId = memberId
-              TenantId = tenantId
-              Name = name
-              Type = GroupGroupMember
-              }  
-        
-        return rsGroupMember
-
-       }
-       rsTransfromation
-
-
-
-    let create fieldName (groupMemberDtoTempList:GroupMemberDtoTemp list) =  
-        groupMemberDtoTempList
-        |> List.map transformGroupMemberDtoTo
-        |> ResultOfSequenceTemp
-
-
-    let create' = create "GroupMembers : "
-
-
 
 
 
@@ -1320,31 +1253,6 @@ module Group =
 
     let toMemberOfTypeGroup =  toMemberOfTypeGroupLocal  GroupMemberType.GroupGroupMember
     let toMemberOfTypeUser' =  toMemberOfTypeUser  GroupMemberType.UserGroupMember
-
-    let create id tenantId name description members = 
-        
-        let rsCreateGroup = result {
-
-            let! groupId = id |> GroupId.create'  
-            let! tenantId' = tenantId |> TenantId.create'
-            let! name' = name |> GroupName.create'
-            let! description' = description |> GroupDescription.create' 
-            let! members = members |> GroupMembers.create'
-          
-
-            return Standard {
-               GroupId = groupId
-               TenantId = tenantId'
-               Name = name'
-               Description = description'
-               Members = members
-               MemberIn = []
-            }
-        }
-
-        rsCreateGroup
-
-
 
 
     let createFull (members : GroupMember list) (groupId:GroupId) (tenantId:TenantId) (name:GroupName) (description:GroupDescription)  = 
@@ -1850,7 +1758,7 @@ module Role =
                 let! userToGroupMember = aUser |> User.toUserGroupMember
                 let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup        
                 let foundGrouMember = roleInternalGroup.Members |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
-                return foundGrouMember, userToGroupMember
+                return (foundGrouMember, userToGroupMember)
                 }
             match rsGroupMember with 
             | Ok optionGmAndUser->
@@ -1933,7 +1841,7 @@ module Dto =
         }      
 
     type ContactInformationChanged = 
-        DomainEvent<ContactInformationChangedEventData>
+        Event<ContactInformationChangedEventData>
     and ContactInformationChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
@@ -1952,7 +1860,7 @@ module Dto =
         }
 
     type PersonalNameChanged = 
-        DomainEvent<PersonalNameChangedEventData>
+        Event<PersonalNameChangedEventData>
     and PersonalNameChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
@@ -1986,7 +1894,7 @@ module Dto =
         }
 
     type UserEnablementChanged =
-            DomainEvent<UserEnablementChangedEventData>
+            Event<UserEnablementChangedEventData>
     and UserEnablementChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
@@ -1995,7 +1903,7 @@ module Dto =
         }
 
     type UserPasswordChanged = 
-            DomainEvent<UserPasswordChangedEventData>
+            Event<UserPasswordChangedEventData>
     and UserPasswordChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
@@ -2004,7 +1912,7 @@ module Dto =
         }
 
     type UserRegisteredChanged = 
-        DomainEvent<UserRegisteredChangedEventData>
+        Event<UserRegisteredChangedEventData>
     and UserRegisteredChangedEventData = {
         EventVersion: int
         OccurredOn : DateTime
@@ -2073,7 +1981,7 @@ module Dto =
     }
 
     type GroupGroupAdded = 
-            DomainEvent<GroupGroupAddedEventData>
+            Event<GroupGroupAddedEventData>
     and GroupGroupAddedEventData = {
         GroupId: string
         NestedGroupId: string
@@ -2081,14 +1989,14 @@ module Dto =
         }
 
     type GroupGroupRemoved = 
-        DomainEvent<GroupGroupRemovedEventData>    
+        Event<GroupGroupRemovedEventData>    
     and GroupGroupRemovedEventData = {
         GroupId: string
         RemovedGroupId: string
         TenantId: string
         }
     type GroupProvisioned = 
-        DomainEvent<GroupProvisionedEventData>
+        Event<GroupProvisionedEventData>
     and GroupProvisionedEventData = {
         GroupId : string
         TenantId :string
@@ -2137,7 +2045,7 @@ module Dto =
         }
         
     type RoleProvisioned = 
-        DomainEvent<RoleProvisionedEventData>
+        Event<RoleProvisionedEventData>
     and RoleProvisionedEventData = {
         RoleId : string
         TenantId : string
@@ -2146,7 +2054,7 @@ module Dto =
 
 
     type GroupAssignedToRole = 
-        DomainEvent<GroupAssignedToRoleEventData>
+        Event<GroupAssignedToRoleEventData>
     and GroupAssignedToRoleEventData = {
         GroupId : string
         RoleId : string
@@ -2154,7 +2062,7 @@ module Dto =
         }
 
     type GroupUnAssignedToRole = 
-        DomainEvent<GroupUnAssignedToRoleEventData>
+        Event<GroupUnAssignedToRoleEventData>
     and GroupUnAssignedToRoleEventData = {
         GroupId : string
         RoleId : string
@@ -2162,7 +2070,7 @@ module Dto =
         }
 
     type UserAssignedToRole = 
-        DomainEvent<UserAssignedToRoleEventData>
+        Event<UserAssignedToRoleEventData>
     and UserAssignedToRoleEventData = {
         GroupId : string
         RoleId : string
@@ -2170,7 +2078,7 @@ module Dto =
         }
 
     type UserUnAssignedToRole = 
-        DomainEvent<UserUnAssignedToRoleEventData>
+        Event<UserUnAssignedToRoleEventData>
     and UserUnAssignedToRoleEventData = {
         GroupId : string
         RoleId : string
@@ -2232,21 +2140,21 @@ module Dto =
         }
 
     type TenantActivationStatusActivated = 
-        DomainEvent<TenantActivationStatusActivatedEventData>
+        Event<TenantActivationStatusActivatedEventData>
     and TenantActivationStatusActivatedEventData = {
         TenantId : TenantId
         UserId : UserId
         }
 
     type TenantActivationStatusDiactivated = 
-        DomainEvent<TenantActivationStatusDiactivatedEventData>
+        Event<TenantActivationStatusDiactivatedEventData>
     and TenantActivationStatusDiactivatedEventData = {
         TenantId : TenantId
         UserId : UserId 
         }     
 
     type TenantAdministratorRegistered = 
-        DomainEvent<TenantAdministratorRegisteredEventData>
+        Event<TenantAdministratorRegisteredEventData>
     and TenantAdministratorRegisteredEventData = {
         TenantId : string
         FullName : string
@@ -2257,7 +2165,7 @@ module Dto =
         }
 
     type TenantProvisioned =        
-        DomainEvent<TenantProvisionedEventData> 
+        Event<TenantProvisionedEventData> 
     and TenantProvisionedEventData = {
         TenantId : string
         }

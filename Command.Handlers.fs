@@ -172,7 +172,7 @@ module Command =
                         roleEventList <- Array.append roleEventList roleCreatedEventL
 
 
-                        let userRegisteredEvent = userRegistered |> UserRegistered
+                        let userRegisteredEvent = userRegistered |> UserStreamEvent.UserRegistered
                         let userRegisteredEventL = [userRegisteredEvent] |> List.toArray
 
           
@@ -181,27 +181,27 @@ module Command =
 
                     | TenantProvisionedEvent.InvitationOffered invitaton ->
 
-                            let invitationOffered : Dto.OfferredRegistrationInvitation  = { 
-                                TenantId = invitaton.TenantId  
-                                OfferredInvitation = invitaton.Invitation
-                            }
+                        let invitationOffered : Dto.OfferredRegistrationInvitation  = { 
+                            TenantId = invitaton.TenantId  
+                            OfferredInvitation = invitaton.Invitation
+                        }
 
-                            let invitationOfferedEvent = TenantStreamEvent.InvitationOfferred  invitationOffered
-                            let invitationOfferedEventL = [invitationOfferedEvent] |> List.toArray
+                        let invitationOfferedEvent = TenantStreamEvent.InvitationOfferred  invitationOffered
+                        let invitationOfferedEventL = [invitationOfferedEvent] |> List.toArray
 
-                            tenantEventList <- Array.append tenantEventList invitationOfferedEventL
+                        tenantEventList <- Array.append tenantEventList invitationOfferedEventL
 
                     | TenantProvisionedEvent.InvitationWithdrawn invitation ->
                           
-                            let registrationInvitationWithdrawnedDto : Dto.WithnrawnRegistrationInvitation  = {   
-                                TenantId = invitation.TenantId
-                                WithdrawnInvitation = invitation.Invitation
-                                }
+                        let registrationInvitationWithdrawnedDto : Dto.WithnrawnRegistrationInvitation  = {   
+                            TenantId = invitation.TenantId
+                            WithdrawnInvitation = invitation.Invitation
+                            }
 
-                            let invitationWithdrawn = TenantStreamEvent.InvitationWithdrawn registrationInvitationWithdrawnedDto
-                            let invitationWithdrawnL = [invitationWithdrawn] |> List.toArray
+                        let invitationWithdrawn = TenantStreamEvent.InvitationWithdrawn registrationInvitationWithdrawnedDto
+                        let invitationWithdrawnL = [invitationWithdrawn] |> List.toArray
 
-                            tenantEventList <- Array.append tenantEventList invitationWithdrawnL
+                        tenantEventList <- Array.append tenantEventList invitationWithdrawnL
                        
                     | ProvisionAcknowledgementSent aProvisionAcknowledgementSent ->
 
@@ -221,7 +221,7 @@ module Command =
         let allTenantAggregateDtoEvents 
 
             (tenantProvisionedEventLis) 
-            : (string * TenantStreamEvent array * string * RoleStreamEvent array * string * UserStreamEvent array) = 
+            : (string * TenantStreamEvent [] * string * RoleStreamEvent [] * string * UserStreamEvent []) = 
 
             let mutable tenantEventList = Array.Empty()
             let mutable userEventList = Array.Empty()
@@ -265,7 +265,7 @@ module Command =
                         roleEventList <- Array.append roleEventList roleCreatedEventL
 
 
-                        let userRegisteredEvent = userRegistered |> UserRegistered
+                        let userRegisteredEvent = userRegistered |> UserStreamEvent.UserRegistered
                         let userRegisteredEventL = [userRegisteredEvent] |> List.toArray
 
           
@@ -274,27 +274,27 @@ module Command =
 
                     | TenantProvisionedEvent.InvitationOffered invitaton ->
 
-                            let invitationOffered : Dto.OfferredRegistrationInvitation  = { 
-                                TenantId = invitaton.TenantId  
-                                OfferredInvitation = invitaton.Invitation
-                            }
+                        let invitationOffered : Dto.OfferredRegistrationInvitation  = { 
+                            TenantId = invitaton.TenantId  
+                            OfferredInvitation = invitaton.Invitation
+                        }
 
-                            let invitationOfferedEvent = TenantStreamEvent.InvitationOfferred  invitationOffered
-                            let invitationOfferedEventL = [invitationOfferedEvent] |> List.toArray
+                        let invitationOfferedEvent = TenantStreamEvent.InvitationOfferred  invitationOffered
+                        let invitationOfferedEventL = [invitationOfferedEvent] |> List.toArray
 
-                            tenantEventList <- Array.append tenantEventList invitationOfferedEventL
+                        tenantEventList <- Array.append tenantEventList invitationOfferedEventL
 
                     | TenantProvisionedEvent.InvitationWithdrawn invitation ->
                           
-                            let registrationInvitationWithdrawnedDto : Dto.WithnrawnRegistrationInvitation  = {   
-                                TenantId = invitation.TenantId
-                                WithdrawnInvitation = invitation.Invitation
-                                }
+                        let registrationInvitationWithdrawnedDto : Dto.WithnrawnRegistrationInvitation  = {   
+                            TenantId = invitation.TenantId
+                            WithdrawnInvitation = invitation.Invitation
+                            }
 
-                            let invitationWithdrawn = TenantStreamEvent.InvitationWithdrawn registrationInvitationWithdrawnedDto
-                            let invitationWithdrawnL = [invitationWithdrawn] |> List.toArray
+                        let invitationWithdrawn = TenantStreamEvent.InvitationWithdrawn registrationInvitationWithdrawnedDto
+                        let invitationWithdrawnL = [invitationWithdrawn] |> List.toArray
 
-                            tenantEventList <- Array.append tenantEventList invitationWithdrawnL
+                        tenantEventList <- Array.append tenantEventList invitationWithdrawnL
                        
                     | ProvisionAcknowledgementSent aProvisionAcknowledgementSent ->
 
@@ -805,6 +805,16 @@ module Command =
 
     module AddGroupToGroup = 
 
+
+
+
+        let toCommand (ur:UnvalidatedGroupIds) : AddGroupToGroupCommand =
+                let cmmd : AddGroupToGroupCommand = {
+                    Data = ur
+                    TimeStamp = DateTime.Now
+                    UserId = "Felicien"
+                    }
+                cmmd
 
 
 

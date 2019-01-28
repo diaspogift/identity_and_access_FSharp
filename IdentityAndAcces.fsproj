@@ -41,9 +41,8 @@
     <Compile Include="Queues.fs" />
     <Compile Include="IdentityAndAccessApp.RestApi.fs" />
     <Compile Include="Queue.RabbitMq.Implementation.fs" />
-    <Compile Include="ProvisionTenant.Dto.fs"/>
+    <Compile Include="ProvisionTenant.Dto.fs" />
     <Compile Include="IdentityAndAccessApp.fs" />
-    
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />

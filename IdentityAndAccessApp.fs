@@ -158,7 +158,7 @@ match  provisionTenantCommand |> ProvisionTenant.handle  with
 
     match rs.Head with 
     | TenantProvisionCreated t ->
-    
+
         let tenant = t.TenantProvisioned
         let role = t.RoleProvisioned
         let user = t.UserRegistered
@@ -345,6 +345,8 @@ match  {
     printfn " %A" rs
     printEmptySeparatorLine(2)
 | Error error -> printfn " %A" error 
+
+
 
 
 
