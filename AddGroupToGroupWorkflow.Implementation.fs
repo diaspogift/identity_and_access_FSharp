@@ -78,6 +78,20 @@ let isGroupMemberService = Group.isGroupMemberIsInGroupServiceLocalImpl
 
 let add  (groupToAddTo:Group.Group) (groupToAdd:Group.Group)   = 
        
+       printfn ""
+       printfn ""
+       printfn ""
+       printfn "INTPUTS OF THE ADD FUNCTION"
+       printfn " ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+       printfn "groupToAddToDto = %A" (groupToAddTo |> Group.fromDomain)
+       printfn " ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+       printfn "groupToAdd = %A" (groupToAdd |> Group.fromDomain)
+       printfn " ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+       printfn ""
+       printfn ""
+       printfn ""
+       printfn ""
+
        let addResult = Group.addGroupToGroup groupToAddTo groupToAdd isGroupMemberService
        addResult
        |> Result.mapError AddGroupToGroupError.AddError

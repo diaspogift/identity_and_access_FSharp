@@ -766,12 +766,12 @@ module Tenant =
 
     let withdrawRegistrationInvitation (aTenant:Tenant) (invitation:RegistrationInvitationId) :Result<Tenant * RegistrationInvitation, string> =
 
-        printfn "TENANT: === "
-        printfn "TENANT: === "
-        printfn "TENANT: === %A" aTenant
-        printfn "INVITATION TO REMOVE: === " 
-        printfn "INVITATION TO REMOVE: === " 
-        printfn "INVITATION TO REMOVE: === %A" invitation
+        // printfn "TENANT: === "
+        // printfn "TENANT: === "
+        // printfn "TENANT: === %A" aTenant
+        // printfn "INVITATION TO REMOVE: === " 
+        // printfn "INVITATION TO REMOVE: === " 
+        // printfn "INVITATION TO REMOVE: === %A" invitation
 
 
         let optionalInvitationToWithdraw = 
@@ -779,9 +779,9 @@ module Tenant =
             |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId = invitation )
             |> List.first
 
-        printfn "INVITATION TO REMOVE FOUND: === " 
-        printfn "INVITATION TO REMOVE FOUND: === " 
-        printfn "INVITATION TO REMOVE FOUND: === %A" optionalInvitationToWithdraw
+        // printfn "INVITATION TO REMOVE FOUND: === " 
+        // printfn "INVITATION TO REMOVE FOUND: === " 
+        // printfn "INVITATION TO REMOVE FOUND: === %A" optionalInvitationToWithdraw
 
         match optionalInvitationToWithdraw with 
         | Some reg -> 
@@ -790,13 +790,13 @@ module Tenant =
                 aTenant.RegistrationInvitations 
                 |> List.filter (fun nextInvitation -> not (nextInvitation.RegistrationInvitationId = invitation) )
 
-            printfn "otherInvitations: === " 
-            printfn "otherInvitations: === " 
-            printfn "otherInvitations: === %A" otherInvitations
+            // printfn "otherInvitations: === " 
+            // printfn "otherInvitations: === " 
+            // printfn "otherInvitations: === %A" otherInvitations
                     
             Ok ({aTenant with RegistrationInvitations = otherInvitations }, reg)
 
-         | None ->
+        | None ->
             let msg = sprintf "No registration invitation found for identifier: %A" invitation
             Error msg
 
@@ -806,13 +806,12 @@ module Tenant =
 
 
 
-    let activateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =
-     
-            match aTenant.ActivationStatus with  
-            | Deactivated ->
-                Ok ({ aTenant with ActivationStatus = ActivationStatus.Activated }, aReason)
-            | Activated -> 
-                Error "Tenant already has its activation status set to Activated" 
+    let activateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =   
+        match aTenant.ActivationStatus with  
+        | Deactivated ->
+            Ok ({ aTenant with ActivationStatus = ActivationStatus.Activated }, aReason)
+        | Activated -> 
+            Error "Tenant already has its activation status set to Activated" 
 
 
 
@@ -820,7 +819,6 @@ module Tenant =
 
 
     let deactivateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =
-        
         match aTenant.ActivationStatus with  
         | Deactivated ->
             Error "Tenant already has its activation status set to Deactivated"
@@ -1393,6 +1391,27 @@ module Group =
 
         let unwrappedGroupToAddTo = aGroupToAddTo |> unwrapToStandardGroup 
         let unwrappedGroupToAdd = aGroupToAdd |> unwrapToStandardGroup
+        printfn "----------------------------------------------------------------------------------------------------"
+        printfn "aGroupToAddTo =====  %A "  aGroupToAddTo 
+        printfn "----------------------------------------------------------------------------------------------------"
+        
+        printfn "----------------------------------------------------------------------------------------------------"
+        printfn "aGroupToAdd =====  %A "  aGroupToAdd
+        printfn "----------------------------------------------------------------------------------------------------"
+        printfn "----------------------------------------------------------------------------------------------------"
+        
+        printfn ""
+
+        printfn "----------------------------------------------------------------------------------------------------"
+
+        printfn "----------------------------------------------------------------------------------------------------"
+        printfn "unwrappedGroupToAddTo =  %A "  unwrappedGroupToAddTo 
+        printfn "----------------------------------------------------------------------------------------------------"
+        
+        printfn "----------------------------------------------------------------------------------------------------"
+        printfn "unwrappedGroupToAdd =  %A "  unwrappedGroupToAdd
+        printfn "----------------------------------------------------------------------------------------------------"
+        
                                                 
         let doBothGroupsHaveSameTenant = (unwrappedGroupToAddTo.TenantId = unwrappedGroupToAdd.TenantId)
         let isNotTheSameGroup  = unwrappedGroupToAdd |> checkNotSame unwrappedGroupToAddTo   
@@ -1421,17 +1440,6 @@ module Group =
                         let newStandardGroupToAdd = {unwrappedGroupToAdd with MemberIn = unwrappedGroupToAdd.MemberIn @ oneListGrpMemberIn }
                         match aGroupToAddTo with  
                         | Group.Standard _ -> 
-                            printfn "----------------------------------------------------------------------------------------------------"
-                            printfn "----------------------------------------------------------------------------------------------------"
-                            printfn "HERE THE RESULT newStandardGroupToAddTo = /n %A, groupMember = %A /n" newStandardGroupToAddTo groupMember
-                            printfn "----------------------------------------------------------------------------------------------------"
-                            printfn "----------------------------------------------------------------------------------------------------"
-                            
-                            printfn "----------------------------------------------------------------------------------------------------"
-                            printfn "----------------------------------------------------------------------------------------------------"
-                            printfn "HERE THE RESULT newStandardGroupToAdd = /n %A, groupMember = %A /n" newStandardGroupToAdd groupMemberIn
-                            printfn "----------------------------------------------------------------------------------------------------"
-                            printfn "----------------------------------------------------------------------------------------------------"                            
                             
                             Ok (Standard newStandardGroupToAddTo, groupMember, Standard newStandardGroupToAdd, groupMemberIn)
                         | Group.Internal _ -> 
@@ -2495,31 +2503,31 @@ module Dto =
                 
 
             result {
-                let unwrapToStandardGroup = match aGrouDto with 
-                                            | Standard s -> s
-                                            | Internal i -> i
+                let unwrapToStandardGroup = 
+                    match aGrouDto with 
+                    | Standard s -> s
+                    | Internal i -> i
                 let! groupId = unwrapToStandardGroup.GroupId |> GroupId.create'
                 let! tenantId = unwrapToStandardGroup.TenantId |> TenantId.create'
                 let! name = unwrapToStandardGroup.Name |> GroupName.create'
                 let! description =  unwrapToStandardGroup.Description |>  GroupDescription.create'
 
-                let! members = unwrapToStandardGroup.Members
-                              |> List.map fromGoupMemberDomain
-                              |> ResultOfSequenceTemp
-                              
+                let! members = unwrapToStandardGroup.Members |> List.map fromGoupMemberDomain |> ResultOfSequenceTemp
+                let! memberIns = unwrapToStandardGroup.MemberIn |> List.map fromGoupMemberDomain |> ResultOfSequenceTemp
+                                          
                 let standardGroup: IdentityAndAcccess.DomainTypes.Group.StandardGroup = {
                     GroupId = groupId 
                     TenantId = tenantId
                     Name = name 
                     Description = description
                     Members = members
-                    MemberIn = []
+                    MemberIn = memberIns
                     }
 
-                let group = match aGrouDto with 
-                            | Standard s ->  IdentityAndAcccess.DomainTypes.Group.Standard standardGroup
-                            | Internal i -> IdentityAndAcccess.DomainTypes.Group.Internal standardGroup
-
+                let group = 
+                    match aGrouDto with 
+                    | Standard s ->  IdentityAndAcccess.DomainTypes.Group.Standard standardGroup
+                    | Internal i -> IdentityAndAcccess.DomainTypes.Group.Internal standardGroup
                 return group
                 }
 

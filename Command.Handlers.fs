@@ -818,11 +818,21 @@ module Command =
                 let strGroupIdToAddTo =  aCommandData.GroupIdToAddTo |> concatGroupStreamId 
                 let strGroupIdToAdd =  aCommandData.GroupIdToAdd |> concatGroupStreamId
 
-                let! groupStreamIdToAddTo, groupDtoToAddTo, 
-                     lastEventNumberToAddTo = strGroupIdToAddTo |> loadGroupWithId  
-                
+                let! groupStreamIdToAddTo, groupDtoToAddTo, lastEventNumberToAddTo = strGroupIdToAddTo |> loadGroupWithId                 
                 let! groupStreamIdToAdd , groupDtoToAdd, lastEventNumberToAdd = strGroupIdToAdd |> loadGroupWithId    
                
+                printfn ""
+                printfn ""
+                printfn ""
+                printfn "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+                printfn "IN THE HANDLER AND groupDtoToAddTo from loadGroupWithId with id (%A) = %A" strGroupIdToAddTo groupDtoToAddTo 
+                printfn "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+                printfn "IN THE HANDLER AND groupDtoToAdd from loadGroupWithId with id (%A) = %A" strGroupIdToAdd groupDtoToAdd 
+                printfn "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+                printfn ""
+                printfn ""
+                printfn ""
+
                 let! rsAddGroupToGroup = result {
 
                     let grpDtoToAddTo = groupDtoToAddTo |> Dto.Group.Standard

@@ -276,36 +276,14 @@ module EventStorePlayGround =
 
         match anEvent with 
         | RoleStreamEvent.RoleCreated role ->
-          role
+            role
         | RoleStreamEvent.RoleDeleted role ->
-          role
+            role
         | RoleStreamEvent.RoleRenamed role ->
-          role      
+            role      
 
 
 
-
-
-
-
-
-
-(* 
-    let applyGroupEvent (aGroup:Dto.StandardGroup) anEvent = 
-
-        match anEvent with 
-        | GroupStreamEvent.GroupCreated group ->
-            group
-        | GroupStreamEvent.UserAddedToGroup memberAdded ->
-            let newMemberList = memberAdded |> List.singleton 
-            Dto.Standard { aGroup with Members = aGroup.Members @ newMemberList }
-        
-        | GroupStreamEvent.GroupAddedToGroup memberAdded ->
-            let newMemberList = memberAdded |> List.singleton 
-            Dto.Standard { aGroup with Members = aGroup.Members @ newMemberList }
-        
-
- *)
 
 
 
@@ -384,14 +362,16 @@ module EventStorePlayGround =
 
     let loadGroupWithId groupStreamId = 
 
-        printfn "=========================="
-        printfn "groupStreamId not found %A" groupStreamId
-        printfn "=========================="
 
+        
 
         let store = create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
         let foundGroupEventStreamList,lastEventNumber,
             _ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
+
+        printfn "=========================="
+        printfn "foundGroupEventStreamList %A" foundGroupEventStreamList
+        printfn "=========================="
        
         match foundGroupEventStreamList.Head with  
         | GroupStreamEvent.GroupCreated groupZeroState ->  
@@ -399,6 +379,10 @@ module EventStorePlayGround =
             let groupDto =  foundGroupEventStreamList 
                             |>  List.toArray 
                             |> Seq.fold applyGroupEvent groupZeroState
+
+            printfn "=========================="
+            printfn "groupDto  %A" groupDto
+            printfn "=========================="
             Ok (groupStreamId, groupDto, lastEventNumber)
         | _ ->      
             Error "Could not built group initial state"

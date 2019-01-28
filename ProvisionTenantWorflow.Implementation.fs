@@ -90,7 +90,7 @@ type SaveTenanProvision = Provision -> unit
 let validateProvision : ValidateTenantProvision =
 
     fun aUnvalidatedTenantProvision ->
-        printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
+        //printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
         result {
             let! name = 
                 aUnvalidatedTenantProvision.TenantInfo.Name 

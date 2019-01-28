@@ -340,17 +340,25 @@ let addJuniorDeveloperGroupToDeveloperGroupCommand1 : AddGroupToGroupCommand = {
         UserId = diaspoGiftAdminUserId
         } 
 
-match  addJuniorDeveloperGroupToDeveloperGroupCommand1 |> AddGroupToGroup.handle  with  
+match  addJuniorDeveloperGroupToDeveloperGroupCommand |> AddGroupToGroup.handle  with  
 | Ok rs -> 
     printEmptySeparatorLine(2)
-    printfn " JUNIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP FAILED"
-    printEmptySeparatorLine(2)
+    printfn " JUNIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP"
     printfn " %A" rs
     printEmptySeparatorLine(2)
 
 | Error error -> printfn " %A" error 
 
 
+
+match  addJuniorDeveloperGroupToDeveloperGroupCommand1 |> AddGroupToGroup.handle  with  
+| Ok rs -> 
+    printEmptySeparatorLine(2)
+    printfn " JUNIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP ERROR"
+    printfn " %A" rs
+    printEmptySeparatorLine(2)
+
+| Error error -> printfn " %A" error 
 
 
 

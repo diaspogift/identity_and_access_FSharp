@@ -182,17 +182,51 @@ module Group =
     
     let isGroupMemberIsInGroupServiceLocalImpl  =
 
+
+    
         fun aGroupToAddTo aGroupToAdd -> 
+
+            printfn "===================================="
+            printfn "===================================="
+            printfn "aGroupToAddTo =                  %A" aGroupToAddTo
+            printfn "===================================="
+            printfn "===================================="
+            printfn "aGroupToAdd =                  %A" aGroupToAdd
+            printfn "===================================="
+            printfn "===================================="
+
 
             let unwrappedGroupToAddTo = aGroupToAddTo |> DomainHelpers.unwrapToStandardGroup
             let unwrappedGroupToAdd = aGroupToAdd |> DomainHelpers.unwrapToStandardGroup
+
+            printfn ""
+            printfn ""
+            printfn ""
+            printfn "===================================="
+            printfn "===================================="
+            printfn "unwrappedGroupToAddTo =                  %A" unwrappedGroupToAddTo
+            printfn "===================================="
+            printfn "===================================="
+            printfn "unwrappedGroupToAdd =                  %A" unwrappedGroupToAdd
+            printfn "===================================="
+            printfn "===================================="
+            printfn ""
+            printfn ""
+            printfn ""
+
+
             let groupsThatGroupToAddToIsMemberInList = unwrappedGroupToAddTo.MemberIn 
             let groupsThatGroupToAddIsMemberInList = unwrappedGroupToAdd.MemberIn 
 
             //check that the groupGroupMemberToAdd does not contains the GoupToAddto as a member aka group recursion
             let rsIsGroupTangleRecursion = result {
-                let! groupMemberToAddTo = (aGroupToAddTo |> Group.toMemberOfTypeGroup)
-                let rsIsGroupTangleRecursion = groupsThatGroupToAddIsMemberInList |> List.contains groupMemberToAddTo
+                let! groupMemberToAdd = (aGroupToAdd |> Group.toMemberOfTypeGroup)
+                let rsIsGroupTangleRecursion = groupsThatGroupToAddToIsMemberInList |> List.contains groupMemberToAdd
+                printfn "===================================="
+                printfn "rsIsGroupTangleRecursion =                  %A" rsIsGroupTangleRecursion
+                printfn "===================================="
+                printfn ""
+                printfn ""
                 return rsIsGroupTangleRecursion
                 }
             match rsIsGroupTangleRecursion with 
