@@ -8,13 +8,10 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServicesImplementations.Tenant
 open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.Functions.RegistrationInvitations
 open IdentityAndAcccess.DomainTypes
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
-open IdentityAndAccess.DatabaseTypes
 
 
 
@@ -23,11 +20,6 @@ open IdentityAndAccess.DatabaseTypes
 ///Dependencies 
 /// 
 /// 
-
-let loadOneTenantById : LoadTenantById = TenantDb.loadOneTenantById
-let updateTenant : UpdateOneTenant = TenantDb.updateOneTenant
-
-
 
 
 

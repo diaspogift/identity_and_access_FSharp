@@ -7,7 +7,6 @@ open System
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainServicesImplementations
-open IdentityAndAccess.DatabaseTypes
 
 
 open IdentityAndAcccess.DomainTypes.Functions

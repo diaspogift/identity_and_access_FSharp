@@ -4,7 +4,6 @@ open System
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 
 open IdentityAndAcccess.EventStorePlayGround.Implementation
 open IdentityAndAcccess.DomainTypes.Functions
@@ -25,9 +24,9 @@ open System.Text.RegularExpressions
 
 
 let unwrapToStandardGroup aGroupToUnwrapp = 
-        match aGroupToUnwrapp with 
-            | Standard aStandardGroup -> aStandardGroup
-            | Internal anInternalGroup -> anInternalGroup
+    match aGroupToUnwrapp with 
+    | Standard aStandardGroup -> aStandardGroup
+    | Internal anInternalGroup -> anInternalGroup
 
 
 
@@ -38,14 +37,7 @@ let unwrapToStandardGroup aGroupToUnwrapp =
 module Tenant =
 
 
-    ///Mongo Database dependecies 
-    
-    let saveOneTenantDbDependencyFunction = TenantDb.saveOneTenant
-    let saveOneUserDbDependencyFunction = TenantDb.saveOneTenant
-    let saveOneRoleDbDependencyFunction = TenantDb.saveOneTenant
 
-
-    
 
     ///Other domain service dependencies 
     
@@ -366,7 +358,6 @@ module Role =
     ///Database dependecies 
      
     
-    let loadUserByUserIdAndTenantIdDependencyFunction = UserDb.loadUserByUserIdAndTenantId
 
 
      
@@ -423,7 +414,6 @@ module User =
     ///Database dependecies 
      
     
-    let loadUserByUserIdAndTenantIdDependencyFunction = UserDb.loadUserByUserIdAndTenantId
 
 
      

@@ -11,7 +11,7 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServicesImplementations.Tenant
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
+
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open System.Text.RegularExpressions

@@ -7,7 +7,6 @@ open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAccess.DatabaseTypes
  
 
  
@@ -30,14 +29,14 @@ open IdentityAndAcccess.DomainTypes.Group
 
 module DbConfig =
 
-    let _DB_DEV_CONNECTION_URL_ = "mongodb://localhost"
-    let _MONGO_DB_CLIENT_CONNECTIONT = new MongoClient(_DB_DEV_CONNECTION_URL_)
-    let _INDENTITYY_AND_ACCESS_DB_ = _MONGO_DB_CLIENT_CONNECTIONT.GetDatabase("IdentityAndAccessDb")
+    let connSting = "mongodb://localhost"
+    let mongoClientConn = new MongoClient(connSting)
+    let identityAndAccess = mongoClientConn.GetDatabase("IdentityAndAccessDb")
 
-    let roleCollection = "roles" |> _INDENTITYY_AND_ACCESS_DB_.GetCollection<Dto.Role> 
-    let userCollection = "users" |> _INDENTITYY_AND_ACCESS_DB_.GetCollection<Dto.User> 
-    let groupCollection = "groups" |> _INDENTITYY_AND_ACCESS_DB_.GetCollection<Dto.Group> 
-    let tenantCollection = "tenants" |> _INDENTITYY_AND_ACCESS_DB_.GetCollection<Dto.Tenant> 
+    let roleCollection = "roles" |> identityAndAccess.GetCollection<Dto.Role> 
+    let userCollection = "users" |> identityAndAccess.GetCollection<Dto.User> 
+    let groupCollection = "groups" |> identityAndAccess.GetCollection<Dto.Group> 
+    let tenantCollection = "tenants" |> identityAndAccess.GetCollection<Dto.Tenant> 
      
  
 

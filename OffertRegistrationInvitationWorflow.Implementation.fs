@@ -9,12 +9,10 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServicesImplementations.Tenant
 open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 
-open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 
@@ -24,13 +22,6 @@ open IdentityAndAcccess.DomainTypes.Functions.Dto
 ///Dependencies 
 /// 
 /// 
-
-let loadOneTenantById : LoadTenantById = TenantDb.loadOneTenantById
-let updateTenant : UpdateOneTenant = TenantDb.updateOneTenant
-
-
-
-
 
 
 

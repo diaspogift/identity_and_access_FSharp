@@ -2,13 +2,11 @@ namespace IdentityAndAcccess.Aggregates.Implementation
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Functions
-open IdentityAndAccess.DatabaseTypes
 open FSharp.Data.Sql
 open System
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.CommonDomainTypes
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 
 

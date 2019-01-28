@@ -14,7 +14,6 @@ open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Group
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.DomainServicesImplementations.Tenant
 open IdentityAndAcccess.DomainTypes.Role

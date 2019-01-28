@@ -8,7 +8,6 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServicesImplementations.Tenant
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 
@@ -19,10 +18,6 @@ open IdentityAndAcccess.DomainTypes.Functions
 ///Dependencies 
 /// 
 /// 
-
-let saveOneTenant : SaveOneTenant = TenantDb.saveOneTenant
-let saveOneRole : SaveOneRole = RoleDb.saveOneRole
-let saveOneUser : SaveOneUser = UserDb.saveOneUser
 
 
 

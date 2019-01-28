@@ -11,12 +11,10 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.User
-open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open IdentityAndAcccess.DomainTypes.Tenant

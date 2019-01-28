@@ -1,7 +1,6 @@
 module IdentityAndAcccess.Commamds.Handlers
 
 
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
@@ -42,21 +41,16 @@ open IdentityAndAcccess.EventStorePlayGround.Implementation
 open IdentityAndAcccess.EventStorePlayGround.Implementation.EventStorePlayGround
 
 
-open IdentityAndAccess.DatabaseTypes
 
 
 open System
 open FSharp.Data.Sql
 open System.Collections.Generic
-open IdentityAndAcccess.Aggregates.Implementation
 open IdentityAndAcccess.DomainTypes.Functions
 open System.Collections.Generic
 open FSharp.Data.Sql
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAcccess.DomainTypes.User
-open IdentityAndAcccess.Aggregates.Implementation
 open IdentityAndAcccess.DomainTypes.Group
-open IdentityAndAcccess.Aggregates.Implementation
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open IdentityAndAcccess.DomainTypes.Tenant

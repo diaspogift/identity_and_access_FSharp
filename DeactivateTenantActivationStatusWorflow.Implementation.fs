@@ -6,7 +6,6 @@ open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
@@ -14,8 +13,6 @@ open IdentityAndAcccess.DomainServicesImplementations
 
 
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
-open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 
 
@@ -25,11 +22,6 @@ open IdentityAndAcccess.DomainTypes.Functions.Dto
 ///Dependencies 
 /// 
 /// 
-
-let loadOneTenantById : LoadTenantById = TenantDb.loadOneTenantById
-let updateTenant : UpdateOneTenant = TenantDb.updateOneTenant
-
-
 
 
 

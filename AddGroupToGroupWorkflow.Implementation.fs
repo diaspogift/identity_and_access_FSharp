@@ -8,13 +8,11 @@ open IdentityAndAcccess.CommonDomainTypes.Functions
 open IdentityAndAcccess.DomainServicesImplementations.Tenant
 open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes
-open IdentityAndAccess.DatabaseTypes
 
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Functions.Dto
