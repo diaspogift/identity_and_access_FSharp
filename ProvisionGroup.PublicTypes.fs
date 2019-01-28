@@ -31,7 +31,7 @@ type UnvalidatedGroup = {
     TenantId : string
     Name : string
     Description : string
-    Members : UnvalidatedGroupMember  array
+    Members : UnvalidatedGroupMember  []
     }
     and UnvalidatedGroupMember = {
             MemberId : string
