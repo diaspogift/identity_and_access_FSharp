@@ -17,7 +17,7 @@ open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
-open IdentityAndAcccess.DomainApiTypes.Handlers
+open IdentityAndAcccess.Commamds.Handlers
 open RabbitMQ.Client.Impl
 
 open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes

@@ -186,13 +186,13 @@ module Group =
 
             let unwrappedGroupToAddTo = aGroupToAddTo |> DomainHelpers.unwrapToStandardGroup
             let unwrappedGroupToAdd = aGroupToAdd |> DomainHelpers.unwrapToStandardGroup
-            let groupsThatGroupToAddToIsMemberInList = unwrappedGroupToAddTo.GroupIAmMemberInRefs 
-            let groupsThatGroupToAddIsMemberInList = unwrappedGroupToAdd.GroupIAmMemberInRefs 
+            let groupsThatGroupToAddToIsMemberInList = unwrappedGroupToAddTo.MemberIn 
+            let groupsThatGroupToAddIsMemberInList = unwrappedGroupToAdd.MemberIn 
 
             //check that the groupGroupMemberToAdd does not contains the GoupToAddto as a member aka group recursion
             let rsIsGroupTangleRecursion = result {
-                let! groupMemberToAdd = (aGroupToAdd |> Group.toMemberOfTypeGroup')
-                let rsIsGroupTangleRecursion = groupsThatGroupToAddToIsMemberInList |> List.contains groupMemberToAdd
+                let! groupMemberToAddTo = (aGroupToAddTo |> Group.toMemberOfTypeGroup)
+                let rsIsGroupTangleRecursion = groupsThatGroupToAddIsMemberInList |> List.contains groupMemberToAddTo
                 return rsIsGroupTangleRecursion
                 }
             match rsIsGroupTangleRecursion with 
@@ -201,7 +201,7 @@ module Group =
                 else 
                     //Check that the groupMember is not already member
                     let rsIsGroupToAddArealdyMember = result {
-                            let! groupMemberToAdd = aGroupToAdd |> Group.toMemberOfTypeGroup'
+                            let! groupMemberToAdd = aGroupToAdd |> Group.toMemberOfTypeGroup
                             let rsIsGroupToAddArealdyMember = unwrappedGroupToAddTo.Members |> List.contains groupMemberToAdd
                             return rsIsGroupToAddArealdyMember
                         }
@@ -211,7 +211,7 @@ module Group =
                         else
                             //check that the groupToAddTo is not already referenced in the group member we are trying to add
                             let check1 = result {
-                                let! groupMemberToAddTo = aGroupToAddTo |> Group.toMemberOfTypeGroup'
+                                let! groupMemberToAddTo = aGroupToAddTo |> Group.toMemberOfTypeGroup
                                 let check1 = groupsThatGroupToAddIsMemberInList |> List.contains groupMemberToAddTo                               
                                 return check1 
                                 }
@@ -455,31 +455,21 @@ module User =
                 match aUser.Enablement.EnablementStatus with
                 | EnablementStatus.Enabled ->
 
-
                     let rsPasswordComparison = result {
-
                         let strUserEncryptedPassWord  = aUser.Password |> Password.value 
                         let! userEncryptedPassWord = strUserEncryptedPassWord |> EncrytedPassword.create'
-
                         let areSamePasswords = aPasswordMatcherService aPassword userEncryptedPassWord
-            
-
                         return areSamePasswords
                     }
 
                     match rsPasswordComparison with 
                     | Ok areSamePasswords ->
 
-
-                            if areSamePasswords then 
-
-                                let userDescriptor = aUser |> User.toUserDesriptor
-
-                                userDescriptor
-
-                            else
-
-                                Error "Password does not match"
+                        if areSamePasswords then 
+                            let userDescriptor = aUser |> User.toUserDesriptor
+                            userDescriptor
+                        else
+                            Error "Password does not match"
 
                     | Error error ->
                         Error error
@@ -494,7 +484,6 @@ module User =
                     let msg = "User enablement status is desabled"
 
                     Error msg
-
 
             | Deactivated ->
 

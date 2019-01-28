@@ -282,7 +282,7 @@ module Group =
         Name: GroupName
         Description: GroupDescription
         Members: GroupMember list
-        GroupIAmMemberInRefs : GroupMember list
+        MemberIn : GroupMember list
         }
 
 

@@ -19,6 +19,10 @@ open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open System.Text.RegularExpressions
+open IdentityAndAcccess.EventStorePlayGround.Implementation
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open FSharp.Data.Sql
+open IdentityAndAcccess.DomainTypes.Functions.Dto
 
 
 
@@ -48,7 +52,7 @@ type AddGroupToGroup =
 
 //Step 3 - Create events step
 
-type CreateEvents = Group.Group * Group.GroupMember -> GroupAddedToGroupEvent
+type CreateEvents = Group.Group*Group.GroupMember*Group.Group*Group.GroupMember -> string*GroupStreamEvent list* string*GroupStreamEvent list
 
 
 
@@ -82,11 +86,31 @@ let add  (groupToAddTo:Group.Group) (groupToAdd:Group.Group)   =
 
 ///Step2 create events impl
 let createEvents : CreateEvents = 
-    fun (aGroup, aGroupMember) ->
-       let groupAddedToGroupEvent : GroupAddedToGroupEvent = {
-           GroupMemberAdded =  aGroupMember |> Dto.GroupMember.fromDomain   
-       }
-       groupAddedToGroupEvent
+    fun (group1, memberAddedToG1, group2, memberInAddedToG2 ) ->
+
+       let ug1 = group1 |> unwrapToStandardGroup 
+       let ug2 = group2 |> unwrapToStandardGroup 
+       let ug1id = ug1.GroupId |> GroupId.value 
+       let ug2id = ug2.GroupId |> GroupId.value 
+
+       let groupAddedToGroupEventData = memberAddedToG1 |> GroupMember.fromDomain
+       let groupAddedToGroupEvent = groupAddedToGroupEventData |> GroupStreamEvent.GroupAddedToGroup |> List.singleton
+
+       let groupInAddedToGroupEventData = memberInAddedToG2 |> GroupMember.fromDomain 
+       let groupInAddedToGroupEvent = groupInAddedToGroupEventData |> GroupStreamEvent.GroupInAddedToGroup |> List.singleton
+
+
+       printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+       printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+       printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+       printfn "%A = "  (ug1id, groupAddedToGroupEvent, ug2id, groupInAddedToGroupEvent)
+       printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+       printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+       printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+       printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+
+       
+       (ug1id, groupAddedToGroupEvent, ug2id, groupInAddedToGroupEvent)
 
                   
 ///Add group to group workflow implementation
@@ -95,9 +119,8 @@ let createEvents : CreateEvents =
 let addGroupToGroupWorkflow: AddGroupToGroupWorkflow = 
     fun groupToAddTo groupToAdd ->
         let createEvents = Result.map createEvents        
-        groupToAdd
-        |> add groupToAddTo
-        |> createEvents
+        let b = groupToAdd |> add groupToAddTo
+        b |> createEvents
         
 
 

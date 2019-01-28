@@ -51,6 +51,7 @@ type GroupStreamEvent =
     | GroupCreated of Dto.GroupCreated
     | UserAddedToGroup of Dto.GroupMember
     | GroupAddedToGroup of Dto.GroupMember
+    | GroupInAddedToGroup of Dto.GroupMember
 
 
 
@@ -323,8 +324,10 @@ module EventStorePlayGround =
             let newMemberList = memberAdded |> List.singleton 
             { aGroup with Members = aGroup.Members @ newMemberList }
         
-
-
+        | GroupStreamEvent.GroupInAddedToGroup memberInAdded ->
+            let newMemberInList = memberInAdded |> List.singleton 
+            { aGroup with MemberIn = aGroup.MemberIn @ newMemberInList }
+       
 
 
     let loadTenantWithId tenantStreamId = 

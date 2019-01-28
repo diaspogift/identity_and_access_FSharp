@@ -1,4 +1,4 @@
-module IdentityAndAcccess.DomainApiTypes.Handlers
+module IdentityAndAcccess.Commamds.Handlers
 
 
 open IdentityAndAccess.DatabaseFunctionsInterfaceTypes.Implementation
@@ -63,6 +63,7 @@ open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Functions.Dto
+open System.Collections.Generic
 
 
 
@@ -777,7 +778,7 @@ module Command =
                     return rs 
                     }  
 
-                return rsAddUserToGroup, groupStreamId, lastEventNumber
+                return (rsAddUserToGroup, groupStreamId, lastEventNumber)
 
                 }
 
@@ -817,22 +818,11 @@ module Command =
                 let strGroupIdToAddTo =  aCommandData.GroupIdToAddTo |> concatGroupStreamId 
                 let strGroupIdToAdd =  aCommandData.GroupIdToAdd |> concatGroupStreamId
 
-                printfn "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
-                printfn "IN handleAddGroupToGroup and strGroupIdToAddTo = %A" strGroupIdToAddTo
-                printfn "IN handleAddGroupToGroup and strGroupIdToAdd = %A" strGroupIdToAdd
-                printfn "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
-
                 let! groupStreamIdToAddTo, groupDtoToAddTo, 
                      lastEventNumberToAddTo = strGroupIdToAddTo |> loadGroupWithId  
-
-                printfn "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ"
-                printfn "IN handleAddGroupToGroup and groupStreamIdToAddTo,  = %A" groupStreamIdToAddTo
-                printfn "IN handleAddGroupToGroup and groupDtoToAddTo = %A" groupDtoToAddTo
-                printfn "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ"
                 
-                let! _, groupDtoToAdd, _ = strGroupIdToAdd |> loadGroupWithId    
+                let! groupStreamIdToAdd , groupDtoToAdd, lastEventNumberToAdd = strGroupIdToAdd |> loadGroupWithId    
                
-
                 let! rsAddGroupToGroup = result {
 
                     let grpDtoToAddTo = groupDtoToAddTo |> Dto.Group.Standard
@@ -841,38 +831,46 @@ module Command =
                     let! groupDomainToAddTo  =  grpDtoToAddTo |> Dto.Group.toDomain
                     let! groupDomainToAdd =  grpDtoToAdd |> Dto.Group.toDomain
 
-
-                    printfn "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-                    printfn "IN handleAddGroupToGroup and groupDomainToAddTo,  = %A" groupStreamIdToAddTo
-                    printfn "IN handleAddGroupToGroup and groupDomainToAdd = %A" groupDomainToAdd
-                    printfn "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-
                     let rs = addGroupToGroupWorkflow groupDomainToAddTo groupDomainToAdd
                     return rs 
                     }  
 
-                return rsAddGroupToGroup, groupStreamIdToAddTo, lastEventNumberToAddTo
+                return (rsAddGroupToGroup, groupStreamIdToAddTo, lastEventNumberToAddTo, lastEventNumberToAdd)
 
                 }
 
             match rsAddGroupToGroupWorkflow with  
             | Ok en ->
                 match en with  
-                | Ok ev, groupStreamIdMemberWasToAddTo, lastEventNumber -> 
-                    let saveGroupAddedToGroupEvent = async {
-                        let groupAddedToGroupEvent =  ev.GroupMemberAdded |> GroupStreamEvent.GroupAddedToGroup 
-                        let groupAddedToGroupEventL =  groupAddedToGroupEvent |> toSequence |> Array.singleton
-                        
+                | Ok events, groupStreamIdMemberWasToAddTo, lastEventNumber, lastEventNumberToAdd-> 
+                    let saveGroup2Event = async {
 
-                        let rsAppendToTenantStream = recursivePersistEventsStream groupStreamIdMemberWasToAddTo lastEventNumber groupAddedToGroupEventL
+                        let group1Id, group1EventList, _, _ = events 
+                        let group1StreamId = concatGroupStreamId group1Id
+                        let rsAppendToGroup1Stream = 
+                            recursivePersistEventsStream group1StreamId lastEventNumber (group1EventList.Head |> toSequence |> Array.singleton)
                      
-                        return rsAppendToTenantStream
+                        return rsAppendToGroup1Stream
+                        }      
+                    
+                    let saveGroup1Events = async {
+
+                        let _, _, group2Id, group2EventList = events 
+                        let group2StreamId = concatGroupStreamId group2Id
+
+           
+                        let rsAppendToGroup2Stream = 
+                            recursivePersistEventsStream group2StreamId lastEventNumberToAdd (group2EventList.Head |> toSequence |> Array.singleton)
+                     
+                        return rsAppendToGroup2Stream
                         }      
 
-                    saveGroupAddedToGroupEvent
+                    saveGroup2Event
                     |> Async.RunSynchronously
-                    Ok ev
-                | Error error, s, t ->
+                    saveGroup1Events
+                    |> Async.RunSynchronously
+                    Ok events
+                | Error error, s, t, i ->
                     Error  error
             | Error error ->
                 let er = AddGroupToGroupError.DbError error

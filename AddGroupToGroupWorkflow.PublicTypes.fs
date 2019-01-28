@@ -11,6 +11,7 @@ open IdentityAndAccess.DatabaseTypes
 open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.Functions
+open IdentityAndAcccess.EventStorePlayGround.Implementation
 
 
 
@@ -68,4 +69,4 @@ type AddGroupToGroupError =
 //Worflow type 
 
 type AddGroupToGroupWorkflow = 
-    Group.Group -> Group.Group -> Result<GroupAddedToGroupEvent , AddGroupToGroupError>
+    Group.Group -> Group.Group -> Result<string*GroupStreamEvent list*string*GroupStreamEvent list , AddGroupToGroupError>
