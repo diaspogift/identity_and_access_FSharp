@@ -40,49 +40,42 @@ let encryptPasswordService (aPleinTextPassword:Password) =
 
 ///User related service implementations
 
-let authenticateUserService  (loadUserByUserIdAndTenantId:LoadUserByUserIdPasswordAndTenantId) //Database Dependency 
-                             (loadTenantById:LoadTenantById) //Database Dependency 
-                             (passwordEncryptionService:PasswordEncryptionService) //Encription Dependency 
-                             (userId:UserId) 
-                             (tenantId:TenantId) 
-                             (aPleinTextPassword:Password) 
-                             : Result<UserDescriptor,string> = 
+let authenticateUserService  
+     (loadUserByUserIdAndTenantId:LoadUserByUserIdPasswordAndTenantId) //Database Dependency 
+     (loadTenantById:LoadTenantById) //Database Dependency 
+     (passwordEncryptionService:PasswordEncryptionService) //Encription Dependency 
+     (userId:UserId) 
+     (tenantId:TenantId) 
+     (aPleinTextPassword:Password) 
+     : Result<UserDescriptor,string> = 
     
     try 
 
+          let rsOfAuthenticatedUser = result{
+               let! tenant = loadTenantById tenantId
+               let unwrappedPassword = aPleinTextPassword |> Password.value 
+               let! aPleinTextStrongPassword = unwrappedPassword |> StrongPassword.create'
+               let! encrytedPassword = aPleinTextStrongPassword |> passwordEncryptionService
+               let! userToAuthenticate =  loadUserByUserIdAndTenantId userId encrytedPassword tenant.TenantId         
+               return userToAuthenticate
+               }
 
-       let rsOfAuthenticatedUser = result{
+          match rsOfAuthenticatedUser with
+          | Ok user ->
 
-            let! tenant = loadTenantById tenantId
-            let unwrappedPassword = aPleinTextPassword |> Password.value 
-            let! aPleinTextStrongPassword = unwrappedPassword |> StrongPassword.create'
-            let! encrytedPassword = aPleinTextStrongPassword |> passwordEncryptionService
-            let! userToAuthenticate =  loadUserByUserIdAndTenantId userId encrytedPassword tenant.TenantId 
-    
-            return userToAuthenticate
-
-       }
-
-       match rsOfAuthenticatedUser with
-       | Ok   user ->
-
-            match user.Enablement.EnablementStatus with
-            | Enabled ->
-
-                   user
-                   |> User.toUserDesriptor
-
-              | Disabled ->
-                    let msg = sprintf "User enablement status is disabled"
-                    Error msg
-                       
-       | Error error ->
-
-            Error error            
-
-    with
-        | :? System.FormatException as ex -> Error "error0"    
-        | :? System.TypeInitializationException as ex -> Error "error1"    
-        | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
-        | Failure msg -> Error (msg + ": By ...Faillure msg..." )
-        | _ -> Error "Unmatched error occurred" 
+                match user.Enablement.EnablementStatus with
+                | Enabled ->
+                
+                     user
+                     |> User.toUserDesriptor
+                | Disabled ->
+                   let msg = sprintf "User enablement status is disabled"
+                   Error msg                 
+          | Error error ->
+               Error error            
+     with
+          | :? System.FormatException as ex -> Error "error0"    
+          | :? System.TypeInitializationException as ex -> Error "error1"    
+          | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+          | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+          | _ -> Error "Unmatched error occurred" 

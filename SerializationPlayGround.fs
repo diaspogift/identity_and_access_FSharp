@@ -98,7 +98,7 @@ module private Json =
             read r
             let i, fieldType = Map.find fieldName fieldMap
 
-            let prop = i, s.Deserialize(r, fieldType)
+            let prop = (i, s.Deserialize(r, fieldType))
             read r
             prop
 
@@ -124,7 +124,7 @@ module private Json =
                     values
                 else
                     let fieldValue = deserializeField()
-                    loop (fieldValue :: values)
+                    loop (fieldValue::values)
 
             let values =
                 loop []
@@ -132,7 +132,7 @@ module private Json =
                 |> Seq.map snd
                 |> Seq.toArray
 
-            FSharpValue.MakeUnion(case,values)
+            FSharpValue.MakeUnion(case, values)
         else
             match FSharpType.GetUnionCases t with
             | [| case |] when case.GetFields().Length = 1 ->
@@ -187,7 +187,7 @@ let private rootUnionConverter<'a> (case: UnionCaseInfo) =
 let private optionConverter =
     { new JsonConverter() with
         member __.WriteJson(w,v,s) = 
-            match FSharpValue.GetUnionFields(v,v.GetType()) with
+            match FSharpValue.GetUnionFields(v, v.GetType()) with
             | _, [|v|] -> s.Serialize(w, v)
             | _ -> w.WriteNull()
 
@@ -201,7 +201,7 @@ let private optionConverter =
             if r.TokenType = JsonToken.Null then
                 FSharpValue.MakeUnion(cases.[0], null)
             else
-                FSharpValue.MakeUnion(cases.[1], [| s.Deserialize(r,optionType) |])
+                FSharpValue.MakeUnion(cases.[1], [| s.Deserialize(r, optionType) |])
                                 
         member __.CanConvert t = isOption t }
 
@@ -234,16 +234,19 @@ let deserializeUnion<'a>  eventType data =
     FSharpType.GetUnionCases(typeof<'a>)
     |> Array.tryFind (fun c -> c.Name = eventType)
     |> function
-       | Some case ->  
+        | Some case ->  
+            
             let serializer = new JsonSerializer()
+            
             rootUnionConverter<'a> case :: converters
             |> List.iter serializer.Converters.Add
             
             use stream = new IO.MemoryStream(data: byte[])
             use reader = new JsonTextReader(new IO.StreamReader(stream))
+            
             serializer.Deserialize<'a>(reader)
             |> Some
-       | None -> None
+        | None -> None
 
 
 let serializeUnion (o:'a)  =

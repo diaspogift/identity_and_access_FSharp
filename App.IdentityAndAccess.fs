@@ -3,19 +3,14 @@
 
 
 
-open IdentityAndAcccess.EventStore.Implementation
-open IdentityAndAcccess.EventStorePlayGround.Implementation
 
-open IdentityAndAcccess.Serialization
 
 open Suave.Web
 open Suave.Successful
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.CommonDomainTypes
-open IdentityAndAcccess.DomainServicesImplementations.Tenant
 open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.DomainTypes
 
@@ -34,7 +29,6 @@ open MongoDB.Bson
 open System
 
 
-open IdentityAndAcces.Infrstructure.Queue.Impl
 
 open IdentityAndAccess.RabbitMQ.FSharp.Client
 
@@ -54,8 +48,6 @@ open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowIm
 open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open System.Collections
-open IdentityAndAcces.Infrstructure.Queue.Impl.Queue
-open IdentityAndAcces.Infrstructure.Queue.Impl
 open IdentityAndAccess.RabbitMQ.FSharp.Client
 
 open IdentityAndAcccess.Commamds.Handlers.Command

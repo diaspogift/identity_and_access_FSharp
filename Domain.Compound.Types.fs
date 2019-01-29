@@ -259,7 +259,6 @@ module Group =
 
 
 
-
     ///Group related types
     /// 
     /// 
@@ -308,29 +307,26 @@ module Group =
         }
 
 
-    type GroupGroupAdded = 
+    type MemberInAddedToGroupEvent = { 
+        TenantId : string
+        MemberInAdded : Dto.GroupMember
+        }
 
-        Event<GroupGroupAddedData>
+    type MemberAddedToGroup = 
+        Event<MemberAddedToGroupData>
+    and MemberAddedToGroupData = {
+        TenantId : string
+        MemberAdded : Dto.GroupMember
+        }
 
-    and GroupGroupAddedData = {
+    type MemberInAddedToGroup = 
 
-        GroupId: string
-        NestedGroupId: string
-        TenantId: string
+        Event<MemberInAddedToGroupData>
 
-    }
-
-    type GroupGroupInAdded = 
-
-        Event<GroupGroupInAddedData>
-
-    and GroupGroupInAddedData = {
-
-        GroupId: string
-        NestedGroupId: string
-        TenantId: string
-
-    }  
+    and MemberInAddedToGroupData = {
+        TenantId : string
+        MemberInAdded : Dto.GroupMember
+        }  
 
 
 
@@ -577,8 +573,16 @@ module Tenant =
     
 
 
+    type TenantProvision = {
+        Tenant : Tenant
+        AdminUser : User
+        AdminRole : Role 
+        OfferredInvitation : RegistrationInvitation  
+        WithdrawnInvitation : RegistrationInvitation
+        }
 
-    type Provision = (Tenant*User*Role*RegistrationInvitation list)
+
+    //type Provision = (Tenant*User*Role*RegistrationInvitation list)
 
 
 

@@ -97,22 +97,18 @@ module EventStorePlayGround =
 
 
     let unwrapGroup (aGroup:Dto.Group) : Dto.StandardGroup = 
-
-        let unwrappedGroup = match aGroup with  
-                                     | Dto.Group.Standard s -> s
-                                     | Dto.Group.Internal i -> i
-
-
+        let unwrappedGroup =
+             match aGroup with  
+             | Dto.Group.Standard s -> s
+             | Dto.Group.Internal i -> i
         unwrappedGroup
 
 
     let unwrapGroupCreated (aGroup:Dto.GroupCreated) : Dto.StandardGroup = 
-
-        let unwrappedGroup = match aGroup with  
-                                     | Dto.GroupCreated.Standard s -> s
-                                     | Dto.GroupCreated.Internal i -> i
-
-
+        let unwrappedGroup =
+             match aGroup with  
+             | Dto.GroupCreated.Standard s -> s
+             | Dto.GroupCreated.Internal i -> i
         unwrappedGroup.Group
 
 
@@ -137,10 +133,13 @@ module EventStorePlayGround =
     
 
     type IEventStoreConnection with
+        
         member this.AsyncConnect() = this.ConnectAsync() |> Async.AwaitTask
+        
         member this.AsyncReadStreamEventsForward stream start count resolveLinkTos =
             this.ReadStreamEventsForwardAsync(stream, start, count, resolveLinkTos)
             |> Async.AwaitTask
+        
         member this.AsyncAppendToStream stream expectedVersion events =
             this.AppendToStreamAsync(stream, expectedVersion, events)
             |> Async.AwaitTask
@@ -160,7 +159,7 @@ module EventStorePlayGround =
             return conn 
         }
 
-(*     let subscribe (projection: Event<'T> -> unit) (getStore: Async<IEventStoreConnection>) =
+    (*let subscribe (projection: Event<'T> -> unit) (getStore: Async<IEventStoreConnection>) =
         async {
         let! store = getStore
         let credential = SystemData.UserCredentials("admin", "changeit")
@@ -172,20 +171,16 @@ module EventStorePlayGround =
     let readStream<'a> (store: IEventStoreConnection) streamId version count = 
         
         async {
-
-
             let! slice = store.AsyncReadStreamEventsForward streamId version count true
             let events = 
                 slice.Events 
                 |> Seq.choose deserialize<'a>
                 |> Seq.toList
-
             let nextEventNumber = 
                 if slice.IsEndOfStream 
                 then None 
                 else Some slice.NextEventNumber
-
-            return events, slice.LastEventNumber, nextEventNumber 
+            return (events, slice.LastEventNumber, nextEventNumber) 
         }
 
     let appendToStream (store: IEventStoreConnection) streamId expectedVersion newEvents = 
@@ -202,16 +197,11 @@ module EventStorePlayGround =
 
 
 
-
-
-
     let concatStreamId (p1:string) (p2:string) = p1.Trim() + p2.Trim() 
     let concatTenantStreamId = concatStreamId "TENANT_With_ID_=_"
     let concatRoleStreamId = concatStreamId "ROLE_With_ID_=_"
     let concatGroupStreamId = concatStreamId "GROUP_With_ID_=_"
     let concatUserStreamId = concatStreamId "USER_With_ID_=_"
-
-
 
 
 
@@ -234,7 +224,7 @@ module EventStorePlayGround =
              
         | TenantStreamEvent.ActivationStatusReActivated statusAndreason ->
 
-             { aTenant with ActivationStatus = statusAndreason.Status }
+            { aTenant with ActivationStatus = statusAndreason.Status }
 
         | TenantStreamEvent.InvitationOfferred  offerredInvitation ->  
 
@@ -245,7 +235,7 @@ module EventStorePlayGround =
             let newInvitationList = 
                 aTenant.RegistrationInvitations 
                 |> List.filter (fun reginv -> 
-                    not (reginv.RegistrationInvitationId = withdrawnInvitation.WithdrawnInvitation.RegistrationInvitationId))
+                    (reginv.RegistrationInvitationId <> withdrawnInvitation.WithdrawnInvitation.RegistrationInvitationId))
             { aTenant with  RegistrationInvitations = newInvitationList }
 
             
@@ -258,7 +248,7 @@ module EventStorePlayGround =
 
         match anEvent with 
         | UserStreamEvent.UserRegistered user ->
-          user
+            user
         | UserStreamEvent.PasswordChanged password ->
             {aUser with Password = password |> Password.value }
         | UserStreamEvent.PersonalNameChanged fullName ->

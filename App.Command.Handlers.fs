@@ -51,7 +51,6 @@ open System.Collections.Generic
 open FSharp.Data.Sql
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Group
-open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Functions.Dto

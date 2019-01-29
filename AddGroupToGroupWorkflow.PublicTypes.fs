@@ -7,10 +7,8 @@ open IdentityAndAcccess.CommonDomainTypes
 
 open System
 open IdentityAndAcccess.DomainTypes
-open IdentityAndAcccess.DomainServicesImplementations
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.Functions
-open IdentityAndAcccess.EventStorePlayGround.Implementation
 
 
 
@@ -31,29 +29,17 @@ type UnvalidatedGroupIds = {
     }
 
 
-
-//Defining the comand types
-type Command<'data> = {
-    Data : 'data;
-    TimeStamp : DateTime;
-    UserId : string;
-}
-
-
-
-
-type AddGroupToGroupCommand =
-        Command<UnvalidatedGroupIds> 
-
-
 ///Ouputs of the add group to group worflow 
 //- Sucess types
 
 
 
 
+
 type GroupAddedToGroupEvent = { 
-    GroupMemberAdded : Dto.GroupMember
+    TenantId : string
+    MemberAdded : MemberAddedToGroupEvent
+    MemberInAdded : MemberInAddedToGroupEvent
     }
 
 
@@ -65,7 +51,5 @@ type AddGroupToGroupError =
     | DbError of string
 
 
-//Worflow type 
-
 type AddGroupToGroupWorkflow = 
-    Group.Group -> Group.Group -> Result<string*GroupStreamEvent list*string*GroupStreamEvent list , AddGroupToGroupError>
+    Group.Group -> Group.Group -> Result<GroupAddedToGroupEvent list , AddGroupToGroupError>

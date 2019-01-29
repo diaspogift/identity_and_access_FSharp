@@ -232,7 +232,7 @@ module ServiceInterfaces =
                 -> PostalAddress 
                 -> Telephone 
                 -> Telephone
-                ->  Result<Provision,string>
+                ->  Result<TenantProvision,string>
 
 
 
@@ -2194,7 +2194,7 @@ module Dto =
         Until : DateTime
         }
 
-    type Provision = (Tenant*User*Role*RegistrationInvitation list)
+    //type Provision = (Tenant*User*Role*RegistrationInvitation list)
 
 
 

@@ -192,7 +192,7 @@ module private JsonNet =
 //            serializer.Deserialize(reader, t)
     
     let s = new JsonSerializer()    
-    s.Converters.Add(new GuidConverter())
+    s.Converters.Add(GuidConverter())
     s.Converters.Add(new TupleArrayConverter())
     s.Converters.Add(new OptionConverter())
     s.Converters.Add(new ListConverter())
@@ -212,9 +212,9 @@ module private JsonNet =
         (use jsonWriter = new JsonTextWriter(new StreamWriter(ms))
         s.Serialize(jsonWriter, o))
         let data = ms.ToArray()
-        (eventType o),data
+        ((eventType o), data)
 
-    let deserialize (t, et:string, data:byte array) =
+    let deserialize (t, et:string, data:byte []) =
         use ms = new MemoryStream(data)
         use jsonReader = new JsonTextReader(new StreamReader(ms))
         s.Deserialize(jsonReader, t)
@@ -237,9 +237,9 @@ module private JsonNet =
 //            FSharpValue.MakeUnion(case, args)
 //        else null
 
-let serializer = JsonNet.serialize,JsonNet.deserialize
+let serializer = (JsonNet.serialize, JsonNet.deserialize)
 
-let deserializet<'T> (data:byte array) =
+let deserializet<'T> (data:byte []) =
     let json = Encoding.UTF8.GetString(data)
     JsonConvert.DeserializeObject<'T>(json)
     

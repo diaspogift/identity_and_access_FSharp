@@ -9,7 +9,6 @@ open IdentityAndAcccess.EventStorePlayGround.Implementation
 open IdentityAndAcccess.DomainTypes.Functions
 
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAccess.DatabaseFunctionsInterfaceTypes
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Role
@@ -30,96 +29,6 @@ let unwrapToStandardGroup aGroupToUnwrapp =
 
 
 
-
-///User type related services 
-/// 
-///  
-module Tenant =
-
-
-
-
-    ///Other domain service dependencies 
-    
-    let strongPasswordServiceImpl:StrongPasswordGeneratorService = 
-        fun aPassword ->
-            let unwrappedPassword = Password.value aPassword
-            //some logic go he to generate a strong password
-            StrongPassword.create' unwrappedPassword
-
-
-
-    let passwordEncryptionServiceImpl:PasswordEncryptionService = 
-        fun aStrongPassword ->
-            let unwrappedPassword = StrongPassword.value aStrongPassword
-            //some logic go he to generate a strong password
-            EncrytedPassword.create' unwrappedPassword
-
-
-
-    let provisionTenantServiceImpl : ProvisionTenantService =
-                                     
-        fun strongPasswordService passwordEncryptionService aTenantName aTenantDescription anAdministorFirstName 
-            anAdministorMiddleName anAdministorLastName anEmailAddress aPostalAddress aPrimaryTelephone aSecondaryTelephone ->
-
-
-
-          result {
-
-            let enablementSartDate = DateTime.Now
-            let enablementEndDate = enablementSartDate.AddDays(365.0)
-
-            let! invitationDescription = "Invitation for Tenant ..."  |> RegistrationInvitationDescription.create' 
-
-            let! tenantToProvision = Tenant.createFullActivatedTenant aTenantName aTenantDescription
-
-
-            let! tenantWithRegistrationInvitation, registrationInvitation =  Tenant.offerRegistrationInvitation  tenantToProvision  invitationDescription
-
-
-            let! password = "123456" |> Password.create' 
-
-            let!  strongPassword = password |> strongPasswordService
-
-
-            let! encryptedPassword = strongPassword |> passwordEncryptionService
-
-
-            let! unwrappedEncryptedPassword = encryptedPassword 
-                                           |> EncrytedPassword.value 
-                                           |> Password.create'
-
-
-
-            let! adminUsername = "Default Aministrator" |> Username.create' 
-
-            let! adminUserEnablement = Enablement.fullCreate enablementSartDate enablementEndDate EnablementStatus.Enabled
-
-            let! adminUser = Tenant.registerUserForTenant tenantWithRegistrationInvitation registrationInvitation.RegistrationInvitationId adminUsername  
-                                                          unwrappedEncryptedPassword adminUserEnablement anEmailAddress aPostalAddress aPrimaryTelephone 
-                                                          aSecondaryTelephone anAdministorFirstName anAdministorMiddleName anAdministorLastName 
-
-                                        
-            let! rstenant, invitation = Tenant.withdrawRegistrationInvitation tenantWithRegistrationInvitation registrationInvitation.RegistrationInvitationId
-
-
-            let! adminRoleName = "SUPER_ADMINISTRATOR" |> RoleName.create'
-            let! adminRoleDescription = "SUPER_ADMINISTRATOR is a role that have access to all tenant'rsources" |> RoleDescription.create'
-
-            let! adminRole = Tenant.provisionRole rstenant adminRoleName adminRoleDescription
-
-            let! resultAssignUserToSuperAdminRole = Role.assignUser adminRole adminUser
-
-      
-            //IO operation kept and the end ????
-
-
-            return (tenantToProvision, adminUser, resultAssignUserToSuperAdminRole, tenantWithRegistrationInvitation.RegistrationInvitations)
-          }
-
-
-
-    let provisionTenantServiceImpl' = provisionTenantServiceImpl strongPasswordServiceImpl passwordEncryptionServiceImpl
 
 
 
@@ -172,11 +81,7 @@ module Group =
     ///services
     
     
-    let isGroupMemberIsInGroupServiceLocalImpl  =
-
-
-    
-        fun aGroupToAddTo aGroupToAdd -> 
+    let isGroupMemberIsInGroupServiceLocalImpl  = fun aGroupToAddTo aGroupToAdd -> 
 
             printfn "===================================="
             printfn "===================================="
