@@ -1367,8 +1367,8 @@ module Group =
     let addUserToGroup (aGroupToAddTo:Group) (aUserToAdd:User) : Result<Group*GroupMember, string>   =
 
 
-        let aStandardGroupToAdd =  aGroupToAddTo |> DomainHelpers.unwrapToStandardGroup
-        let areFromSameTenant = aUserToAdd.TenantId |> checkSameTenancy aStandardGroupToAdd.TenantId 
+        let aStandardGroupToAddTo =  aGroupToAddTo |> DomainHelpers.unwrapToStandardGroup
+        let areFromSameTenant = aUserToAdd.TenantId |> checkSameTenancy aStandardGroupToAddTo.TenantId 
         let isUserEnabled = aUserToAdd |> User.isEnabled
         let isGroupToAddToRoleNotInterNalGroup = aGroupToAddTo |> isInternalGroup |> not        
    
@@ -1377,7 +1377,7 @@ module Group =
             let isUseGroupMember = result {
                 let! groupMemberToAdd = aUserToAdd |> toMemberOfTypeUser'
                 let searchGivenMemberInGroupMembers = 
-                    aStandardGroupToAdd.Members
+                    aStandardGroupToAddTo.Members
                     |> List.filter (
                       fun next -> 
                         groupMemberToAdd.MemberId = next.MemberId
@@ -1398,7 +1398,7 @@ module Group =
                         return groupMemberToAdd
                         }
                     match groupMemberToAdd with  
-                    | Ok grouMember -> Ok (Standard {aStandardGroupToAdd with Members = aStandardGroupToAdd.Members@[grouMember]}, grouMember)
+                    | Ok grouMember -> Ok (Standard {aStandardGroupToAddTo with Members = aStandardGroupToAddTo.Members@[grouMember]}, grouMember)
                     | Error error -> Error error
                 | true ->
                     let msg = sprintf "Already group member" 

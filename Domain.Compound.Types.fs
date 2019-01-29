@@ -4,6 +4,7 @@ namespace IdentityAndAcccess.DomainTypes
 ///Imported local libs
 open IdentityAndAcccess.CommonDomainTypes
 open System
+open System.Text.RegularExpressions
 
 
 
@@ -306,17 +307,25 @@ module Group =
         GroupName :string 
         }
 
+    type MemberAddedToGroupEvent = { 
+        GroupId : string
+        TenantId : string
+        MemberAdded : GroupMember
+        }
 
     type MemberInAddedToGroupEvent = { 
+        GroupId : string
         TenantId : string
-        MemberInAdded : Dto.GroupMember
+        MemberInAdded : GroupMember
         }
+
+    
 
     type MemberAddedToGroup = 
         Event<MemberAddedToGroupData>
     and MemberAddedToGroupData = {
         TenantId : string
-        MemberAdded : Dto.GroupMember
+        MemberAdded : GroupMember
         }
 
     type MemberInAddedToGroup = 
@@ -325,7 +334,7 @@ module Group =
 
     and MemberInAddedToGroupData = {
         TenantId : string
-        MemberInAdded : Dto.GroupMember
+        MemberInAdded : GroupMember
         }  
 
 

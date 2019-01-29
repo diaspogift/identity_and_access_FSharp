@@ -11,12 +11,10 @@
     <Compile Include="Worflow.ProvisionGroup.Implementation.fs" />
     <Compile Include="AddUserToGroupWorkflow.PublicTypes.fs" />
     <Compile Include="AddUserToGroupWorkflow.Implementation.fs" />
-    <Compile Include="AddGroupToGroupWorkflow.PublicTypes.fs" />
-    <Compile Include="AddGroupToGroupWorkflow.Implementation.fs" />
+    <Compile Include="Workflow.AddGroupToGroup.Implementation.fs" />
     <Compile Include="ProvisionRole.PublicTypes.fs" />
     <Compile Include="Workflow.ProvisionTenant.Implementation.fs" />
-    <Compile Include="OffertRegistrationInvitation.PublicTypes.fs" />
-    <Compile Include="OffertRegistrationInvitationWorflow.Implementation.fs" />
+    <Compile Include="Workflow.OffertRegistrationInvitation.Implementation.fs" />
     <Compile Include="WithdrawRegistrationInvitation.PublicTypes.fs" />
     <Compile Include="WithdrawRegistrationInvitationWorflow.Implementation.fs" />
     <Compile Include="DeactivateTenantActivationStatusWorflow.PublicTypes.fs" />

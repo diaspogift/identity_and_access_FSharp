@@ -5,7 +5,6 @@ open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Role
 open IdentityAndAcccess.CommonDomainTypes
 open IdentityAndAcccess.CommonDomainTypes.Functions
-open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.Group
@@ -20,13 +19,50 @@ open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.CommonDomainTypes
 
 
 
 
 
 
+///Add group to group worflow types
+/// 
+/// 
 
+
+//add group to group workflow input types
+type UnvalidatedGroupIds = {
+        GroupIdToAddTo : string
+        GroupIdToAdd: string
+    }
+
+
+///Ouputs of the add group to group worflow 
+//- Sucess types
+
+
+
+
+
+type GroupAddedToGroupEvent =
+    | MemberAdded of MemberAddedToGroupEvent
+    | MemberInAdded of MemberInAddedToGroupEvent
+ 
+
+
+//- Failure types
+
+type AddGroupToGroupError = 
+    | ValidationError of string
+    | AddError of string
+    | DbError of string
+
+
+type AddGroupToGroupWorkflow = 
+    Group.Group -> Group.Group -> Result<GroupAddedToGroupEvent list , AddGroupToGroupError>
 
 
 //Step 1 - add group to group 
@@ -149,67 +185,32 @@ module AddGroupToGroupWorkflowImplementation =
        let createEvents : CreateEvents = 
            fun (group1, memberAddedToG1, group2, memberInAddedToG2 ) ->
 
+                let uwGroup1 = group1 |> unwrapToStandardGroup
+                let uwGroup2 = group2 |> unwrapToStandardGroup
 
+                let memberAddedToGroupEvent:MemberAddedToGroupEvent = { 
+                    GroupId = uwGroup1.GroupId |> GroupId.value
+                    TenantId = memberAddedToG1.TenantId |> TenantId.value
+                    MemberAdded = memberAddedToG1 
+                    }
 
+                let memberInAddedToGroupEvent:MemberInAddedToGroupEvent = { 
+                    GroupId = uwGroup2.GroupId |> GroupId.value
+                    TenantId = memberInAddedToG2.TenantId |> TenantId.value
+                    MemberInAdded = memberInAddedToG2
+                    }
 
+                let memberAdded:GroupAddedToGroupEvent =  memberAddedToGroupEvent |> GroupAddedToGroupEvent.MemberAdded
+                let memberInAdded:GroupAddedToGroupEvent =  memberInAddedToGroupEvent |> GroupAddedToGroupEvent.MemberInAdded
+   
+                let memberAddedToGroupEventList = memberAdded |> List.singleton
+                let memberInAddedToGroupEventList = memberInAdded |> List.singleton
 
-(*               type MemberAddedToGroupEvent = { 
-                  TenantId : string
-                  MemberInAdded : Dto.GroupMember
-                  }
+                printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+                printfn "%A = "  (memberAddedToGroupEventList, memberInAddedToGroupEventList)
+                printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
 
-              type MemberInAddedToGroupEvent = { 
-                  TenantId : string
-                  MemberInAdded : Dto.GroupMember
-                  }
-
-
-              type GroupAddedToGroupEvent = { 
-                  TenantId : string
-                  MemberAdded : MemberAddedToGroupEvent
-                  MemberInAdded : MemberInAddedToGroupEvent
-                  } *)
-
-              let memberAddedToGroupEvent:MemberAddedToGroupEvent = { 
-                  TenantId = memberAddedToG1.TenantId |> TenantId.value
-                  MemberAdded = memberAddedToG1 |> GroupMember.fromDomain
-                  }
-
-              let memberInAddedToGroupEvent:MemberInAddedToGroupEvent = { 
-                  TenantId = memberInAddedToG2.TenantId |> TenantId.value
-                  MemberInAdded = memberInAddedToG2 |> GroupMember.fromDomain
-                  }
-
-
-              let groupAddedToGroupEvents:GroupAddedToGroupEvent = {
-                     TenantId = memberAddedToG1.TenantId |> TenantId.value
-                     MemberAdded = memberAddedToGroupEvent
-                     MemberInAdded = memberInAddedToGroupEvent
-                     }
-        
-
-              let groupAddedToGroupEventList = groupAddedToGroupEvent |> List.singleton
-              let groupInAddedToGroupEventList = groupInAddedToGroupEvent |> List.singleton
-
-              let ug1 = group1 |> unwrapToStandardGroup 
-              let ug2 = group2 |> unwrapToStandardGroup 
-              let ug1id = ug1.GroupId |> GroupId.value 
-              let ug2id = ug2.GroupId |> GroupId.value 
-
-              
-
-
-
-              printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
-              printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
-              printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
-              printfn "%A = "  (ug1id, groupAddedToGroupEvent, ug2id, groupInAddedToGroupEvent)
-              printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
-              printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
-              printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
-              printfn "KKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
-
-              groupAddedToGroupEventList @  groupInAddedToGroupEventList
+                memberAddedToGroupEventList @  memberInAddedToGroupEventList
               
 
                          

@@ -17,39 +17,4 @@ open IdentityAndAcccess.DomainTypes.Functions
 
 
 
-///Add group to group worflow types
-/// 
-/// 
 
-
-//add group to group workflow input types
-type UnvalidatedGroupIds = {
-        GroupIdToAddTo : string
-        GroupIdToAdd: string
-    }
-
-
-///Ouputs of the add group to group worflow 
-//- Sucess types
-
-
-
-
-
-type GroupAddedToGroupEvent = { 
-    TenantId : string
-    MemberAdded : MemberAddedToGroupEvent
-    MemberInAdded : MemberInAddedToGroupEvent
-    }
-
-
-//- Failure types
-
-type AddGroupToGroupError = 
-    | ValidationError of string
-    | AddError of string
-    | DbError of string
-
-
-type AddGroupToGroupWorkflow = 
-    Group.Group -> Group.Group -> Result<GroupAddedToGroupEvent list , AddGroupToGroupError>
