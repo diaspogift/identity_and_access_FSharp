@@ -53,7 +53,7 @@ let unwrapToStandardGroup aGroupToUnwrapp =
 
 let generateNoEscapeId () =   
     let objectId = ObjectId.GenerateNewId()
-    objectId.ToString()
+    objectId.ToString().ToUpper()
 
 
 
@@ -354,14 +354,10 @@ module RegistrationInvitations =
         | false -> false
 
 
-
     let invitation  (aRegistrationInvitationId : RegistrationInvitationId) (aRegistrationInvitationList : RegistrationInvitation list) =
         aRegistrationInvitationList 
         |> List.filter (fun nextRegistrationInvitation -> isIdentifiedById aRegistrationInvitationId nextRegistrationInvitation)
         |> List.tryHead
-
-
-
 
 
     let isAvailable (aTimeNow : DateTime) (aRegistrationInvitation : RegistrationInvitation) : Boolean =
@@ -375,12 +371,8 @@ module RegistrationInvitations =
         | false -> true
 
 
-
-
-
     let isAvailableWithBakedDateTimeParam = isAvailable DateTime.Now
        
-
 
 
     let isNotAvailable (aTimeNow : DateTime) (aRegistrationInvitation : RegistrationInvitation): Boolean =
@@ -393,8 +385,6 @@ module RegistrationInvitations =
         | true ->  true
         | false -> false
           
-
-
 
 
     let isNotAvailableWithBakedDateTimeParam = isNotAvailable DateTime.Now
@@ -443,30 +433,6 @@ module Tenant =
 
 
 
-    ///Helper functions
-    /// 
-    /// 
-    let preppend  firstR restR = 
-        match firstR, restR with
-        | Ok first, Ok rest -> Ok (first::rest)  
-        | Error error1, Ok _ -> Error error1
-        | Ok _, Error error2 -> Error error2  
-        | Error error1, Error _ -> Error error1
-
-
-
-
-    let ResultOfSequenceTemp aListOfResults =
-        let initialValue = Ok List.empty
-        List.foldBack preppend aListOfResults initialValue
-
-
-    open ContactInformation
-
-
-
-
-
 
     let create id name description = 
         
@@ -482,11 +448,8 @@ module Tenant =
                     Description = descriptions
                     RegistrationInvitations = []
                     ActivationStatus = ActivationStatus.Activated
-            }
-        }
-
-
-
+                    }
+                }
 
 
 
@@ -520,8 +483,7 @@ module Tenant =
             match result with  
             | Some _ -> true
             | None -> false
-        | Deactivated 
-            -> false
+        | Deactivated -> false
         
 
 

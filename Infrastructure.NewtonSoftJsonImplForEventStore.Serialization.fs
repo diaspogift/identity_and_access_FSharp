@@ -31,8 +31,8 @@ module private Reflection =
     let isGeneric td (t:Type) = 
         t.IsGenericType && t.GetGenericTypeDefinition() = td
         
-    let isList t = isGeneric typedefof<List<_>> t
-    let isOption t = isGeneric typedefof<Option<_>> t
+    let isList t = isGeneric typedefof<_ list> t
+    let isOption t = isGeneric typedefof<_ Option> t
 
     let propertyName (case: PropertyInfo) = case.Name
 
@@ -55,7 +55,7 @@ module private Reflection =
             |> Array.find (fun c -> c.Name = caseName)
     let getFields (case: UnionCaseInfo) =
         case.GetFields()
-        |> Array.mapi (fun i c -> c.Name, (i,c.PropertyType))
+        |> Array.mapi (fun i c -> (c.Name, (i, c.PropertyType)))
         |> Map.ofArray
 
     /// Returns all value type containing a single property from
@@ -153,7 +153,7 @@ let unionConverter =
         member __.WriteJson(w,v,s) =
             match v with
             | NamedCase name -> w.WriteValue name
-            | SingleCase(_, (_,fieldValue)) -> s.Serialize(w,fieldValue)
+            | SingleCase(_, (_,fieldValue)) -> s.Serialize(w, fieldValue)
             | UnionCase(name, fields)  ->
                 ("_Case", box name) :: fields
                 |> Json.writeObject w s
@@ -231,37 +231,29 @@ let converters =
 
 let deserializeUnion<'a>  eventType data = 
 
-    FSharpType.GetUnionCases(typeof<'a>)
-    |> Array.tryFind (fun c -> c.Name = eventType)
-    |> function
+    let deserialize aCase = 
+        match aCase with  
         | Some case ->  
-            
-            let serializer = new JsonSerializer()
+            let serializer = JsonSerializer()
             
             rootUnionConverter<'a> case :: converters
             |> List.iter serializer.Converters.Add
             
             use stream = new IO.MemoryStream(data: byte[])
             use reader = new JsonTextReader(new IO.StreamReader(stream))
+            serializer.Deserialize<'a>(reader) |> Some
             
-            serializer.Deserialize<'a>(reader)
-            |> Some
         | None -> None
+
+    FSharpType.GetUnionCases(typeof<'a>)
+    |> Array.tryFind (fun c -> c.Name = eventType)
+    |> deserialize
 
 
 let serializeUnion (o:'a)  =
 
-    printfn "HEREEEEEEEEEEEEEEEEEEEEE o =========================== %A" o
-    printfn "HEREEEEEEEEEEEEEEEEEEEEE o =========================== %A" o
-    printfn "HEREEEEEEEEEEEEEEEEEEEEE o =========================== %A" o
-    printfn "HEREEEEEEEEEEEEEEEEEEEEE o =========================== %A" o
-    printfn "typeof<'a> ================================== %A" typeof<'a>
-    printfn "typeof<'a> ================================== %A" typeof<'a>
-    printfn "typeof<'a> ================================== %A" typeof<'a>
-    printfn "typeof<'a> ================================== %A" typeof<'a>
-
     let case,_ = FSharpValue.GetUnionFields(o, typeof<'a>)
-    let serializer = new JsonSerializer()
+    let serializer = JsonSerializer()
     rootUnionConverter<'a> case :: converters
     |> List.iter serializer.Converters.Add
     use stream = new IO.MemoryStream()
