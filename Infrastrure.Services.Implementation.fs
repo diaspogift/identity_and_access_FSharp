@@ -51,31 +51,27 @@ let authenticateUserService
     
     try 
 
-          let rsOfAuthenticatedUser = result{
+          result {
                let! tenant = loadTenantById tenantId
                let unwrappedPassword = aPleinTextPassword |> Password.value 
                let! aPleinTextStrongPassword = unwrappedPassword |> StrongPassword.create'
                let! encrytedPassword = aPleinTextStrongPassword |> passwordEncryptionService
-               let! userToAuthenticate =  loadUserByUserIdAndTenantId userId encrytedPassword tenant.TenantId         
-               return userToAuthenticate
-               }
+               let! userToAuthenticate =  loadUserByUserIdAndTenantId userId encrytedPassword tenant.TenantId 
+           
+               let! userDescriptor =
+                    match userToAuthenticate.Enablement.EnablementStatus with
+                    | EnablementStatus.Enabled ->
+                        userToAuthenticate 
+                        |> User.toUserDesriptor
+                    | EnablementStatus.Disabled ->
+                        let msg = sprintf "User enablement status is disabled"
+                        Error msg  
 
-          match rsOfAuthenticatedUser with
-          | Ok user ->
-
-                match user.Enablement.EnablementStatus with
-                | Enabled ->
-                
-                     user
-                     |> User.toUserDesriptor
-                | Disabled ->
-                   let msg = sprintf "User enablement status is disabled"
-                   Error msg                 
-          | Error error ->
-               Error error            
+               return userDescriptor
+               } 
      with
-          | :? System.FormatException as ex -> Error "error0"    
-          | :? System.TypeInitializationException as ex -> Error "error1"    
-          | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
-          | Failure msg -> Error (msg + ": By ...Faillure msg..." )
-          | _ -> Error "Unmatched error occurred" 
+     | :? System.FormatException as ex -> Error "error0"    
+     | :? System.TypeInitializationException as ex -> Error "error1"    
+     | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+     | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+     | _ -> Error "Unmatched error occurred" 
