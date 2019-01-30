@@ -329,6 +329,35 @@ module Command =
 
                         tenantEventList <- Array.append tenantEventList invitationOfferedEventL
 
+                    | TenantProvisionedEvent.UserAssignedToRole assignment ->
+
+                        let assignmen : Dto.UserAssignedToRoleEvent  = { 
+                            RoleId = assignment.RoleId
+                            UserId = assignment.UserId  
+                            AssignedUser = assignment.AssignedUser
+                        }
+
+                        let assignmenEvent = assignmen |> RoleStreamEvent.UserAssignedToRole 
+                        let assignmenEventL = [assignmenEvent] |> List.toArray
+
+                        roleEventList <- Array.append roleEventList assignmenEventL
+
+                    | TenantProvisionedEvent.UserUnAssignedFromRole assignment ->
+
+                        let assignmen : Dto.UserAssignedToRoleEvent  = { 
+                            RoleId = assignment.RoleId
+                            UserId = assignment.UserId  
+                            AssignedUser = assignment.AssignedUser
+                        }
+
+                        let assignmenEvent = assignmen |> RoleStreamEvent.UserAssignedToRole 
+                        let assignmenEventL = [assignmenEvent] |> List.toArray
+
+                        failwith "Wrong state"
+
+                        //roleEventList <- Array.append roleEventList assignmenEventL
+
+                        
                     | TenantProvisionedEvent.InvitationWithdrawn invitation ->
                           
                         let registrationInvitationWithdrawnedDto : Dto.WithnrawnRegistrationInvitation  = {   
