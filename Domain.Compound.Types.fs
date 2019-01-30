@@ -307,17 +307,6 @@ module Group =
         GroupName :string 
         }
 
-    type MemberAddedToGroupEvent = { 
-        GroupId : string
-        TenantId : string
-        MemberAdded : GroupMember
-        }
-
-    type MemberInAddedToGroupEvent = { 
-        GroupId : string
-        TenantId : string
-        MemberInAdded : GroupMember
-        }
 
     
 

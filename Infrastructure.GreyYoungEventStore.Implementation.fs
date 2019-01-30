@@ -48,8 +48,8 @@ type RoleStreamEvent =
 type GroupStreamEvent =
     | GroupCreated of Dto.GroupCreated
     | UserAddedToGroup of Dto.GroupMember
-    | GroupAddedToGroup of Dto.GroupMember
-    | GroupInAddedToGroup of Dto.GroupMember
+    | GroupAddedToGroup of MemberAddedToGroupEvent
+    | GroupInAddedToGroup of MemberInAddedToGroupEvent
 
 
 
@@ -287,11 +287,11 @@ module EventStorePlayGround =
             { aGroup with Members = aGroup.Members @ newMemberList }
         
         | GroupStreamEvent.GroupAddedToGroup memberAdded ->
-            let newMemberList = memberAdded |> List.singleton 
+            let newMemberList = memberAdded.MemberAdded  |> List.singleton 
             { aGroup with Members = aGroup.Members @ newMemberList }
         
         | GroupStreamEvent.GroupInAddedToGroup memberInAdded ->
-            let newMemberInList = memberInAdded |> List.singleton 
+            let newMemberInList = memberInAdded.MemberInAdded |> List.singleton 
             { aGroup with MemberIn = aGroup.MemberIn @ newMemberInList }
        
 

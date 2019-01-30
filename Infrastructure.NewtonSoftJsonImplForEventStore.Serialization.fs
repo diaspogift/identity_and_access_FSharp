@@ -250,6 +250,16 @@ let deserializeUnion<'a>  eventType data =
 
 
 let serializeUnion (o:'a)  =
+
+    printfn "HEREEEEEEEEEEEEEEEEEEEEE o =========================== %A" o
+    printfn "HEREEEEEEEEEEEEEEEEEEEEE o =========================== %A" o
+    printfn "HEREEEEEEEEEEEEEEEEEEEEE o =========================== %A" o
+    printfn "HEREEEEEEEEEEEEEEEEEEEEE o =========================== %A" o
+    printfn "typeof<'a> ================================== %A" typeof<'a>
+    printfn "typeof<'a> ================================== %A" typeof<'a>
+    printfn "typeof<'a> ================================== %A" typeof<'a>
+    printfn "typeof<'a> ================================== %A" typeof<'a>
+
     let case,_ = FSharpValue.GetUnionFields(o, typeof<'a>)
     let serializer = new JsonSerializer()
     rootUnionConverter<'a> case :: converters

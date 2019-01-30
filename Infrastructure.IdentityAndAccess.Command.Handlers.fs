@@ -377,8 +377,6 @@ module Command =
                 Error error
 
 
-
-
     module OfferInvitation = 
 
 
@@ -891,8 +889,9 @@ module Command =
                                 | GroupAddedToGroupEvent.MemberAdded memberAdded -> 
 
                                     let group1StreamId = memberAdded.GroupId |> concatGroupStreamId 
+                                    let group1Evt = memberAdded |> GroupStreamEvent.GroupAddedToGroup
                                     let saveGroup1Event = async {
-                                        recursivePersistEventsStream group1StreamId lastEventNumber (memberAdded |> toSequence |> Array.singleton)
+                                        recursivePersistEventsStream group1StreamId lastEventNumber (group1Evt |> toSequence |> Array.singleton)
                                         }
                                     
                                     saveGroup1Event 
@@ -901,8 +900,10 @@ module Command =
                                 | GroupAddedToGroupEvent.MemberInAdded memberInAdded ->
 
                                     let group2StreamId = memberInAdded.GroupId |> concatGroupStreamId 
+                                    let group1Evt = memberInAdded |> GroupStreamEvent.GroupInAddedToGroup
+
                                     let saveGroup2Event = async {
-                                        recursivePersistEventsStream group2StreamId lastEventNumber (memberInAdded |> toSequence |> Array.singleton)
+                                        recursivePersistEventsStream group2StreamId lastEventNumber (group1Evt |> toSequence |> Array.singleton)
                                         }
                                     
                                     saveGroup2Event 

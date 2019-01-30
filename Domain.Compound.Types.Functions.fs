@@ -659,11 +659,10 @@ module Tenant =
     let getAllAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
 
         match aTenant.ActivationStatus with 
-        | ActivationStatus.Activated 
-            -> aTenant.RegistrationInvitations
-               |> List.filter RegistrationInvitations.isAvailableWithBakedDateTimeParam
-        | Deactivated 
-            -> []
+        | ActivationStatus.Activated -> 
+            aTenant.RegistrationInvitations
+            |> List.filter RegistrationInvitations.isAvailableWithBakedDateTimeParam
+        | Deactivated -> []
 
 
 
@@ -673,11 +672,10 @@ module Tenant =
     let getAllUnAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
 
         match aTenant.ActivationStatus with 
-        | ActivationStatus.Activated 
-            -> aTenant.RegistrationInvitations
-               |> List.filter RegistrationInvitations.isNotAvailableWithBakedDateTimeParam
-        | Deactivated 
-            -> []
+        | ActivationStatus.Activated -> 
+            aTenant.RegistrationInvitations
+            |> List.filter RegistrationInvitations.isNotAvailableWithBakedDateTimeParam
+        | Deactivated -> []
 
 
 
@@ -692,28 +690,32 @@ module Tenant =
         :Result<Tenant, string> =
         
          match aTenant.ActivationStatus with 
+         | ActivationStatus.Activated ->
 
-          | ActivationStatus.Activated ->
+            let concernedRegistrationInvitation = 
+                aTenant.RegistrationInvitations
+                |> List.filter 
+                    (fun nextRegistrationInvitation -> 
+                        nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId
+                        )
+                |> List.first
 
-                let concernedRegistrationInvitation = 
-                        aTenant.RegistrationInvitations
-                        |> List.filter (fun nextRegistrationInvitation -> nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId)
-                        |> List.first
+            match concernedRegistrationInvitation with 
+            | Some invitation -> 
 
-                match concernedRegistrationInvitation with 
-                | Some invitation -> 
-
-                    let remainingRegistrationInvitations = aTenant.RegistrationInvitations 
-                                                           |> List.filter (fun nextRegistrationInvitation -> nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId) 
-                    let newInvitation = {invitation with StartingOn = aStartDate; Until = anEndDate}
-                        
-                    Ok {aTenant with RegistrationInvitations = remainingRegistrationInvitations@[newInvitation]}
-                | None   
-                    -> let msg = sprintf "Registration invitation with id %A not found" aRegistrationInvitationId
-                       Error msg
-
-
-          | Deactivated -> 
+                let remainingRegistrationInvitations = 
+                    aTenant.RegistrationInvitations 
+                    |> List.filter 
+                        (fun nextRegistrationInvitation -> 
+                            nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId
+                            ) 
+                let newInvitation = {invitation with StartingOn = aStartDate; Until = anEndDate}
+                    
+                Ok {aTenant with RegistrationInvitations = remainingRegistrationInvitations@[newInvitation]}
+            | None   -> 
+                let msg = sprintf "Registration invitation with id %A not found" aRegistrationInvitationId
+                Error msg
+         | Deactivated -> 
                let error = sprintf "Tenant is deactivated"
                Error error
 
@@ -2006,23 +2008,18 @@ module Dto =
         | GroupId of GroupId
         | GroupMemberId of GroupMemberId
 
-    type GroupMemberDto = {
-        MemberId : string
+
+    type MemberAddedToGroupEvent = { 
+        GroupId : string
         TenantId : string
-        Name : string
-        Type : string
+        MemberAdded : GroupMember
         }
 
-
-    ///Temporary types should there be here? let alone should they have been created?
-    type GroupMemberDtoTemp = {
-        MemberId : string
+    type MemberInAddedToGroupEvent = { 
+        GroupId : string
         TenantId : string
-        Name : string
-        Type : string
+        MemberInAdded : GroupMember
         }
-
-
 
 
 

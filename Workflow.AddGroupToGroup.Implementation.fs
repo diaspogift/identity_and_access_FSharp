@@ -191,13 +191,13 @@ module AddGroupToGroupWorkflowImplementation =
                 let memberAddedToGroupEvent:MemberAddedToGroupEvent = { 
                     GroupId = uwGroup1.GroupId |> GroupId.value
                     TenantId = memberAddedToG1.TenantId |> TenantId.value
-                    MemberAdded = memberAddedToG1 
+                    MemberAdded = memberAddedToG1 |> GroupMember.fromDomain 
                     }
 
                 let memberInAddedToGroupEvent:MemberInAddedToGroupEvent = { 
                     GroupId = uwGroup2.GroupId |> GroupId.value
                     TenantId = memberInAddedToG2.TenantId |> TenantId.value
-                    MemberInAdded = memberInAddedToG2
+                    MemberInAdded = memberInAddedToG2 |> GroupMember.fromDomain 
                     }
 
                 let memberAdded:GroupAddedToGroupEvent =  memberAddedToGroupEvent |> GroupAddedToGroupEvent.MemberAdded
