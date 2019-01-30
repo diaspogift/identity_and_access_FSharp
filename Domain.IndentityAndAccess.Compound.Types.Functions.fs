@@ -21,6 +21,9 @@ open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.User
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Group
 
 
 
@@ -917,7 +920,6 @@ module User =
 
         let rs = result {
 
-                let enablement = aUser.Enablement 
                 let! memberId = GroupMemberId.create "memberId" (UserId.value aUser.UserId)
                 let! tenantId = TenantId.create "tenantId" (TenantId.value aUser.TenantId)
                 let! name = GroupMemberName.create "groupName" (Username.value aUser.Username)
@@ -2083,7 +2085,17 @@ module Dto =
         }
 
 
+    type UserAssignedToRoleEvent = { 
+        RoleId : string
+        UserId : string
+        AssignedUser : GroupMember
+        }
 
+    type UserUnAssignedFromRoleEvent = { 
+        RoleId : string
+        UserId : string
+        AssignedUser : GroupMember
+        }
 
 
 
@@ -2314,6 +2326,16 @@ module Dto =
                 return user
 
             }
+        let private toGroupMember (memberType:GroupMemberType) (aUser:User) :GroupMember =
+            let groupMember:GroupMember = {
+                    MemberId = aUser.UserId
+                    TenantId = aUser.TenantId
+                    Name = aUser.Person.Name.First + aUser.Person.Name.Last
+                    Type = memberType
+                }
+            groupMember
+        let toUserGroupMember = toGroupMember GroupMemberType.UserGroupMember
+         
 
     module GroupMember = 
 

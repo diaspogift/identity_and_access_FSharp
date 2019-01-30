@@ -18,6 +18,9 @@ open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open IdentityAndAcccess.DomainTypes.Tenant
+open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes.Group
 
 
 
@@ -40,6 +43,8 @@ type UserStreamEvent =
 
 type RoleStreamEvent =
     | RoleCreated of Dto.Role  
+    | UserAssignedToRole of Dto.UserAssignedToRoleEvent
+    | UserUnAssignedToRole of Dto.UserUnAssignedFromRoleEvent
     | RoleDeleted of Dto.Role
     | RoleRenamed of Dto.Role
 
@@ -48,8 +53,8 @@ type RoleStreamEvent =
 type GroupStreamEvent =
     | GroupCreated of Dto.GroupCreated
     | UserAddedToGroup of Dto.GroupMember
-    | GroupAddedToGroup of MemberAddedToGroupEvent
-    | GroupInAddedToGroup of MemberInAddedToGroupEvent
+    | GroupAddedToGroup of Dto.MemberAddedToGroupEvent
+    | GroupInAddedToGroup of Dto.MemberInAddedToGroupEvent
 
 
 
@@ -198,10 +203,10 @@ module EventStorePlayGround =
 
 
     let concatStreamId (p1:string) (p2:string) = p1.Trim() + p2.Trim() 
-    let concatTenantStreamId = concatStreamId "TENANT_With_ID_=_"
-    let concatRoleStreamId = concatStreamId "ROLE_With_ID_=_"
-    let concatGroupStreamId = concatStreamId "GROUP_With_ID_=_"
-    let concatUserStreamId = concatStreamId "USER_With_ID_=_"
+    let concatTenantStreamId = concatStreamId "tenant_id_=_"
+    let concatRoleStreamId = concatStreamId "role_id_=_"
+    let concatGroupStreamId = concatStreamId "group_id_=_"
+    let concatUserStreamId = concatStreamId "user_id_=_"
 
 
 
@@ -265,6 +270,28 @@ module EventStorePlayGround =
         match anEvent with 
         | RoleStreamEvent.RoleCreated role ->
             role
+        | RoleStreamEvent.UserAssignedToRole  userUnAssignedToRole ->
+            let roleInternalGroup = aRole.InternalGroup
+            let unwrapppedGroup = roleInternalGroup |> unwrapGroup
+            let newUserPlaiyingRoleList = userUnAssignedToRole.AssignedUser |> List.singleton 
+            let udatedMembers = unwrapppedGroup.Members @ newUserPlaiyingRoleList
+            let updatedUnwrapIntenanlGroup = {unwrapppedGroup with Members = udatedMembers}
+            let internalGroup:Dto.Group = updatedUnwrapIntenanlGroup |> Dto.Group.Internal 
+
+            { aRole with InternalGroup = internalGroup}
+
+        | RoleStreamEvent.UserUnAssignedToRole  userUnAssignedToRole ->
+            let roleInternalGroup = aRole.InternalGroup
+            let unwrapppedGroup = roleInternalGroup |> unwrapGroup
+            let newUserPlaiyingRoleList = 
+                unwrapppedGroup.Members  
+                |> List.filter (fun gm ->  gm <> userUnAssignedToRole.AssignedUser)
+            let udatedMembers = unwrapppedGroup.Members @ newUserPlaiyingRoleList
+            let updatedUnwrapIntenanlGroup = {unwrapppedGroup with Members = udatedMembers}
+            let internalGroup:Dto.Group = updatedUnwrapIntenanlGroup |> Dto.Group.Internal 
+
+            { aRole with InternalGroup = internalGroup}
+            
         | RoleStreamEvent.RoleDeleted role ->
             role
         | RoleStreamEvent.RoleRenamed role ->

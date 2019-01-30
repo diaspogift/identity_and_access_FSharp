@@ -9,6 +9,7 @@ open IdentityAndAcccess.DomainTypes.Functions
 open System
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes.Functions
 
 
 
@@ -108,6 +109,8 @@ type TenantProvisionedEvent =
     | TenantProvisionCreated of TenantProvisionCreated
     | InvitationWithdrawn of InvitationWithdrawn
     | InvitationOffered of InvitationOffered
+    | UserAssignedToRole of UserAssignedToRoleEvent
+    | UserUnAssignedFromRole of UserUnAssignedFromRoleEvent
     | ProvisionAcknowledgementSent of ProvisionAcknowledgementSent
 
 
@@ -329,28 +332,40 @@ module ProvisionTenantWorflowImplementation =
         fun aProvision ->
             //let tenant, user, role, invs =  aProvision
 
-            let tenant = aProvision.Tenant
-            let user = aProvision.AdminUser
-            let role = aProvision.AdminRole
+            let tenant = aProvision.Tenant |> Tenant.fromDomain
+            let user = aProvision.AdminUser |> User.fromDomain
+            let role = aProvision.AdminRole |> Role.fromDomain
             let offerredInv = aProvision.OfferredInvitation
             let withdrawnInv = aProvision.WithdrawnInvitation
 
             let tenantProvisionCreatedEvent = {
-                TenantProvisioned = tenant |> Tenant.fromDomain
-                RoleProvisioned = role |> Role.fromDomain
-                UserRegistered = user |> User.fromDomain
+                TenantProvisioned = tenant 
+                RoleProvisioned = role 
+                UserRegistered = user 
                 }
-            let tenantProvisionedEvent = TenantProvisionCreated tenantProvisionCreatedEvent
 
-            let ioff:InvitationOffered = {TenantId = tenant.TenantId |> TenantId.value ; Invitation = offerredInv |> RegistrationInvitation.fromDomain}
-            let iowi:InvitationWithdrawn = {TenantId = tenant.TenantId  |> TenantId.value ; Invitation = withdrawnInv |> RegistrationInvitation.fromDomain}
+            let ioff:InvitationOffered = {
+                TenantId = tenant.TenantId 
+                Invitation = offerredInv |> RegistrationInvitation.fromDomain
+                }
+            let iowi:InvitationWithdrawn = {
+                TenantId = tenant.TenantId 
+                Invitation = withdrawnInv |> RegistrationInvitation.fromDomain
+                }
+            let uassr:UserAssignedToRoleEvent = {
+                RoleId = role.RoleId
+                UserId = user.UserId
+                AssignedUser = user |> Dto.User.toUserGroupMember
+                }
 
+            let tenantProvisionedEvent = tenantProvisionCreatedEvent |> TenantProvisionedEvent.TenantProvisionCreated |> List.singleton
             let listOfOfferedRegInv = ioff |> TenantProvisionedEvent.InvitationOffered |> List.singleton
             let listOfWithdrawnRegInv = iowi |> TenantProvisionedEvent.InvitationWithdrawn |> List.singleton
-                
-            let r = List.append [tenantProvisionedEvent]  listOfOfferedRegInv  
+            let listUserAssignedToRole = uassr |> TenantProvisionedEvent.UserAssignedToRole |> List.singleton
+
+            tenantProvisionedEvent @ listOfOfferedRegInv @ listOfWithdrawnRegInv @ listUserAssignedToRole
+
             
-            List.append r listOfWithdrawnRegInv
 
 
 

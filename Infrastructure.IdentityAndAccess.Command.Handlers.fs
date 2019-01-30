@@ -208,6 +208,34 @@ module Command =
 
                         tenantEventList <- Array.append tenantEventList invitationOfferedEventL
 
+                    | TenantProvisionedEvent.UserAssignedToRole assigment ->
+
+                        let assigment : Dto.UserAssignedToRoleEvent  = { 
+                            RoleId = assigment.RoleId  
+                            UserId = assigment.UserId
+                            AssignedUser = assigment.AssignedUser
+                        }
+
+                        let assigment = assigment |> RoleStreamEvent.UserAssignedToRole
+                        let assigmentL = [assigment] |> List.toArray
+
+                        roleEventList <- Array.append roleEventList assigmentL
+                    
+                    | TenantProvisionedEvent.UserUnAssignedFromRole assigment ->
+
+                        let assigment : Dto.UserAssignedToRoleEvent  = { 
+                            RoleId = assigment.RoleId  
+                            UserId = assigment.UserId
+                            AssignedUser = assigment.AssignedUser
+                        }
+
+                        let assigment = assigment |> RoleStreamEvent.UserAssignedToRole
+                        let assigmentL = [assigment] |> List.toArray
+                        
+                        failwith "NOT IMPLEMENTED YET"
+
+                        //roleEventList <- Array.append roleEventList assigmentL
+
                     | TenantProvisionedEvent.InvitationWithdrawn invitation ->
                           
                         let registrationInvitationWithdrawnedDto : Dto.WithnrawnRegistrationInvitation  = {   
