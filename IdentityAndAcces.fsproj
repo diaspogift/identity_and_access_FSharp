@@ -17,14 +17,14 @@
     <Compile Include="Workflow.WithdrawRegistrationInvitation.Implementation.fs" />
     <Compile Include="Workflow.DeactivateTenantActivationStatus.Implementation.fs" />
     <Compile Include="Workflow.ReactivateTenantActivationStatus.Implementation.fs" />
+    <Compile Include="Infrastructure.NewtonSoftJsonImplForEventStore.Serialization.fs" />
+    <Compile Include="Infrastructure.GreyYoungEventStore.Implementation.fs" />
     <Compile Include="Infrastructure.IdentityAndAccess.Command.Handlers.fs" />
     <Compile Include="Infrastructure.IdentityAndAccess.RestApi.fs" />
-    <Compile Include="SerializationPlayGround.fs" />
-    <Compile Include="EventStorePlayGround.Implementation.fs" />
     <Compile Include="Domain.Services.Implementation.fs" />
     <Compile Include="Infrastrure.Services.Implementation.fs" />
-    <Compile Include="Queue.RabbitMq.Implementation.fs" />
-    <Compile Include="Application.IdentityAndAccess.fs" />
+    <Compile Include="Infrastructure.RabbitMq.Implementation.fs" />
+    <Compile Include="IdentityAndAccess.Application.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />

@@ -13,7 +13,6 @@ open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes.ProvisionGroupWorflowImplementation
 open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
 open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes.OffertRegistrationInvitationWorflowImplementation
-
 open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes
 open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes.WithdrawRegistrationInvitationWorflowImplementation
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
@@ -58,19 +57,50 @@ open System.Collections.Generic
 
 
 
+//Defining the comand types
+type Command<'data> = {
+    Data : 'data;
+    TimeStamp : DateTime;
+    UserId : string;
+}
 
 
 
+
+type ProvisionTenantCommand =
+        Command<UnvalidatedTenantProvision> 
 
     
-    
-
-    
-
-    
+type OfferRegistrationInvitationCommand =
+        Command<UnvalidatedRegistrationInvitationDescription> 
 
 
-    
+type WithdrawRegistrationInvitationCommand =
+        Command<UnvalidatedRegistrationInvitationIdentifier> 
+
+
+type ReactivateTenantActivationStatusCommand =
+        Command<UnvalidatedTenantActivationStatusData> 
+
+
+type DeactivateTenantActivationStatusCommand =
+        Command<UnvalidatedTenantActivationStatus> 
+
+
+type ProvisionGroupCommand =
+        Command<UnvalidatedGroup> 
+
+
+type ProvisionRoleCommand =
+        Command<UnvalidatedRole>   
+
+
+type AddUserToGroupCommand =
+        Command<UnvalidatedGroupAndUserId> 
+
+
+type AddGroupToGroupCommand =
+        Command<UnvalidatedGroupIds>        
 
 
 
@@ -115,7 +145,7 @@ module Command =
       
         let allTenantAggregateEvents 
             (tenantProvisionedEventLis) 
-            : (string * TenantStreamEvent array * string * RoleStreamEvent array * string * UserStreamEvent array) = 
+            : (string * TenantStreamEvent [] * string * RoleStreamEvent [] * string * UserStreamEvent []) = 
 
             let mutable tenantEventList = Array.Empty()
             let mutable userEventList = Array.Empty()
@@ -132,9 +162,9 @@ module Command =
                     match event with
                     | TenantProvisionedEvent.TenantProvisionCreated aTenantProvisionCreated ->  
 
-                        let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned |> Dto.Tenant.fromDomain
-                        let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> Dto.Role.fromDomain
-                        let userRegistered = aTenantProvisionCreated.UserRegistered |> Dto.User.fromDomain
+                        let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned 
+                        let roleProvisioned = aTenantProvisionCreated.RoleProvisioned 
+                        let userRegistered = aTenantProvisionCreated.UserRegistered 
 
                         tenantId <-   tenantProvisioned.TenantId
                         roleId <-  roleProvisioned.RoleId
@@ -225,9 +255,9 @@ module Command =
                     match event with
                     | TenantProvisionedEvent.TenantProvisionCreated aTenantProvisionCreated ->  
 
-                        let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned |> Dto.Tenant.fromDomain
-                        let roleProvisioned = aTenantProvisionCreated.RoleProvisioned |> Dto.Role.fromDomain
-                        let userRegistered = aTenantProvisionCreated.UserRegistered |> Dto.User.fromDomain
+                        let tenantProvisioned = aTenantProvisionCreated.TenantProvisioned 
+                        let roleProvisioned = aTenantProvisionCreated.RoleProvisioned 
+                        let userRegistered = aTenantProvisionCreated.UserRegistered 
 
                         tenantId <-   tenantProvisioned.TenantId
                         roleId <-  roleProvisioned.RoleId
@@ -345,6 +375,8 @@ module Command =
 
             | Error error ->
                 Error error
+
+
 
 
     module OfferInvitation = 
@@ -850,32 +882,42 @@ module Command =
             | Ok en ->
                 match en with  
                 | Ok events, groupStreamIdMemberWasToAddTo, lastEventNumber, lastEventNumberToAdd-> 
-                    let saveGroup2Event = async {
+                    let saveBothGroupEvents = async {
+                        events 
+                        |> List.iter 
+                            (fun event ->
 
-                        let group1Id, group1EventList, _, _ = events 
-                        let group1StreamId = concatGroupStreamId group1Id
-                        let rsAppendToGroup1Stream = 
-                            recursivePersistEventsStream group1StreamId lastEventNumber (group1EventList.Head |> toSequence |> Array.singleton)
-                     
-                        return rsAppendToGroup1Stream
-                        }      
+                                match event with 
+                                | GroupAddedToGroupEvent.MemberAdded memberAdded -> 
+
+                                    let group1StreamId = memberAdded.GroupId |> concatGroupStreamId 
+                                    let saveGroup1Event = async {
+                                        recursivePersistEventsStream group1StreamId lastEventNumber (memberAdded |> toSequence |> Array.singleton)
+                                        }
+                                    
+                                    saveGroup1Event 
+                                    |> Async.RunSynchronously
+                                     
+                                | GroupAddedToGroupEvent.MemberInAdded memberInAdded ->
+
+                                    let group2StreamId = memberInAdded.GroupId |> concatGroupStreamId 
+                                    let saveGroup2Event = async {
+                                        recursivePersistEventsStream group2StreamId lastEventNumber (memberInAdded |> toSequence |> Array.singleton)
+                                        }
+                                    
+                                    saveGroup2Event 
+                                    |> Async.RunSynchronously
+                                    )
+
+                        return ()
+                        } 
+
+                    saveBothGroupEvents 
+                    |> Async.RunSynchronously
                     
-                    let saveGroup1Events = async {
+                  
 
-                        let _, _, group2Id, group2EventList = events 
-                        let group2StreamId = concatGroupStreamId group2Id
-
-           
-                        let rsAppendToGroup2Stream = 
-                            recursivePersistEventsStream group2StreamId lastEventNumberToAdd (group2EventList.Head |> toSequence |> Array.singleton)
-                     
-                        return rsAppendToGroup2Stream
-                        }      
-
-                    saveGroup2Event
-                    |> Async.RunSynchronously
-                    saveGroup1Events
-                    |> Async.RunSynchronously
+                   
                     Ok events
                 | Error error, s, t, i ->
                     Error  error

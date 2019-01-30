@@ -9,13 +9,16 @@ open Suave
 open Suave.Operators
 open Suave.Filters
 
+open IdentityAndAcccess.Commamds.Handlers
 
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
-open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
-open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
-open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
-open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
-open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
+open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
+open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
+open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
+open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
+open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
+open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
+open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes
 open IdentityAndAcccess.Commamds.Handlers
 open RabbitMQ.Client.Impl
 
@@ -71,8 +74,8 @@ module Rest =
             
     ///Transform an type 'a into a webpart
     let toJsonWebPart v = 
-        let settings = new JsonSerializerSettings()
-        settings.ContractResolver <- new CamelCasePropertyNamesContractResolver()
+        let settings = JsonSerializerSettings()
+        settings.ContractResolver <- CamelCasePropertyNamesContractResolver()
         JsonConvert.SerializeObject(v, settings)
         |> OK >=> Writers.setMimeType "application/json; charset=utf-8"
 

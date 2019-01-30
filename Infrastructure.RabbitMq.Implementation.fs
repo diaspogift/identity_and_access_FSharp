@@ -1,4 +1,4 @@
-namespace IdentityAndAcces.Infrstructure.Queue.Impl
+namespace IdentityAndAcces.Infrstructure.RabbitMQ.Impl
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 
 

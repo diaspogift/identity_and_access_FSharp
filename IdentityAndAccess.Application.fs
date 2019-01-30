@@ -1,8 +1,5 @@
 ﻿// Learn more about F# at http://fsharp.org
-
-
-
-
+module IdentityAndAcccess.App
 
 
 open Suave.Web
@@ -20,7 +17,6 @@ open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes.ProvisionTenantWorflowImplementation
 open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
 open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes
-open IdentityAndAcccess.WithdrawRegistrationInvitationApiTypes.WithdrawRegistrationInvitationWorflowImplementation
 open Suave.Sockets
 
 open IdentityAndAcccess.Commamds.Handlers
@@ -30,12 +26,11 @@ open System
 
 
 
-open IdentityAndAccess.RabbitMQ.FSharp.Client
+open IdentityAndAcces.Infrstructure.RabbitMQ.Impl
 
 open IdentityAndAcccess.EventStorePlayGround.Implementation.EventStorePlayGround
 open EventStore.ClientAPI
 
-open IdentityAndAcccess.DeactivateTenantActivationStatusApiTypes.DeactivateTenantActivationStatusWorflowImplementation
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
@@ -48,7 +43,6 @@ open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowIm
 open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open System.Collections
-open IdentityAndAccess.RabbitMQ.FSharp.Client
 
 open IdentityAndAcccess.Commamds.Handlers.Command
 open IdentityAndAcccess.ReastApi
@@ -154,9 +148,9 @@ match  provisionTenantCommand |> ProvisionTenant.handle  with
         let role = t.RoleProvisioned
         let user = t.UserRegistered
 
-        diaspoGiftTenantId <- tenant.TenantId |> TenantId.value
-        diaspoGiftAdminUserId <- user.UserId |> UserId.value
-        diaspoGiftAdminRoleId <- role.RoleId |> RoleId.value 
+        diaspoGiftTenantId <- tenant.TenantId 
+        diaspoGiftAdminUserId <- user.UserId 
+        diaspoGiftAdminRoleId <- role.RoleId 
 
         printfn " diaspoGiftTenantId %A"   diaspoGiftTenantId   
         printfn " diaspoGiftAdminUserId %A"   diaspoGiftAdminUserId   
@@ -283,12 +277,16 @@ match  seniorDeveloperGroup |> ProvisionGroup.handle  with
 printEmptySeparatorLine(2)
 
 
-///ADD JUNIOR_DEVELOPER GROUP TO THE DEVELOPER GROUP
-match  {
+///ADD JUNIOR_DEVELOPER GROUP TO THE DEVELOPER GROUP 
+
+let  juniorToDeveloperGroup:AddGroupToGroupCommand = {
         Data = { GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup; GroupIdToAdd = diaspoGiftGroupIdForJuniorDeveloperGroup }
         TimeStamp = DateTime.Now
         UserId = diaspoGiftAdminUserId
-        } |> AddGroupToGroup.handle  with  
+        } 
+
+
+match  juniorToDeveloperGroup |> AddGroupToGroup.handle  with  
 | Ok rs -> 
     printEmptySeparatorLine(2)
     printfn " JUNIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP"
@@ -302,12 +300,13 @@ printEmptySeparatorLine(2)
 
 
 ///ADD MID_DEVELOPER GROUP TO THE DEVELOPER GROUP
-
-match  {   
+let midToDeveloperGroup:AddGroupToGroupCommand = {   
         Data = { GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup; GroupIdToAdd = diaspoGiftGroupIdForMidDeveloperGroup }
         TimeStamp = DateTime.Now
         UserId = diaspoGiftAdminUserId
-        } |> AddGroupToGroup.handle  with  
+        }
+
+match  midToDeveloperGroup |> AddGroupToGroup.handle  with  
 | Ok rs -> 
     printEmptySeparatorLine(2)
     printfn " JUNIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP"
@@ -324,12 +323,12 @@ printEmptySeparatorLine(1)
 
 ///ADD SENIOR_DEVELOPER GROUP TO THE DEVELOPER GROUP
 
-match  {   
+let seniorToDeveloper:AddGroupToGroupCommand = {   
         Data = {  GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup; GroupIdToAdd = diaspoGiftGroupIdForSeniorDeveloperGroup }
         TimeStamp = DateTime.Now
         UserId = diaspoGiftAdminUserId
         } 
-    |> AddGroupToGroup.handle  with  
+match seniorToDeveloper |> AddGroupToGroup.handle  with  
 | Ok rs -> 
     printEmptySeparatorLine(2)
     printfn " SENIOR DEVELOPER GROUP ADDED TO  DEVELOPER GROUP"
