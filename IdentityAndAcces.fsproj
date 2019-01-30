@@ -8,27 +8,23 @@
     <Compile Include="Domain.Common.Types.Functions.fs" />
     <Compile Include="Domain.Compound.Types.fs" />
     <Compile Include="Domain.Compound.Types.Functions.fs" />
-    <Compile Include="Worflow.ProvisionGroup.Implementation.fs" />
-    <Compile Include="AddUserToGroupWorkflow.PublicTypes.fs" />
-    <Compile Include="AddUserToGroupWorkflow.Implementation.fs" />
+    <Compile Include="Workflow.AddUserToGroup.Implementation.fs" />
     <Compile Include="Workflow.AddGroupToGroup.Implementation.fs" />
-    <Compile Include="ProvisionRole.PublicTypes.fs" />
+    <Compile Include="Workflow.ProvisionGroup.Implementation.fs" />
+    <Compile Include="Workflow.ProvisionRole.Implementation.fs" />
     <Compile Include="Workflow.ProvisionTenant.Implementation.fs" />
     <Compile Include="Workflow.OffertRegistrationInvitation.Implementation.fs" />
-    <Compile Include="WithdrawRegistrationInvitation.PublicTypes.fs" />
-    <Compile Include="WithdrawRegistrationInvitationWorflow.Implementation.fs" />
-    <Compile Include="DeactivateTenantActivationStatusWorflow.PublicTypes.fs" />
-    <Compile Include="DeactivateTenantActivationStatusWorflow.Implementation.fs" />
-    <Compile Include="ReactivateTenantActivationStatusWorflow.PublicTypes.fs" />
-    <Compile Include="ReactivateTenantActivationStatusWorflow.Implementation.fs" />
-    <Compile Include="App.Command.Handlers.fs" />
-    <Compile Include="IdentityAndAccessApp.RestApi.fs" />
+    <Compile Include="Workflow.WithdrawRegistrationInvitation.Implementation.fs" />
+    <Compile Include="Workflow.DeactivateTenantActivationStatus.Implementation.fs" />
+    <Compile Include="Workflow.ReactivateTenantActivationStatus.Implementation.fs" />
+    <Compile Include="Infrastructure.IdentityAndAccess.Command.Handlers.fs" />
+    <Compile Include="Infrastructure.IdentityAndAccess.RestApi.fs" />
     <Compile Include="SerializationPlayGround.fs" />
     <Compile Include="EventStorePlayGround.Implementation.fs" />
     <Compile Include="Domain.Services.Implementation.fs" />
     <Compile Include="Infrastrure.Services.Implementation.fs" />
     <Compile Include="Queue.RabbitMq.Implementation.fs" />
-    <Compile Include="App.IdentityAndAccess.fs" />
+    <Compile Include="Application.IdentityAndAccess.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />

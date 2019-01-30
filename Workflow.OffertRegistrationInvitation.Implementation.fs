@@ -1,4 +1,4 @@
-namespace IdentityAndAcccess.OffertRegistrationInvitationApiTypes
+namespace IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
 
 open IdentityAndAcccess.DomainTypes.Tenant
 open IdentityAndAcccess.DomainTypes.User

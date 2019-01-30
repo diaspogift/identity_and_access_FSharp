@@ -11,7 +11,6 @@ open Suave.Filters
 
 
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
-open IdentityAndAcccess.Workflow.WithdrawRegistrationInvitationApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
@@ -20,10 +19,6 @@ open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
 open IdentityAndAcccess.Commamds.Handlers
 open RabbitMQ.Client.Impl
 
-open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
-open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
-open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
-open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
 open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
 
