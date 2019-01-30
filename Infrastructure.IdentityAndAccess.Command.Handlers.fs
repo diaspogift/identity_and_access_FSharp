@@ -903,7 +903,7 @@ module Command =
                                     let group1Evt = memberInAdded |> GroupStreamEvent.GroupInAddedToGroup
 
                                     let saveGroup2Event = async {
-                                        recursivePersistEventsStream group2StreamId lastEventNumber (group1Evt |> toSequence |> Array.singleton)
+                                        recursivePersistEventsStream group2StreamId lastEventNumberToAdd (group1Evt |> toSequence |> Array.singleton)
                                         }
                                     
                                     saveGroup2Event 
@@ -915,10 +915,6 @@ module Command =
 
                     saveBothGroupEvents 
                     |> Async.RunSynchronously
-                    
-                  
-
-                   
                     Ok events
                 | Error error, s, t, i ->
                     Error  error
