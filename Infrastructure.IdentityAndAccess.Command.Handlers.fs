@@ -401,6 +401,7 @@ module Command =
 
         let handle(aCommand:ProvisionTenantCommand) = 
 
+
             let data = aCommand.Data
             
             let ouput = data |> provisionTenantWorflow 
@@ -718,7 +719,7 @@ module Command =
                         Status = rsWorkflowCall.Status
                         Reason = rsWorkflowCall.Reason
                         }
-                    let event = eventDto |> TenantStreamEvent.ActivationStatusDeActivated
+                    let event = eventDto |> TenantStreamEvent.ActivationStatusReActivated
                     let eventList =  event |> toSequence |> Array.singleton
                     
                     recursivePersistEventsStream tenantStreamId tenantAggrLastEventNum eventList 
@@ -877,7 +878,7 @@ module Command =
             let workflowResult = result {
                 
 
-                let! loadRoleAndGroup = result {  
+                let! loadInputs = result {  
 
                     let aCommandData = aCommad.Data
 
@@ -907,7 +908,7 @@ module Command =
                     domainRole, 
                     _,
                     _, 
-                    domainUser = loadRoleAndGroup
+                    domainUser = loadInputs
 
 
                 let! rscallWorkflow = result {  
@@ -930,6 +931,7 @@ module Command =
 
                     return eventDto
                     } 
+
 
                 return persisteWorflowEvents
                 }

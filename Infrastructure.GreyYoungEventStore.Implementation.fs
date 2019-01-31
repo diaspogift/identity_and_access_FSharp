@@ -335,7 +335,7 @@ module EventStorePlayGround =
             let tenantZeroState:IdentityAndAcccess.DomainTypes.Functions.Dto.Tenant = tenantZeroState.Tenant
             let tenantDto =  foundTenantEventStreamList |>  List.toArray |> Seq.fold applyTenantEvent tenantZeroState
             let tenantAggregate : AggregateRecord<Dto.Tenant> = {
-                StreamId = tenantDto.TenantId
+                StreamId = toTenantStreamId tenantDto.TenantId 
                 Data = tenantDto 
                 LastEventNum = lastEventNumber
             }
@@ -359,7 +359,7 @@ module EventStorePlayGround =
             let roleDto =  foundRoleEventStreamList |>  List.toArray |> Seq.fold applyRoleEvent roleZeroState
 
             let roleAggregate : AggregateRecord<Dto.Role> = {
-                StreamId = roleStreamId
+                StreamId = toRoleStreamId roleStreamId
                 Data = roleDto 
                 LastEventNum = lastEventNumber
             }
@@ -381,7 +381,7 @@ module EventStorePlayGround =
             let userDto =  foundUserEventStreamList |>  List.toArray |> Seq.fold applyUserEvent userZeroState
 
             let userAggregate : AggregateRecord<Dto.User> = {
-                StreamId = userStreamId
+                StreamId = toUserStreamId userStreamId
                 Data = userDto 
                 LastEventNum = lastEventNumber
             }
