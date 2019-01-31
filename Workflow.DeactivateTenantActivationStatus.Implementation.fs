@@ -27,7 +27,7 @@ open IdentityAndAcccess.DomainTypes.Functions.Dto
 
 
 
-type UnvalidatedTenantActivationStatus = {
+type UnvalidatedTenantDeactivationStatus = {
     
     TenantId : string
     ActivationStatus : bool
@@ -50,7 +50,7 @@ type Command<'data> = {
 
 
 type DeactivateTenantActivationStatusCommand =
-        Command<UnvalidatedTenantActivationStatus> 
+        Command<UnvalidatedTenantDeactivationStatus> 
 
 
 ///Ouputs of the provision tenant worflow 
@@ -86,7 +86,7 @@ type DeactivateTenantActivationStatusError =
 //Worflow type 
 
 type DeactivateTenantActivationStatusWorkflow = 
-    Tenant.Tenant -> CommonDomainTypes.Reason -> UnvalidatedTenantActivationStatus -> Result<TenantActivationStatusDeactivatedEvent, DeactivateTenantActivationStatusError>
+    Tenant.Tenant -> CommonDomainTypes.Reason -> UnvalidatedTenantDeactivationStatus -> Result<TenantActivationStatusDeactivatedEvent, DeactivateTenantActivationStatusError>
 
 
 
@@ -103,7 +103,7 @@ type ValidatedTenantActivationStatus = {
 
 type ValidateTenantActivationStatus =
 
-    UnvalidatedTenantActivationStatus -> Result<ValidatedTenantActivationStatus, DeactivateTenantActivationStatusError>
+    UnvalidatedTenantDeactivationStatus -> Result<ValidatedTenantActivationStatus, DeactivateTenantActivationStatusError>
 
 
 

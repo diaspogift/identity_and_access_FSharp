@@ -168,77 +168,43 @@ module Group =
 
 
 
-    let isUserInNestedGroupServiceLocal : IsUserInNestedGroupService = 
+    let isUserInNestedGroupService : IsUserInNestedGroupService = 
 
-        fun loadGroupMemberById  //Database dependency
-            aGroup 
-            aUser ->
+        fun   aGroup aUserMember ->
 
-
-
-
-            let rec InternalRecursiveIsUserInNestedGroupService (aMember : GroupMember)  
-                                                                (loadGroupMemberById : LoadGroupMemberById) 
-                                                                (aGroupMemberList : GroupMember list) =
+            let rec recursiveCheck (aUserMemberToChechIfInNestedGroup : GroupMember) (aGroupMemberList : GroupMember list) =
                                                                 
+                match aGroupMemberList with
+                | [] -> 
+                    let rs0 = ([], false)
+                    rs0
+                | firstGroupMember::remainingGroupMembers ->
 
-                    match aGroupMemberList with
-                    | [] -> 
-                        false
-                    | head::tail ->
+                    if (firstGroupMember.Type = GroupMemberType.UserGroupMember) && (aUserMemberToChechIfInNestedGroup = firstGroupMember)    then
+                        let rs1 = ([], true)
+                        rs1
+                    else if (firstGroupMember.Type = GroupMemberType.GroupGroupMember) && (aUserMemberToChechIfInNestedGroup <> firstGroupMember) then
+                        let rsSearch,
+                            _ = recursiveCheck aUserMemberToChechIfInNestedGroup remainingGroupMembers
+                        let rs2 = (rsSearch@[firstGroupMember], false)
+                        rs2
+                    else 
+                        let rs3 = ([], false)
+                        rs3
 
-                        if (head.Type = GroupGroupMember) && (head = aMember) then
-                            true
-                        else 
+                    
                         
-                        
-                        ///IO operation here. looking for a group member by its group member identifier - START
-                            let additionalGroupToSearch = loadGroupMemberById head.MemberId
-                        ///IO operation here. - END
-                       
-                            match additionalGroupToSearch with
-                            | Ok anAdditionalGroupToSearch ->
-
-                                let aStandardAdditionalGroupToSearch = anAdditionalGroupToSearch 
-                                                                       |> DomainHelpers.unwrapToStandardGroup
-                                                                       
-                                let newMembersToAppend =  aStandardAdditionalGroupToSearch.Members
-                                let allMembers = tail @ newMembersToAppend
-                                let result = InternalRecursiveIsUserInNestedGroupService aMember loadGroupMemberById allMembers
-
-                                result
-
-                            | Error _ -> false
-
+            let uwGroup = aGroup |> unwrapToStandardGroup 
+            let uwGroupMembers = uwGroup.Members
+                
+            recursiveCheck aUserMember uwGroupMembers
+                   
 
             
-            let aStandardGroup = aGroup |> DomainHelpers.unwrapToStandardGroup
-            let aUserGroupMember = aUser |> User.toUserGroupMember
-
-
-            match aUserGroupMember with  
-            | Ok aMember ->
-
-                InternalRecursiveIsUserInNestedGroupService  aMember  loadGroupMemberById   aStandardGroup.Members
-                   
-            | Error error ->
-                false
+         
 
         
-    let isUserInNestedGroupServiceImpl = 
-            isUserInNestedGroupServiceLocal loadGroupByGroupMemberIdGreyYoungEventStoreDependencyFunction
-
-
-   
-
-
-    let groupMemberServices: GroupMemberServices = {
-        TimeServiceWasCalled = DateTime.Now
-        CallerCredentials = CallerCredential "FOTIO"
-        isGroupMember = isGroupMemberIsInGroupServiceLocalImpl
-        isUserInNestedGroup = isUserInNestedGroupServiceLocal
-        }
-
+    
     
 
     
@@ -257,7 +223,7 @@ module Group =
 module Role =
 
 
-
+    ()
 
 
     ///Database dependecies 
@@ -276,18 +242,18 @@ module Role =
 
     //Authorisation relatedservices
 
-    let isUserInRoleServiceImpl : IsUserInRoleService' = 
+    // let isUserInRoleServiceImpl : IsUserInRoleService = 
 
-        fun  isUserInNestedGroupService confirmUserServive aRole aUser -> 
+    //     fun  isUserInNestedGroupService confirmUserServive aRole aUser -> 
 
-            match aUser.Enablement.EnablementStatus with 
-            | Enabled -> 
+    //         match aUser.Enablement.EnablementStatus with 
+    //         | Enabled -> 
 
-                Role.isInRole isUserInNestedGroupService confirmUserServive aRole aUser
+    //             Role.isInRole isUserInNestedGroupService confirmUserServive aRole aUser
 
-            | Disabled ->
+    //         | Disabled ->
 
-                false
+    //             false
 
 
         
@@ -336,7 +302,7 @@ module User =
     //Domain related services
     let confirmUserServiveImpl : ConfirmUserServive = 
 
-        fun loadUserByUserIdAndTenantId aGroup aUser ->
+        fun aGroup aUser ->
             let unWrappedGroup  =  aGroup |> unwrapToStandardGroup 
             aUser.TenantId = unWrappedGroup.TenantId
 
@@ -352,23 +318,23 @@ module User =
 
 
 
-    let allRolesForIdentifiedUser (isUserInNestedGroup:IsUserInNestedGroupService')  //Dependency
-                                  (confirmUserServive:ConfirmUserServive')          //Dependency
-                                  (allTenantRoles:Role list) (aTenant:Tenant) (aUser:User) : RoleDescriptor list = 
+    // let allRolesForIdentifiedUser (isUserInNestedGroup:IsUserInNestedGroupService')  //Dependency
+    //                               (confirmUserServive:ConfirmUserServive')          //Dependency
+    //                               (allTenantRoles:Role list) (aTenant:Tenant) (aUser:User) : RoleDescriptor list = 
 
-        let fromRoleToRoleDescriptor (aRole:Role) =
-             {RoleId = aRole.RoleId; TenantId = aRole.TenantId; Name = aRole.Name}
+    //     let fromRoleToRoleDescriptor (aRole:Role) =
+    //          {RoleId = aRole.RoleId; TenantId = aRole.TenantId; Name = aRole.Name}
 
 
 
-        let isUserPlayingRole aUser aRole  = 
-            Role.isInRole isUserInNestedGroup confirmUserServive aRole aUser
+    //     let isUserPlayingRole aUser aRole  = 
+    //         Role.isInRole isUserInNestedGroup confirmUserServive aRole aUser
 
-        let isUserPlayingRole' = isUserPlayingRole  aUser
+    //     let isUserPlayingRole' = isUserPlayingRole  aUser
 
-        allTenantRoles
-        |> List.filter isUserPlayingRole'
-        |> List.map fromRoleToRoleDescriptor
+    //     allTenantRoles
+    //     |> List.filter isUserPlayingRole'
+    //     |> List.map fromRoleToRoleDescriptor
 
 
 

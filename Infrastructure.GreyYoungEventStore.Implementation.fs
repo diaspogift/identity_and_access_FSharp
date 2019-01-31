@@ -60,10 +60,11 @@ type GroupStreamEvent =
 
 
 
-
-
-
-
+type AggregateRecord<'Data> = {
+    StreamId : string 
+    Data : 'Data
+    LastEventNum : int64
+}
 
 
 
@@ -202,11 +203,11 @@ module EventStorePlayGround =
 
 
 
-    let concatStreamId (p1:string) (p2:string) = p1.Trim() + p2.Trim() 
-    let concatTenantStreamId = concatStreamId "tenant_id_=_"
-    let concatRoleStreamId = concatStreamId "role_id_=_"
-    let concatGroupStreamId = concatStreamId "group_id_=_"
-    let concatUserStreamId = concatStreamId "user_id_=_"
+    let toStreamId (p1:string) (p2:string) = p1.Trim() + p2.Trim() 
+    let toTenantStreamId = toStreamId "tenant_id_=_"
+    let toRoleStreamId = toStreamId "role_id_=_"
+    let toGroupStreamId = toStreamId "group_id_=_"
+    let toUserStreamId = toStreamId "user_id_=_"
 
 
 
@@ -333,7 +334,12 @@ module EventStorePlayGround =
         | TenantStreamEvent.TenantCreated tenantZeroState ->  
             let tenantZeroState:IdentityAndAcccess.DomainTypes.Functions.Dto.Tenant = tenantZeroState.Tenant
             let tenantDto =  foundTenantEventStreamList |>  List.toArray |> Seq.fold applyTenantEvent tenantZeroState
-            Ok (tenantStreamId, tenantDto, lastEventNumber)
+            let tenantAggregate : AggregateRecord<Dto.Tenant> = {
+                StreamId = tenantDto.TenantId
+                Data = tenantDto 
+                LastEventNum = lastEventNumber
+            }
+            Ok tenantAggregate
         | _ -> 
             Error "Could not built tenant initial state"
 
@@ -351,9 +357,15 @@ module EventStorePlayGround =
         match  foundRoleEventStreamList.Head with  
         | RoleStreamEvent.RoleCreated roleZeroState ->  
             let roleDto =  foundRoleEventStreamList |>  List.toArray |> Seq.fold applyRoleEvent roleZeroState
-            Ok (roleStreamId, roleDto, lastEventNumber)
+
+            let roleAggregate : AggregateRecord<Dto.Role> = {
+                StreamId = roleStreamId
+                Data = roleDto 
+                LastEventNum = lastEventNumber
+            }
+            Ok roleAggregate
         | _ -> 
-            Error "Could not built tenant initial state"
+            Error "Could not built role initial state"
 
 
 
@@ -363,13 +375,18 @@ module EventStorePlayGround =
         let foundUserEventStreamList, lastEventNumber,
             _ = readStream<UserStreamEvent> store userStreamId 0L 4095  |> Async.RunSynchronously
 
-        printfn "foundUserEventStreamList = %A" foundUserEventStreamList
-        printfn "userStreamId = %A" userStreamId
-
+       
         match foundUserEventStreamList.Head with
         | UserStreamEvent.UserRegistered userZeroState ->
             let userDto =  foundUserEventStreamList |>  List.toArray |> Seq.fold applyUserEvent userZeroState
-            Ok (userStreamId, userDto, lastEventNumber)
+
+            let userAggregate : AggregateRecord<Dto.User> = {
+                StreamId = userStreamId
+                Data = userDto 
+                LastEventNum = lastEventNumber
+            }
+            Ok userAggregate
+
         | _ ->
             Error "Could not built tenant initial state"
 
@@ -384,76 +401,80 @@ module EventStorePlayGround =
         let foundGroupEventStreamList,lastEventNumber,
             _ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
 
-        printfn "=========================="
-        printfn "foundGroupEventStreamList %A" foundGroupEventStreamList
-        printfn "=========================="
-       
+
         match foundGroupEventStreamList.Head with  
         | GroupStreamEvent.GroupCreated groupZeroState ->  
             let groupZeroState = groupZeroState |> unwrapGroupCreated
-            let groupDto =  foundGroupEventStreamList 
-                            |>  List.toArray 
-                            |> Seq.fold applyGroupEvent groupZeroState
+            let groupDto =  foundGroupEventStreamList |>  List.toArray |> Seq.fold applyGroupEvent groupZeroState
 
-            printfn "=========================="
-            printfn "groupDto  %A" groupDto
-            printfn "=========================="
-            Ok (groupStreamId, groupDto, lastEventNumber)
+            let groupAggregate : AggregateRecord<Dto.StandardGroup> = {
+                StreamId = groupStreamId
+                Data = groupDto 
+                LastEventNum = lastEventNumber
+            }
+            Ok groupAggregate
         | _ ->      
             Error "Could not built group initial state"
 
         
-    let loadGroupWithGroupId (aGroupId:CommonDomainTypes.GroupId) : Result<Group.Group, string>  = 
+    let loadGroupWithGroupId (aGroupId:CommonDomainTypes.GroupId)   = 
 
      
-        let groupStreamId = aGroupId |> GroupId.value |> concatGroupStreamId
-
-        printfn "=========================="
-        printfn "groupStreamId %A" groupStreamId
-        printfn "=========================="
-
+        let groupStreamId = aGroupId |> GroupId.value |> toGroupStreamId
 
         let store = create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
-        let foundGroupEventStreamList,_,_ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
+        let foundGroupEventStreamList, lastEventNumber,_ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
        
         match foundGroupEventStreamList.Head with  
         | GroupStreamEvent.GroupCreated groupZeroState -> 
-            let groupZeroState = groupZeroState |> unwrapGroupCreated
-            let groupDto =  foundGroupEventStreamList 
-                            |>  List.toArray 
-                            |> Seq.fold applyGroupEvent groupZeroState
-            groupDto 
-            |> Dto.Group.Standard
-            |> Group.toDomain
+            
+            result {
+                let groupZeroState = groupZeroState |> unwrapGroupCreated
+                let groupDto =  foundGroupEventStreamList |>  List.toArray |> Seq.fold applyGroupEvent groupZeroState
+                
+                let! domain = groupDto |> Dto.Group.Standard |> Group.toDomain
+
+                let groupAggregate : AggregateRecord<Group.Group> = {
+                    StreamId = groupStreamId
+                    Data = domain 
+                    LastEventNum = lastEventNumber
+                    }
+
+                return groupAggregate
+                }
         | _ ->      
             Error "Could not built group initial state"
 
 
 
-    let loadGroupWithGroupMemberId : LoadGroupMemberById = 
+
+
+    let loadGroupWithGroupMemberId (aGroupMemberId:CommonDomainTypes.GroupMemberId) = 
         
-        fun (aGroupMemberId:GroupMemberId) ->
-
      
-        let groupStreamId = aGroupMemberId |> GroupMemberId.value |> concatGroupStreamId
-
-        printfn "=========== IN loadGroupWithGroupMemberId ==============="
-        printfn "groupStreamId %A" groupStreamId
-        printfn "=========== IN loadGroupWithGroupMemberId ==============="
-
+        let groupStreamId = aGroupMemberId |> GroupMemberId.value |> toGroupStreamId
 
         let store = create groupStreamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
-        let foundGroupEventStreamList,_,_ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
-       
+        let foundGroupEventStreamList, lastEventNumber,_ = readStream<GroupStreamEvent> store groupStreamId 0L 4095  |> Async.RunSynchronously
+        
+        
         match foundGroupEventStreamList.Head with  
-        | GroupStreamEvent.GroupCreated groupZeroState ->  
-            let groupZeroState = groupZeroState |> unwrapGroupCreated
-            let groupDto =  foundGroupEventStreamList 
-                            |>  List.toArray 
-                            |> Seq.fold applyGroupEvent groupZeroState
-            groupDto 
-            |> Dto.Group.Standard
-            |> Group.toDomain
+        | GroupStreamEvent.GroupCreated groupZeroState -> 
+            
+            result {
+                let groupZeroState = groupZeroState |> unwrapGroupCreated
+                let groupDto =  foundGroupEventStreamList |>  List.toArray |> Seq.fold applyGroupEvent groupZeroState
+                
+                let! domain = groupDto |> Dto.Group.Standard |> Group.toDomain
+
+                let groupAggregate : AggregateRecord<Group.Group> = {
+                    StreamId = groupStreamId
+                    Data = domain 
+                    LastEventNum = lastEventNumber
+                    }
+
+                return groupAggregate
+                }
         | _ ->      
             Error "Could not built group initial state"
 
@@ -470,7 +491,7 @@ module EventStorePlayGround =
 
 
 
-    let rec recursivePersistEventsStream streamId (position:int64) (eventsToPersist:seq<'T> array) = 
+    let rec recursivePersistEventsStream streamId (position:int64) (eventsToPersist:seq<'T> []) = 
 
         let store = create streamId "tcp://admin:changeit@localhost:1113" |> Async.RunSynchronously 
 

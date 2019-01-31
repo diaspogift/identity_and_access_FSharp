@@ -120,7 +120,7 @@ module Rest =
                 >> toJsonWebPart)
 
             path "/deactivate-tenant" 
-                >=> request (getResourceFromReq<UnvalidatedTenantActivationStatus> 
+                >=> request (getResourceFromReq<UnvalidatedTenantDeactivationStatus> 
                 >> Command.DeactivateTenant.toCommand
                 >> Command.DeactivateTenant.handle
                 >> workflowResultToHttpReponse

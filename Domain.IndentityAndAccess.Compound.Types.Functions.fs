@@ -30,6 +30,8 @@ open IdentityAndAcccess.DomainTypes.Group
 
 
 
+
+
 /// To be moved to common the namespace
 
 let preppend  firstR restR = 
@@ -54,6 +56,22 @@ let unwrapToStandardGroup aGroupToUnwrapp =
 let generateNoEscapeId () =   
     let objectId = ObjectId.GenerateNewId()
     objectId.ToString().ToUpper()
+
+
+
+let isSameTenancy (tid1:TenantId) (tid2:TenantId)  = tid1 <> tid2
+
+
+let passThroughLocal errorMessage f x y grpMember  = 
+    if f x y then 
+        Ok grpMember 
+    else 
+       Error errorMessage
+
+let passThrough = passThroughLocal "Wrong tenant consistency!" 
+
+
+
 
 
 
@@ -192,26 +210,19 @@ module ServiceInterfaces =
                 -> GroupMember   
                 -> Boolean
 
-    type IsUserInNestedGroupService = 
-            LoadGroupMemberById 
-                -> Group 
-                -> User 
-                -> Boolean
 
-    type IsUserInNestedGroupService' = 
-             Group 
-                -> User 
-                -> Boolean
+    
+    type IsUserInNestedGroupService = 
+            Group 
+                -> GroupMember 
+                -> (GroupMember list * Boolean)
+
+
+
 
     type ConfirmUserServive = 
-            LoadUserByUserIdAndTenantId 
-                -> Group 
-                -> User
-                -> Boolean
-
-    type ConfirmUserServive' = 
              Group 
-                -> User 
+                -> GroupMember 
                 -> Boolean  
 
 
@@ -274,9 +285,7 @@ module ServiceInterfaces =
     
 
     type IsUserInRoleService =  
-        IsUserInNestedGroupService 
-            -> ConfirmUserServive
-            -> Role
+        Role
             -> User
             -> Boolean
             
@@ -292,16 +301,6 @@ module ServiceInterfaces =
 
 
 
-
-
-    
-
-    type IsUserInRoleService' =  
-        IsUserInNestedGroupService' 
-            -> ConfirmUserServive'
-            -> Role
-            -> User
-            -> Boolean
 
 
     type Subject = Subject of string
@@ -1379,51 +1378,31 @@ module Group =
 
             
 
-    let isMember (isUserInNestedGroupService:IsUserInNestedGroupService') //Service depndency for business logic function
-                 (confirmUserServive:ConfirmUserServive') //Service depndency for business logic function
+    let isMember (isUserInNestedGroupService:IsUserInNestedGroupService) //Service depndency for business logic function
+                 (confirmUserServive:ConfirmUserServive) //Service depndency for business logic function
                  (aGroup:Group) 
-                 (aUser:User)
-                 :Boolean =
+                 (aUserMember:GroupMember)
+                 :(GroupMember list * Boolean) =
 
         let aStandardGroup = aGroup |> unwrapToStandardGroup
-        let areBothFromSameTenant = aStandardGroup.TenantId = aUser.TenantId
-        let userIsEnabled = aUser |> User.isEnabled
+        let areBothFromSameTenant = aStandardGroup.TenantId = aUserMember.TenantId
+        //let userIsEnabled = aUserMember |> User.isEnabled
 
-        match areBothFromSameTenant with
-        | true -> 
+        
 
-            match userIsEnabled with
-            | true  ->
+        let foundMembers = aStandardGroup.Members |> List.filter (fun nextGM -> aUserMember = nextGM)
 
-                let groupMemberToFind = aUser |> User.toUserGroupMember
+        match foundMembers with 
+         |[foundMember] -> 
+            match foundMember |> confirmUserServive aGroup  with 
+            | true -> 
+                ([], true)
+            | false -> 
+                aUserMember |> isUserInNestedGroupService  aGroup 
+         |_::_ -> ([], false)
+         |[] -> ([], false)
+     
 
-                match groupMemberToFind with 
-                | Ok gMToFind ->
-
-                    let foundMembers = 
-                        aStandardGroup.Members 
-                                      |> List.filter (
-                                          fun nextGM -> gMToFind.MemberId = nextGM.MemberId
-                                      )
-
-                    match foundMembers with 
-                     |[] -> false
-                     |[_] -> 
-                        
-                        let userConfirmationResult = confirmUserServive aGroup aUser 
-
-                        match userConfirmationResult with 
-                        | true -> 
-                            aUser |> isUserInNestedGroupService  aGroup 
-                        | false -> false
-                     |_::_ ->
-                        false
-                | Error _ ->
-                    false
-            | false ->
-                false
-        | false ->
-            false
 
 
 
@@ -1716,30 +1695,34 @@ module Role =
 
     let assignUser (aRole:Role) (aUser:User) =
 
-        let areBothFromSameTenants = (aRole.TenantId = aUser.TenantId)
+        
 
-        match areBothFromSameTenants with 
-        | true ->
-            let rsGroupMember = result {
+            result {
+
+
+                let sameTenancyChecked = passThrough  isSameTenancy aRole.TenantId  aUser.TenantId 
+  
+                 
                 let! userToGroupMember = aUser |> User.toUserGroupMember
-                let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup        
-                let foundGrouMember = roleInternalGroup.Members |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
-                return (foundGrouMember, userToGroupMember)
-                }
-            match rsGroupMember with 
-            | Ok optionGmAndUser->
-                match optionGmAndUser with
-                | (Some _, _) -> Error "User already playing the role"
-                | (None, gmToAdd) ->
-                    let roleInternalStandardGroup = aRole.InternalGroup |> unwrapToStandardGroup  
-                    let newStandarGroup = {roleInternalStandardGroup with Members = [gmToAdd]@roleInternalStandardGroup.Members}
-                    let newRoleInternalGroup = Internal newStandarGroup
-                    let newInternalRoleGroup = {aRole with InternalGroup = newRoleInternalGroup}
-                    Ok newInternalRoleGroup
-            | Error error ->  
-                Error error     
-        | false -> 
-            Error "Wrond tenant consistency"
+                let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup   
+                
+                     
+                let! foundGroupMember = 
+                     roleInternalGroup.Members 
+                     |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
+                     |> Result.ofOption "User already playing the role"
+                     
+                let! groupMember = foundGroupMember |> sameTenancyChecked
+
+                let roleInternalStandardGroup = aRole.InternalGroup |> unwrapToStandardGroup  
+                let newStandarGroup = {roleInternalStandardGroup with Members = [groupMember]@roleInternalStandardGroup.Members}
+                let newRoleInternalGroup = Internal newStandarGroup
+                let newInternalRoleGroup = {aRole with InternalGroup = newRoleInternalGroup}
+               
+                                        
+                return (newInternalRoleGroup, userToGroupMember)
+
+                }    
 
 
 
@@ -1751,10 +1734,10 @@ module Role =
 
 
 
-    let isInRole (isUserInNestedGroup:IsUserInNestedGroupService') (confirmUserServive:ConfirmUserServive') (aRole:Role) (aUser:User)  =
+    let isInRole (isUserInNestedGroup:IsUserInNestedGroupService) (confirmUserServive:ConfirmUserServive) (aRole:Role) (aUserMember:GroupMember)  =
 
         let roleInternalGroup = aRole.InternalGroup
-        isMember isUserInNestedGroup confirmUserServive roleInternalGroup aUser
+        isMember isUserInNestedGroup confirmUserServive roleInternalGroup aUserMember
 
 
         
