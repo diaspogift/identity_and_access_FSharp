@@ -24,6 +24,7 @@ open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes.Group
+open Suave.Sockets
 
 
 
@@ -59,7 +60,7 @@ let generateNoEscapeId () =
 
 
 
-let isSameTenancy (tid1:TenantId) (tid2:TenantId)  = tid1 <> tid2
+let isSameTenancy (tid1:TenantId) (tid2:TenantId)  = tid1 = tid2
 
 
 let passThroughLocal errorMessage f x y grpMember  = 
@@ -73,6 +74,30 @@ let passThrough = passThroughLocal "Wrong tenant consistency!"
 
 
 
+
+
+let isNotGroupMemberForRoleInternalGroup (aRole:Role.Role) (aUserMember:Group.GroupMember) :(Result<bool, string>) =
+
+    let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup
+    let checkGroupMemberDoesNotExist = 
+         roleInternalGroup.Members 
+         |> List.exists (fun gm -> gm = aUserMember)
+         |> (fun rsCheck ->
+             if rsCheck then Error "User already playing the role" 
+             else Ok rsCheck
+             ) 
+    checkGroupMemberDoesNotExist
+
+let passThroughLocal1 errorMessage f x y grpMember  = 
+    match (f x y) with 
+    | Ok true -> Error errorMessage
+    | Ok false -> Ok grpMember 
+    | Error error -> Error error
+       
+
+let passThrough1 = passThroughLocal1 "User already playing the role !" 
+
+//let memberPlaysRoleChecked = passThrough1  
 
 
 type IsGroupMemberService =  Group -> Group  -> Result<Boolean,string>
@@ -1696,31 +1721,22 @@ module Role =
     let assignUser (aRole:Role) (aUser:User) =
 
         
-
             result {
 
+                let! aUserMember = aUser |> User.toUserGroupMember
 
                 let sameTenancyChecked = passThrough  isSameTenancy aRole.TenantId  aUser.TenantId 
-  
-                 
-                let! userToGroupMember = aUser |> User.toUserGroupMember
-                let roleInternalGroup = aRole.InternalGroup |> unwrapToStandardGroup   
-                
+                let memberDoesNotPlaysRoleChecked = passThrough1 isNotGroupMemberForRoleInternalGroup aRole  aUserMember 
                      
-                let! foundGroupMember = 
-                     roleInternalGroup.Members 
-                     |> List.tryFind (fun gm -> gm.MemberId = userToGroupMember.MemberId)
-                     |> Result.ofOption "User already playing the role"
-                     
-                let! groupMember = foundGroupMember |> sameTenancyChecked
+                let! maybeMember = aUserMember |> sameTenancyChecked
+                let! maybeMember = maybeMember |> memberDoesNotPlaysRoleChecked
 
                 let roleInternalStandardGroup = aRole.InternalGroup |> unwrapToStandardGroup  
-                let newStandarGroup = {roleInternalStandardGroup with Members = [groupMember]@roleInternalStandardGroup.Members}
+                let newStandarGroup = {roleInternalStandardGroup with Members = [maybeMember]@roleInternalStandardGroup.Members}
                 let newRoleInternalGroup = Internal newStandarGroup
-                let newInternalRoleGroup = {aRole with InternalGroup = newRoleInternalGroup}
-               
+                let newInternalRoleGroup = {aRole with InternalGroup = newRoleInternalGroup}               
                                         
-                return (newInternalRoleGroup, userToGroupMember)
+                return (newInternalRoleGroup, maybeMember)
 
                 }    
 
