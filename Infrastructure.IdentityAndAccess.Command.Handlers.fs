@@ -939,8 +939,6 @@ module Command =
             workflowResult   
                
 
-          
-
     module AddUserToGroup = 
 
 
@@ -1007,13 +1005,7 @@ module Command =
             workflowResult
 
             
-
-
-
-
     module AddGroupToGroup = 
-
-
 
 
         let toCommand (ur:UnvalidatedGroupIds) : AddGroupToGroupCommand =
@@ -1036,7 +1028,7 @@ module Command =
                 let! loadInputs = result {
 
                     let aCommandData = aCommad.Data
-                    let groupToAddToStreamId =  aCommandData.GroupIdToAdd |> toGroupStreamId 
+                    let groupToAddToStreamId =  aCommandData.GroupIdToAddTo |> toGroupStreamId 
                     let groupToAddStreamId =  aCommandData.GroupIdToAdd |> toGroupStreamId
 
                     let! dtoGroupToAddToAggregate = groupToAddToStreamId |> loadGroupWithId |> Result.mapError AddGroupToGroupError.DbError

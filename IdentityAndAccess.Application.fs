@@ -191,7 +191,7 @@ match  resultPrvisionDeveloperGroupCommand with
 
 printEmptySeparatorLine(1)
 
-(* 
+ 
 
 // JUNIOR_DEVELOPER Group
 let provisionJuniorDeveloperGroupCommand : ProvisionGroupCommand = {
@@ -340,7 +340,7 @@ match seniorToDeveloper |> AddGroupToGroup.handle  with
 
 
 
-printEmptySeparatorLine(1) *)
+printEmptySeparatorLine(1) 
 
 
 

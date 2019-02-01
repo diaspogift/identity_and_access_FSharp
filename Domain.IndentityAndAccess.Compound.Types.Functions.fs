@@ -1278,7 +1278,7 @@ module Group =
 
 
     let checkNotSame (aGroup1:StandardGroup) (aGroup2:StandardGroup) = 
-         aGroup1.GroupId <> aGroup2.GroupId
+         aGroup1 <> aGroup2
     
     let checkSameTenancy (aTenantId1:TenantId) (aTenantId2:TenantId) = 
          aTenantId1 = aTenantId2
@@ -1289,67 +1289,79 @@ module Group =
 
         let unwrappedGroupToAddTo = aGroupToAddTo |> unwrapToStandardGroup 
         let unwrappedGroupToAdd = aGroupToAdd |> unwrapToStandardGroup
-        printfn "----------------------------------------------------------------------------------------------------"
-        printfn "aGroupToAddTo =====  %A "  aGroupToAddTo 
-        printfn "----------------------------------------------------------------------------------------------------"
-        
-        printfn "----------------------------------------------------------------------------------------------------"
-        printfn "aGroupToAdd =====  %A "  aGroupToAdd
-        printfn "----------------------------------------------------------------------------------------------------"
-        printfn "----------------------------------------------------------------------------------------------------"
-        
-        printfn ""
+                                                       
+        let sameTenancyCheck = unwrappedGroupToAddTo.TenantId = unwrappedGroupToAdd.TenantId
+        let selfGroupCheck  = unwrappedGroupToAdd |> checkNotSame unwrappedGroupToAddTo   
+        let addToInternalGroupPolicyCheck =  aGroupToAddTo |> isInternalGroup |> not
 
-        printfn "----------------------------------------------------------------------------------------------------"
 
-        printfn "----------------------------------------------------------------------------------------------------"
-        printfn "unwrappedGroupToAddTo =  %A "  unwrappedGroupToAddTo 
-        printfn "----------------------------------------------------------------------------------------------------"
-        
-        printfn "----------------------------------------------------------------------------------------------------"
-        printfn "unwrappedGroupToAdd =  %A "  unwrappedGroupToAdd
-        printfn "----------------------------------------------------------------------------------------------------"
-        
-                                                
-        let doBothGroupsHaveSameTenant = (unwrappedGroupToAddTo.TenantId = unwrappedGroupToAdd.TenantId)
-        let isNotTheSameGroup  = unwrappedGroupToAdd |> checkNotSame unwrappedGroupToAddTo   
-        let isGroupToAddToRoleNotInterNalGroup =  aGroupToAddTo |> isInternalGroup |> not
+        printfn "-------------------------------------------------------------------------------"
 
-        match doBothGroupsHaveSameTenant && isNotTheSameGroup && isGroupToAddToRoleNotInterNalGroup with 
+
+
+        printfn "99999999999999999999999999999999999999999999999999999999999999999999999"
+        printfn "unwrappedGroupToAddTo = %A " unwrappedGroupToAddTo
+        printfn "unwrappedGroupToAdd = %A " unwrappedGroupToAdd
+        printfn "99999999999999999999999999999999999999999999999999999999999999999999999"
+
+
+
+        printfn "-------------------------------------------------------------------------------"
+
+
+        printfn "99999999999999999999999999999999999999999999999999999999999999999999999"
+        printfn "sameTenancyCheck = %A " sameTenancyCheck
+        printfn "selfGroupCheck = %A " selfGroupCheck
+        printfn "addToInternalGroupPolicyCheck = %A " addToInternalGroupPolicyCheck
+        printfn "99999999999999999999999999999999999999999999999999999999999999999999999"
+
+
+        printfn "-------------------------------------------------------------------------------"
+
+
+        match sameTenancyCheck && addToInternalGroupPolicyCheck with 
         | true -> 
-            let rsGroupMember = result {
-                let! isTheGroupMemberToAddAlreadyAMember = aGroupToAdd |> isGroupMemberService aGroupToAddTo
-                return isTheGroupMemberToAddAlreadyAMember
-                }
-            match rsGroupMember with 
-            | Ok isAlreadyGroupMember -> 
-                printfn "RESULT isAlreadyGroupMember ==== %A" isAlreadyGroupMember
-                if not isAlreadyGroupMember then   
-                    let rsIsGrouMemberToAdd = result {
-                        let! aMemberToAdd = aGroupToAdd |> toMemberOfTypeGroup
-                        let! aMemberToAddTo = aGroupToAddTo |> toMemberOfTypeGroup
-                        return (aMemberToAdd, aMemberToAddTo)
-                        }
-                    match rsIsGrouMemberToAdd with 
-                    | Ok (groupMember, groupMemberIn) -> 
-                        let oneListGrpMember = groupMember |> List.singleton
-                        let oneListGrpMemberIn = groupMemberIn |> List.singleton
-                        let newStandardGroupToAddTo = {unwrappedGroupToAddTo with Members = unwrappedGroupToAddTo.Members @ oneListGrpMember }
-                        let newStandardGroupToAdd = {unwrappedGroupToAdd with MemberIn = unwrappedGroupToAdd.MemberIn @ oneListGrpMemberIn }
-                        match aGroupToAddTo with  
-                        | Group.Standard _ -> 
-                            
-                            Ok (Standard newStandardGroupToAddTo, groupMember, Standard newStandardGroupToAdd, groupMemberIn)
-                        | Group.Internal _ -> 
-                            Ok (Internal newStandardGroupToAddTo, groupMember, Internal newStandardGroupToAdd, groupMemberIn)
-                    | Error error ->
-                        Error error
-                else
-                    Error "Group already a member"
-            | Error error  -> 
-                Error error
+
+            match selfGroupCheck with
+            | true ->
+                let rsGroupMember = result {
+                    let! isTheGroupMemberToAddAlreadyAMember = aGroupToAdd |> isGroupMemberService aGroupToAddTo
+                    return isTheGroupMemberToAddAlreadyAMember
+                    }
+                match rsGroupMember with 
+                | Ok isAlreadyGroupMember -> 
+                    printfn "RESULT isAlreadyGroupMember ==== %A" isAlreadyGroupMember
+                    if not isAlreadyGroupMember then   
+                        let rsIsGrouMemberToAdd = result {
+                            let! aMemberToAdd = aGroupToAdd |> toMemberOfTypeGroup
+                            let! aMemberToAddTo = aGroupToAddTo |> toMemberOfTypeGroup
+                            return (aMemberToAdd, aMemberToAddTo)
+                            }
+                        match rsIsGrouMemberToAdd with 
+                        | Ok (groupMember, groupMemberIn) -> 
+                            let oneListGrpMember = groupMember |> List.singleton
+                            let oneListGrpMemberIn = groupMemberIn |> List.singleton
+                            let newStandardGroupToAddTo = {unwrappedGroupToAddTo with Members = unwrappedGroupToAddTo.Members @ oneListGrpMember }
+                            let newStandardGroupToAdd = {unwrappedGroupToAdd with MemberIn = unwrappedGroupToAdd.MemberIn @ oneListGrpMemberIn }
+                            match aGroupToAddTo with  
+                            | Group.Standard _ -> 
+                                
+                                Ok (Standard newStandardGroupToAddTo, groupMember, Standard newStandardGroupToAdd, groupMemberIn)
+                            | Group.Internal _ -> 
+                                Ok (Internal newStandardGroupToAddTo, groupMember, Internal newStandardGroupToAdd, groupMemberIn)
+                        | Error error ->
+                            Error error
+                    else
+                        Error "Group already a member"
+                | Error error  -> 
+                    Error error
+            | false -> Error "Trying to add group  to self!"
+
+
+
+
         | false -> 
-            let msg = sprintf "Wrong tenant consistency"
+            let msg = sprintf "Wrong tenant consistency 3"
             Error msg
 
         
