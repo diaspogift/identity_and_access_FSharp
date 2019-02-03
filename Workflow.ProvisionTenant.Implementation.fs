@@ -334,6 +334,7 @@ module ProvisionTenantWorflowImplementation =
 
             let tenant = aProvision.Tenant |> Tenant.fromDomain
             let user = aProvision.AdminUser |> User.fromDomain
+            let userDesc = aProvision.AdminUser |> User.toDescriptor
             let role = aProvision.AdminRole |> Role.fromDomain
             let offerredInv = aProvision.OfferredInvitation
             let withdrawnInv = aProvision.WithdrawnInvitation
@@ -355,7 +356,7 @@ module ProvisionTenantWorflowImplementation =
             let uassr:UserAssignedToRoleEvent = {
                 RoleId = role.RoleId
                 UserId = user.UserId
-                AssignedUser = user |> Dto.User.toUserGroupMember
+                AssignedUser = userDesc |> UserDescriptor.fromDomain
                 }
 
             let tenantProvisionedEvent = tenantProvisionCreatedEvent |> TenantProvisionedEvent.TenantProvisionCreated |> List.singleton

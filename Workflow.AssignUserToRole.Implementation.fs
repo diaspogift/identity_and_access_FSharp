@@ -11,6 +11,7 @@ open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.DomainTypes.Functions.Dto
 open IdentityAndAcccess.DomainTypes.Group
+open IdentityAndAcccess.DomainTypes.User
 
 
 
@@ -35,7 +36,7 @@ type UnvalidatedRoleAndUserId = {
 type UserAssignedToRoleEvent = { 
     RoleId : string
     UserId : string
-    UserAssigned : Dto.GroupMember
+    AssignedUSer : Dto.UserDescriptor
     }
 
 
@@ -71,13 +72,13 @@ type AssignUserToRoleWorkflow =
 
 type AssignUserToRole = 
 
-    Role.Role -> User.User -> Result<Role.Role*Group.GroupMember, AssignUserToRoleError>
+    Role.Role -> User.User -> Result<Role.Role*User.UserDescriptor, AssignUserToRoleError>
 
 
 
 //Step 3 - Create events step
 
-type CreateEvents = Role.Role * Group.GroupMember -> UserAssignedToRoleEvent
+type CreateEvents = Role.Role * User.UserDescriptor -> UserAssignedToRoleEvent
 
 
 
@@ -104,11 +105,11 @@ module AssignUserToRoleWorfklowImplementation =
 
     ///Step2 create events impl
     let createEvents : CreateEvents = 
-        fun (aRole, aGroupMember) ->
+        fun (aRole, aUserDesc) ->
            let userAssignedToRoleEvent : UserAssignedToRoleEvent = {
                RoleId = aRole.RoleId |> RoleId.value
-               UserId = aGroupMember.MemberId |> GroupMemberId.value
-               UserAssigned = aGroupMember |> GroupMember.fromDomain
+               UserId = aUserDesc.UserId |> UserId.value
+               AssignedUSer = aUserDesc |> UserDescriptor.fromDomain
            }
            userAssignedToRoleEvent
 

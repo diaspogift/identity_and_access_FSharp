@@ -7,8 +7,8 @@ open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes.ProvisionRoleWorflowImplementation
 open IdentityAndAcccess.Workflow.AssignUserToRoleApiTypes
 open IdentityAndAcccess.Workflow.AssignUserToRoleApiTypes.AssignUserToRoleWorfklowImplementation
-open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
-open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes.AddGroupToGroupWorkflowImplementation
+open IdentityAndAcccess.Workflow.AssignGroupToRoleApiTypes
+open IdentityAndAcccess.Workflow.AssignGroupToRoleApiTypes.AssignGroupToRoleWorkflowImplementation
 open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
 open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowImplementation
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
@@ -99,16 +99,19 @@ type ProvisionRoleCommand =
         Command<UnvalidatedRole>   
 
 
-type AddUserToRoleCommand =
+type AssignUserToRoleCommand =
         Command<UnvalidatedRoleAndUserId> 
+
+
+ type AssignGroupToRoleCommand =
+        Command<UnvalidatedRoleAndGroupIds> 
 
 
 type AddUserToGroupCommand =
         Command<UnvalidatedGroupAndUserId> 
 
 
-type AddGroupToGroupCommand =
-        Command<UnvalidatedGroupIds>        
+    
 
 
 
@@ -782,16 +785,9 @@ module Command =
 
                 let! rsPersisteWorflowEvents = result {
 
-                    let eventDto:Dto.StandardGroup = rscallWorkflow.Group 
+                    let eventDto:Dto.Group = rscallWorkflow.Group 
 
-
-                    let stdGrpCreated:Dto.StandardGroupCreated = {
-                        GroupId = eventDto.GroupId
-                        TenantId = eventDto.TenantId
-                        Group = eventDto
-                    }
-
-                    let event = stdGrpCreated |> Dto.GroupCreated.Standard  |> GroupStreamEvent.GroupCreated
+                    let event = eventDto |> GroupStreamEvent.GroupCreated
                     let eventList =  event |> toSequence |> Array.singleton
                     let groupStreamId = toGroupStreamId eventDto.GroupId
                     
@@ -867,12 +863,20 @@ module Command =
             workflowResult
             
 
-    module AddUserToRole = 
 
 
 
 
-        let handle (aCommad:AddUserToRoleCommand) = 
+
+
+
+
+    module AssignUserToRole = 
+
+
+
+
+        let handle (aCommad:AssignUserToRoleCommand) = 
 
      
             let workflowResult = result {
@@ -921,7 +925,7 @@ module Command =
                     let eventDto:Dto.UserAssignedToRoleEvent = {
                         RoleId = rscallWorkflow.RoleId
                         UserId = rscallWorkflow.UserId
-                        AssignedUser = rscallWorkflow.UserAssigned
+                        AssignedUser = rscallWorkflow.AssignedUSer
                         }
 
                     let event = eventDto |> RoleStreamEvent.UserAssignedToRole
@@ -959,12 +963,10 @@ module Command =
                     let! dtoGroupAggregate = groupStreamId |> loadGroupWithId |> Result.mapError AddUserToGroupError.DbError
                     let! dtoUserAggregate = userStreamId |> loadUserWithId |> Result.mapError AddUserToGroupError.DbError
 
-                    let dtoGroup = dtoGroupAggregate.Data
+                    let dtGroup = dtoGroupAggregate.Data
                     let dtoUser = dtoUserAggregate.Data
 
-                    let dGroup = dtoGroup |> Dto.Group.Standard  
-
-                    let! domainGroup = dGroup |> Group.toDomain |> Result.mapError AddUserToGroupError.ValidationError
+                    let! domainGroup = dtGroup |> Group.toDomain |> Result.mapError AddUserToGroupError.ValidationError
                     let! domainUser = dtoUser |> User.toDomain |> Result.mapError AddUserToGroupError.ValidationError
                     
                     return (groupStreamId, domainGroup, dtoGroupAggregate.LastEventNum, userStreamId, domainUser, dtoUserAggregate.LastEventNum)
@@ -985,13 +987,14 @@ module Command =
 
                 let! persisteWorflowEvents = result {  
 
-                    let eventDto:Dto.MemberAddedToGroupEvent = {
-                        GroupId = rsAddUserToGroup.GroupMemberAdded.MemberId
-                        TenantId = rsAddUserToGroup.GroupMemberAdded.TenantId
-                        MemberAdded = rsAddUserToGroup.GroupMemberAdded
+                    let eventDto:Dto.UserAddedToGroupEvent = {
+                        GroupId = rsAddUserToGroup.GroupId
+                        TenantId = rsAddUserToGroup.TenantId
+                        UserId = rsAddUserToGroup.AddedUser.UserDescriptorId 
+                        AddedUser = rsAddUserToGroup.AddedUser
                         }
 
-                    let event = eventDto |> GroupStreamEvent.GroupAddedToGroup
+                    let event = eventDto |> GroupStreamEvent.UserAddedToGroup
                     let eventList =  event |> toSequence |> Array.singleton
                     
                     recursivePersistEventsStream groupStreamId groupAggrLastEventNum eventList
@@ -1005,11 +1008,11 @@ module Command =
             workflowResult
 
             
-    module AddGroupToGroup = 
+    module AssignGroupToRole = 
 
 
-        let toCommand (ur:UnvalidatedGroupIds) : AddGroupToGroupCommand =
-                let cmmd : AddGroupToGroupCommand = {
+        let toCommand (ur:UnvalidatedRoleAndGroupIds) : AssignGroupToRoleCommand =
+                let cmmd : AssignGroupToRoleCommand = {
                     Data = ur
                     TimeStamp = DateTime.Now
                     UserId = "Felicien"
@@ -1019,7 +1022,7 @@ module Command =
 
 
 
-        let handle (aCommad:AddGroupToGroupCommand) = 
+        let handle (aCommad:AssignGroupToRoleCommand) = 
 
             
 
@@ -1028,78 +1031,50 @@ module Command =
                 let! loadInputs = result {
 
                     let aCommandData = aCommad.Data
-                    let groupToAddToStreamId =  aCommandData.GroupIdToAddTo |> toGroupStreamId 
-                    let groupToAddStreamId =  aCommandData.GroupIdToAdd |> toGroupStreamId
+                    let roleToAssignToStreamId =  aCommandData.RoleId |> toRoleStreamId 
+                    let groupToAddStreamId =  aCommandData.GroupId |> toGroupStreamId
 
-                    let! dtoGroupToAddToAggregate = groupToAddToStreamId |> loadGroupWithId |> Result.mapError AddGroupToGroupError.DbError
-                    let! dtoGroupToAddAggregate = groupToAddStreamId |> loadGroupWithId |> Result.mapError AddGroupToGroupError.DbError
+                    let! dtoRoleToAssignToAggregate = roleToAssignToStreamId |> loadRoleWithId |> Result.mapError AssignGroupToRoleError.DbError
+                    let! dtoGroupToAddAggregate = groupToAddStreamId |> loadGroupWithId |> Result.mapError AssignGroupToRoleError.DbError
 
-                    let dtoGroupToAddTo = dtoGroupToAddToAggregate.Data
+                    let dtoRoleToAssignTo = dtoRoleToAssignToAggregate.Data
                     let dtoGroupToAdd= dtoGroupToAddAggregate.Data
 
-                    let dGroupToAddTo = dtoGroupToAddTo |> Dto.Group.Standard  
-                    let dGroupToAdd = dtoGroupToAdd |> Dto.Group.Standard  
-
-                    let! domainGroupToAddTo = dGroupToAddTo |> Group.toDomain |> Result.mapError AddGroupToGroupError.ValidationError
-                    let! domainGroupToAdd = dGroupToAdd |> Group.toDomain |> Result.mapError AddGroupToGroupError.ValidationError
+                    let! domainRoleToAssignTo = dtoRoleToAssignTo |> Role.toDomain |> Result.mapError AssignGroupToRoleError.ValidationError
+                    let! domainGroupToAdd = dtoGroupToAdd |> Group.toDomain |> Result.mapError AssignGroupToRoleError.ValidationError
                     
-                    return (groupToAddToStreamId, domainGroupToAddTo, dtoGroupToAddToAggregate.LastEventNum, groupToAddStreamId, domainGroupToAdd, dtoGroupToAddAggregate.LastEventNum)
+                    return (roleToAssignToStreamId, domainRoleToAssignTo, dtoRoleToAssignToAggregate.LastEventNum, groupToAddStreamId, domainGroupToAdd, dtoGroupToAddAggregate.LastEventNum)
                     }
                  
 
-                let groupToAddToStreamId,
-                    domainGroupToAddTo, 
-                    groupToAddToAggrLastEventNum, 
+                let roleToAssignToStreamId,
+                    domainRoleToAssignTo, 
+                    roleToAssignToAggrLastEventNum, 
                     groupToAddStreamId,
                     domainGroupToAdd, 
                     groupToAddAggrLastEventNum = loadInputs
 
-                let! rsAddUserToGroup = result {  
-                    return! addGroupToGroupWorkflow domainGroupToAddTo domainGroupToAdd 
+                let! rsAssignGroupToRole = result {  
+                    return! assignGroupToRoleWorkflow domainRoleToAssignTo domainGroupToAdd 
                     }  
 
 
                 let! persisteWorflowEvents = result {  
+                 
+                    let eventDtoGroupToAddTo:Dto.GroupAssignedToRoleEvent = {
+                        RoleId = rsAssignGroupToRole.RoleId
+                        GroupId = rsAssignGroupToRole.GroupId
+                        TenantId = rsAssignGroupToRole.AssignedGroup.TenantId
+                        AssignedGroup = rsAssignGroupToRole.AssignedGroup
+                        }
 
-                    let groupToAddToEvent = 
-                        rsAddUserToGroup
-                        |> List.iter (fun ev ->
+                    let event = eventDtoGroupToAddTo |> RoleStreamEvent.GroupAssignedToRole
+                    let eventList =  event |> toSequence |> Array.singleton
 
-                            match ev with 
-                            | GroupAddedToGroupEvent.MemberAdded  memberAddedEvent ->
+                    recursivePersistEventsStream roleToAssignToStreamId roleToAssignToAggrLastEventNum eventList
 
-                                let eventDtoGroupToAddTo:Dto.MemberAddedToGroupEvent = {
-                                    GroupId = memberAddedEvent.GroupId
-                                    TenantId = memberAddedEvent.TenantId
-                                    MemberAdded = memberAddedEvent.MemberAdded
-                                    }
-                                let event = eventDtoGroupToAddTo |> GroupStreamEvent.GroupAddedToGroup
-                                let eventList =  event |> toSequence |> Array.singleton
-
-                                recursivePersistEventsStream groupToAddToStreamId groupToAddToAggrLastEventNum eventList
-
-                                
-                            | GroupAddedToGroupEvent.MemberInAdded memberInAddedEvent ->
-                                
-                                let eventDtoGroupToAdd:Dto.MemberInAddedToGroupEvent = {
-                                    GroupId = memberInAddedEvent.GroupId
-                                    TenantId = memberInAddedEvent.TenantId
-                                    MemberInAdded = memberInAddedEvent.MemberInAdded
-                                    }
-                                let event = eventDtoGroupToAdd |> GroupStreamEvent.GroupInAddedToGroup
-                                let eventList =  event |> toSequence |> Array.singleton
-
-                                recursivePersistEventsStream groupToAddStreamId groupToAddAggrLastEventNum eventList
-
-                             )
-                            
-
-                                
-                             
-
-                        
-
-                    return rsAddUserToGroup
+                 
+                    return rsAssignGroupToRole
                     }
  
 
@@ -1109,86 +1084,5 @@ module Command =
 
             workflowResult
                 
-            (* let rsAddGroupToGroupWorkflow = result {  
-
-                let strGroupIdToAddTo =  aCommandData.GroupIdToAddTo |> toGroupStreamId 
-                let strGroupIdToAdd =  aCommandData.GroupIdToAdd |> toGroupStreamId
-
-                let! groupStreamIdToAddTo, groupDtoToAddTo, lastEventNumberToAddTo = strGroupIdToAddTo |> loadGroupWithId                 
-                let! groupStreamIdToAdd , groupDtoToAdd, lastEventNumberToAdd = strGroupIdToAdd |> loadGroupWithId    
-               
-                printfn ""
-                printfn ""
-                printfn ""
-                printfn "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
-                printfn "IN THE HANDLER AND groupDtoToAddTo from loadGroupWithId with id (%A) = %A" strGroupIdToAddTo groupDtoToAddTo 
-                printfn "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
-                printfn "IN THE HANDLER AND groupDtoToAdd from loadGroupWithId with id (%A) = %A" strGroupIdToAdd groupDtoToAdd 
-                printfn "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
-                printfn ""
-                printfn ""
-                printfn ""
-
-                let! rsAddGroupToGroup = result {
-
-                    let grpDtoToAddTo = groupDtoToAddTo |> Dto.Group.Standard
-                    let grpDtoToAdd = groupDtoToAdd |> Dto.Group.Standard
-
-                    let! groupDomainToAddTo  =  grpDtoToAddTo |> Dto.Group.toDomain
-                    let! groupDomainToAdd =  grpDtoToAdd |> Dto.Group.toDomain
-
-                    let rs = addGroupToGroupWorkflow groupDomainToAddTo groupDomainToAdd
-                    return rs 
-                    }  
-
-                return (rsAddGroupToGroup, groupStreamIdToAddTo, lastEventNumberToAddTo, lastEventNumberToAdd)
-
-                }
-
-            match rsAddGroupToGroupWorkflow with  
-            | Ok en ->
-                match en with  
-                | Ok events, groupStreamIdMemberWasToAddTo, lastEventNumber, lastEventNumberToAdd-> 
-                    let saveBothGroupEvents = async {
-                        events 
-                        |> List.iter 
-                            (fun event ->
-
-                                match event with 
-                                | GroupAddedToGroupEvent.MemberAdded memberAdded -> 
-
-                                    let group1StreamId = memberAdded.GroupId |> toGroupStreamId 
-                                    let group1Evt = memberAdded |> GroupStreamEvent.GroupAddedToGroup
-                                    let saveGroup1Event = async {
-                                        recursivePersistEventsStream group1StreamId lastEventNumber (group1Evt |> toSequence |> Array.singleton)
-                                        }
-                                    
-                                    saveGroup1Event 
-                                    |> Async.RunSynchronously
-                                     
-                                | GroupAddedToGroupEvent.MemberInAdded memberInAdded ->
-
-                                    let group2StreamId = memberInAdded.GroupId |> toGroupStreamId 
-                                    let group1Evt = memberInAdded |> GroupStreamEvent.GroupInAddedToGroup
-
-                                    let saveGroup2Event = async {
-                                        recursivePersistEventsStream group2StreamId lastEventNumberToAdd (group1Evt |> toSequence |> Array.singleton)
-                                        }
-                                    
-                                    saveGroup2Event 
-                                    |> Async.RunSynchronously
-                                    )
-
-                        return ()
-                        } 
-
-                    saveBothGroupEvents 
-                    |> Async.RunSynchronously
-                    Ok events
-                | Error error, s, t, i ->
-                    Error  error
-            | Error error ->
-                let er = AddGroupToGroupError.DbError error
-                Error er *)
-
+           
             

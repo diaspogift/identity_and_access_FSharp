@@ -45,6 +45,7 @@ type RoleStreamEvent =
     | RoleCreated of Dto.Role  
     | UserAssignedToRole of Dto.UserAssignedToRoleEvent
     | UserUnAssignedToRole of Dto.UserUnAssignedFromRoleEvent
+    | GroupAssignedToRole of Dto.GroupAssignedToRoleEvent
     | RoleDeleted of Dto.Role
     | RoleRenamed of Dto.Role
 
@@ -52,9 +53,8 @@ type RoleStreamEvent =
 
 type GroupStreamEvent =
     | GroupCreated of Dto.GroupCreated
-    | UserAddedToGroup of Dto.GroupMember
-    | GroupAddedToGroup of Dto.MemberAddedToGroupEvent
-    | GroupInAddedToGroup of Dto.MemberInAddedToGroupEvent
+    | UserAddedToGroup of Dto.UserAddedToGroupEvent
+    | UserRemovedFromGroup of Dto.UserRemovedFromGroupEvent
 
 
 
@@ -102,25 +102,6 @@ module EventStorePlayGround =
     
 
 
-    let unwrapGroup (aGroup:Dto.Group) : Dto.StandardGroup = 
-        let unwrappedGroup =
-             match aGroup with  
-             | Dto.Group.Standard s -> s
-             | Dto.Group.Internal i -> i
-        unwrappedGroup
-
-
-    let unwrapGroupCreated (aGroup:Dto.GroupCreated) : Dto.StandardGroup = 
-        let unwrappedGroup =
-             match aGroup with  
-             | Dto.GroupCreated.Standard s -> s
-             | Dto.GroupCreated.Internal i -> i
-        unwrappedGroup.Group
-
-
-
-
-
 
 
 
@@ -160,7 +141,7 @@ module EventStorePlayGround =
 
     let create connectionName connectionUri = 
         async {
-            let conn = EventStoreConnection.Create(new Uri(connectionUri), connectionName)
+            let conn = EventStoreConnection.Create(Uri(connectionUri), connectionName)
             do! Async.AwaitTask (conn.ConnectAsync())
             return conn 
         }
@@ -271,27 +252,25 @@ module EventStorePlayGround =
         match anEvent with 
         | RoleStreamEvent.RoleCreated role ->
             role
-        | RoleStreamEvent.UserAssignedToRole  userUnAssignedToRole ->
-            let roleInternalGroup = aRole.InternalGroup
-            let unwrapppedGroup = roleInternalGroup |> unwrapGroup
-            let newUserPlaiyingRoleList = userUnAssignedToRole.AssignedUser |> List.singleton 
-            let udatedMembers = unwrapppedGroup.Members @ newUserPlaiyingRoleList
-            let updatedUnwrapIntenanlGroup = {unwrapppedGroup with Members = udatedMembers}
-            let internalGroup:Dto.Group = updatedUnwrapIntenanlGroup |> Dto.Group.Internal 
-
-            { aRole with InternalGroup = internalGroup}
+        | RoleStreamEvent.UserAssignedToRole  userAssignedToRole ->
+         
+            let newUserThatPlayMe = aRole.UsersThatPlayMe @ [userAssignedToRole.AssignedUser]
+           
+            { aRole with UsersThatPlayMe = newUserThatPlayMe}
 
         | RoleStreamEvent.UserUnAssignedToRole  userUnAssignedToRole ->
-            let roleInternalGroup = aRole.InternalGroup
-            let unwrapppedGroup = roleInternalGroup |> unwrapGroup
-            let newUserPlaiyingRoleList = 
-                unwrapppedGroup.Members  
-                |> List.filter (fun gm ->  gm <> userUnAssignedToRole.AssignedUser)
-            let udatedMembers = unwrapppedGroup.Members @ newUserPlaiyingRoleList
-            let updatedUnwrapIntenanlGroup = {unwrapppedGroup with Members = udatedMembers}
-            let internalGroup:Dto.Group = updatedUnwrapIntenanlGroup |> Dto.Group.Internal 
 
-            { aRole with InternalGroup = internalGroup}
+            let newUsersThatPlayMe = 
+                aRole.UsersThatPlayMe 
+                |> List.filter (fun ud -> ud <> userUnAssignedToRole.AssignedUser)
+           
+            { aRole with UsersThatPlayMe = newUsersThatPlayMe}
+
+        | RoleStreamEvent.GroupAssignedToRole  groupAssignedToRole ->
+         
+            let newGroupsThatPlayMe = aRole.GroupsThatPlayMe @ [groupAssignedToRole.AssignedGroup]
+           
+            { aRole with GroupsThatPlayMe = newGroupsThatPlayMe}
             
         | RoleStreamEvent.RoleDeleted role ->
             role
@@ -303,25 +282,22 @@ module EventStorePlayGround =
 
 
 
-    let applyGroupEvent (aGroup:Dto.StandardGroup) anEvent = 
+    let applyGroupEvent (aGroup:Dto.Group) (anEvent:GroupStreamEvent) :(Dto.Group) = 
 
         match anEvent with 
         | GroupStreamEvent.GroupCreated group ->
-            match group with  
-            | Dto.GroupCreated.Standard s -> s.Group
-            | Dto.GroupCreated.Internal i -> i.Group
-        | GroupStreamEvent.UserAddedToGroup memberAdded ->
-            let newMemberList = memberAdded |> List.singleton 
-            { aGroup with Members = aGroup.Members @ newMemberList }
+            group
+        | GroupStreamEvent.UserAddedToGroup userAddedToGroup ->
+            let newUsersList = aGroup.UsersAddedToMe @ [userAddedToGroup.AddedUser]
+            { aGroup with UsersAddedToMe = newUsersList }
         
-        | GroupStreamEvent.GroupAddedToGroup memberAdded ->
-            let newMemberList = memberAdded.MemberAdded  |> List.singleton 
-            { aGroup with Members = aGroup.Members @ newMemberList }
+        | GroupStreamEvent.UserRemovedFromGroup userRemovedFromGroup ->
+            let newUsersList = 
+                aGroup.UsersAddedToMe 
+                |> List.filter (fun ud -> ud <> userRemovedFromGroup.RemovedUser)
+            { aGroup with UsersAddedToMe = newUsersList }
         
-        | GroupStreamEvent.GroupInAddedToGroup memberInAdded ->
-            let newMemberInList = memberInAdded.MemberInAdded |> List.singleton 
-            { aGroup with MemberIn = aGroup.MemberIn @ newMemberInList }
-       
+
 
 
     let loadTenantWithId tenantStreamId = 
@@ -404,10 +380,10 @@ module EventStorePlayGround =
 
         match foundGroupEventStreamList.Head with  
         | GroupStreamEvent.GroupCreated groupZeroState ->  
-            let groupZeroState = groupZeroState |> unwrapGroupCreated
+
             let groupDto =  foundGroupEventStreamList |>  List.toArray |> Seq.fold applyGroupEvent groupZeroState
 
-            let groupAggregate : AggregateRecord<Dto.StandardGroup> = {
+            let groupAggregate : AggregateRecord<Dto.Group> = {
                 StreamId = groupStreamId
                 Data = groupDto 
                 LastEventNum = lastEventNumber
@@ -429,10 +405,9 @@ module EventStorePlayGround =
         | GroupStreamEvent.GroupCreated groupZeroState -> 
             
             result {
-                let groupZeroState = groupZeroState |> unwrapGroupCreated
                 let groupDto =  foundGroupEventStreamList |>  List.toArray |> Seq.fold applyGroupEvent groupZeroState
                 
-                let! domain = groupDto |> Dto.Group.Standard |> Group.toDomain
+                let! domain = groupDto |>  Group.toDomain
 
                 let groupAggregate : AggregateRecord<Group.Group> = {
                     StreamId = groupStreamId
@@ -462,10 +437,9 @@ module EventStorePlayGround =
         | GroupStreamEvent.GroupCreated groupZeroState -> 
             
             result {
-                let groupZeroState = groupZeroState |> unwrapGroupCreated
                 let groupDto =  foundGroupEventStreamList |>  List.toArray |> Seq.fold applyGroupEvent groupZeroState
                 
-                let! domain = groupDto |> Dto.Group.Standard |> Group.toDomain
+                let! domain = groupDto |> Group.toDomain
 
                 let groupAggregate : AggregateRecord<Group.Group> = {
                     StreamId = groupStreamId

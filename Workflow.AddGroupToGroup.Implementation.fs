@@ -97,18 +97,6 @@ module AddGroupToGroupWorkflowImplementation =
        /// 
        let isGroupMemberService  = fun aGroupToAddTo aGroupToAdd -> 
 
-            printfn "===================================="
-            printfn "===================================="
-            printfn "aGroupToAddTo =                  %A" aGroupToAddTo
-            printfn "===================================="
-            printfn "===================================="
-            printfn "aGroupToAdd =                  %A" aGroupToAdd
-            printfn "===================================="
-            printfn "===================================="
-
-
-            let unwrappedGroupToAddTo = aGroupToAddTo |> DomainHelpers.unwrapToStandardGroup
-            let unwrappedGroupToAdd = aGroupToAdd |> DomainHelpers.unwrapToStandardGroup
 
             printfn ""
             printfn ""

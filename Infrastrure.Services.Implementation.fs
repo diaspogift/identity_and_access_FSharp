@@ -7,6 +7,7 @@ open IdentityAndAcccess.DomainTypes.User
 open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Functions.Dto
 
 
 
@@ -27,11 +28,11 @@ let encryptPasswordService (aPleinTextPassword:Password) =
         encriptePassword
 
     with
-        | :? System.FormatException as ex -> Error "error0"    
-        | :? System.TypeInitializationException as ex -> Error "error1"    
-        | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
-        | Failure msg -> Error (msg + ": By ...Faillure msg..." )
-        | _ -> Error "Unmatched error occurred" 
+    | :? System.FormatException as ex -> Error "error0"    
+    | :? System.TypeInitializationException as ex -> Error "error1"    
+    | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
+    | Failure msg -> Error (msg + ": By ...Faillure msg..." )
+    | _ -> Error "Unmatched error occurred" 
 
 
 
@@ -40,7 +41,7 @@ let encryptPasswordService (aPleinTextPassword:Password) =
 
 ///User related service implementations
 
-let authenticateUserService  
+(* let authenticateUserService  
      (loadUserByUserIdAndTenantId:LoadUserByUserIdPasswordAndTenantId) //Database Dependency 
      (loadTenantById:LoadTenantById) //Database Dependency 
      (passwordEncryptionService:PasswordEncryptionService) //Encription Dependency 
@@ -60,10 +61,10 @@ let authenticateUserService
            
                let! userDescriptor =
                     match userToAuthenticate.Enablement.EnablementStatus with
-                    | EnablementStatus.Enabled ->
+                    | User.EnablementStatus.Enabled ->
                         userToAuthenticate 
-                        |> User.toUserDesriptor
-                    | EnablementStatus.Disabled ->
+                        |> User.fromDomain
+                    | User.EnablementStatus.Disabled ->
                         let msg = sprintf "User enablement status is disabled"
                         Error msg  
 
@@ -74,4 +75,4 @@ let authenticateUserService
      | :? System.TypeInitializationException as ex -> Error "error1"    
      | :? MongoDB.Driver.MongoWriteException as ex -> Error "error2"
      | Failure msg -> Error (msg + ": By ...Faillure msg..." )
-     | _ -> Error "Unmatched error occurred" 
+     | _ -> Error "Unmatched error occurred"  *)

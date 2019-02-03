@@ -9,9 +9,8 @@
     <Compile Include="Domain.IndentityAndAccess.Compound.Types.fs" />
     <Compile Include="Domain.IndentityAndAccess.Compound.Types.Functions.fs" />
     <Compile Include="Workflow.AddUserToGroup.Implementation.fs" />
-    <Compile Include="Workflow.AddGroupToGroup.Implementation.fs" />
     <Compile Include="Workflow.AssignUserToRole.Implementation.fs" />
-    <Compile Include="Workflow.AddGroupToRole.Implementation.fs" />
+    <Compile Include="Workflow.AssignGroupToRole.Implementation.fs" />
     <Compile Include="Workflow.ProvisionGroup.Implementation.fs" />
     <Compile Include="Workflow.ProvisionRole.Implementation.fs" />
     <Compile Include="Workflow.ProvisionTenant.Implementation.fs" />

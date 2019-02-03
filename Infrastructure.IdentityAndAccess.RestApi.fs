@@ -12,7 +12,7 @@ open Suave.Filters
 open IdentityAndAcccess.Commamds.Handlers
 
 open IdentityAndAcccess.Workflow.ProvisionTenantApiTypes
-open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
+open IdentityAndAcccess.Workflow.AssignGroupToRoleApiTypes
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.OffertRegistrationInvitationApiTypes
 open IdentityAndAcccess.Workflow.ProvisionGroupApiTypes
@@ -23,7 +23,7 @@ open IdentityAndAcccess.Commamds.Handlers
 open RabbitMQ.Client.Impl
 
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
-open IdentityAndAcccess.Workflow.AddGroupToGroupApiTypes
+open IdentityAndAcccess.Workflow.AssignGroupToRoleApiTypes
 
 
 
@@ -147,10 +147,10 @@ module Rest =
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)  *)            
                    
-            path "/add-group-to-group" 
-                >=> request (getResourceFromReq<UnvalidatedGroupIds> 
-                >> Command.AddGroupToGroup.toCommand
-                >> Command.AddGroupToGroup.handle
+            path "/assign-group-to-role" 
+                >=> request (getResourceFromReq<UnvalidatedRoleAndGroupIds> 
+                >> Command.AssignGroupToRole.toCommand
+                >> Command.AssignGroupToRole.handle
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)             
                    ]

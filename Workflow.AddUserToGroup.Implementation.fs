@@ -9,6 +9,8 @@ open IdentityAndAcccess.DomainTypes.Functions.ServiceInterfaces
 open IdentityAndAcccess.DomainTypes.Functions
 open IdentityAndAcccess.DomainTypes.Group
 open IdentityAndAcccess.DomainTypes
+open IdentityAndAcccess.DomainTypes.Functions.Dto
+open IdentityAndAcccess.DomainTypes.User
 
 
 
@@ -34,7 +36,9 @@ type UnvalidatedGroupAndUserId = {
 
 
 type UserAddedToGroupEvent = { 
-    GroupMemberAdded : Dto.GroupMember
+    GroupId : string
+    TenantId : string
+    AddedUser : Dto.UserDescriptor
     }
 
 
@@ -70,13 +74,13 @@ type AddUserToGroupWorkflow =
 
 type AddUserToGroup = 
 
-    Group.Group -> User.User -> Result<Group.Group*GroupMember, AddUserToGroupError>
+    Group.Group -> User.User -> Result<Group.Group*User.UserDescriptor, AddUserToGroupError>
 
 
 
 //Step 3 - Create events step
 
-type CreateEvents = Group.Group * Group.GroupMember -> UserAddedToGroupEvent
+type CreateEvents = Group.Group * User.UserDescriptor -> UserAddedToGroupEvent
 
 
 
@@ -103,9 +107,11 @@ module AddUserToGroupWorfklowImplementation =
 
     ///Step2 create events impl
     let createEvents : CreateEvents = 
-        fun (aGroup, aGroupMember) ->
+        fun (aGroup, aUser) ->
            let userAddedToGroupEvent : UserAddedToGroupEvent = {
-               GroupMemberAdded =  aGroupMember |> Dto.GroupMember.fromDomain       
+               GroupId = aGroup.GroupId |> GroupId.value
+               TenantId = aGroup.TenantId |> TenantId.value
+               AddedUser =  aUser |> UserDescriptor.fromDomain  
            }
            userAddedToGroupEvent
 

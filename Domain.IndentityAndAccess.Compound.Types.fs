@@ -5,6 +5,7 @@ namespace IdentityAndAcccess.DomainTypes
 open IdentityAndAcccess.CommonDomainTypes
 open System
 open System.Text.RegularExpressions
+open IdentityAndAcccess.CommonDomainTypes.Functions
 
 
 
@@ -36,26 +37,6 @@ module Events =
         OccurredOn : DateTime
         Data : 'Data
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -155,6 +136,19 @@ module User =
         LastName: string
         }
 
+    type  RoleDescriptor = {
+        Id : RoleId
+        TenantId : TenantId
+        Name : RoleName
+        ShortDesc : RoleDescription
+        }
+    
+    type GroupDescriptor = {
+        Id : GroupId
+        TenantId : TenantId
+        Name : GroupName
+        ShortDesc : GroupDescription 
+        }
 
     type User = {
         UserId: UserId
@@ -163,7 +157,10 @@ module User =
         Password: Password
         Enablement: Enablement
         Person: Person
+        RolesIPlay : RoleDescriptor list
+        GroupsIAmIn : GroupDescriptor list
         }
+
 
     type UserRegisteredChangedEventData = {
         UserId: string
@@ -176,23 +173,22 @@ module User =
         }
 
 
-    type RoleDescriptor = {
-            RoleId: RoleId
-            TenantId: TenantId
-            Name: RoleName
-            }
-
-
-
     type UserDescriptor = {
+        UserId: UserId
+        TenantId: TenantId
+        Username: Username
+        Email: EmailAddress
+        FirstName: FirstName
+        LastName: LastName
+        }
+
+    type AuthenticatedUserDescriptor = {
         UserDescriptorId: UserDescriptorId
         TenantId: TenantId
         Username: Username
         Email: EmailAddress
         Roles: RoleDescriptor list 
         }
-
-
     
 
     type UserEnablementChanged =
@@ -242,6 +238,7 @@ module User =
         FirstName: string
         LastName: string
         }
+open User
 
 
 
@@ -279,23 +276,17 @@ module Group =
         }
 
 
-    type StandardGroup = {
+    type Group = {
         GroupId: GroupId
         TenantId: TenantId
         Name: GroupName
         Description: GroupDescription
-        Members: GroupMember list
-        MemberIn : GroupMember list
+        //Ref data
+        UsersAddedToMe: UserDescriptor list
+        GroupsAddedToMe : GroupDescriptor list
+        GroupsIamAddedTo: GroupDescriptor list
+        RolesIPlay : RoleDescriptor list
         }
-
-
-
-    type Group = 
-        | Standard of StandardGroup
-        | Internal of StandardGroup
-
-
-
      
     type GroupProvisioned = 
 
@@ -382,7 +373,8 @@ module Role =
         Name: RoleName
         Description: RoleDescription
         SupportNesting: SupportNestingStatus
-        InternalGroup: Group
+        GroupsThatPlayMe: GroupDescriptor list
+        UsersThatPlayMe: UserDescriptor list
         }
 
 

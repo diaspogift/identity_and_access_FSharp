@@ -65,7 +65,7 @@ type ValidatedGroup = {
 type GroupProvisionedEvent = { 
     GroupId : Dto.GroupId
     TenantId :Dto.TenantId
-    Group : Dto.StandardGroup
+    Group : Dto.Group
     }
 
 
@@ -147,15 +147,11 @@ module ProvisionGroupWorflowImplementation =
     let createEvents : CreateEvents = fun aGroup ->
 
            let groupDto:Dto.Group = aGroup |> Group.fromDomain
-           let ug = 
-                match groupDto with 
-                | Group.Standard s -> s
-                | Group.Internal i -> i
 
            let groupCreatedEvent : GroupProvisionedEvent = {
-                GroupId = ug.GroupId
-                TenantId = ug.TenantId
-                Group = ug
+                GroupId = groupDto.GroupId
+                TenantId = groupDto.TenantId
+                Group = groupDto
                 }
            groupCreatedEvent
 
