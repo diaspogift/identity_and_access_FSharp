@@ -25,10 +25,18 @@ open RabbitMQ.Client.Impl
 open IdentityAndAcccess.Workflow.ProvisionRoleApiTypes
 open IdentityAndAcccess.Workflow.AssignGroupToRoleApiTypes
 
+open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes
+open IdentityAndAcccess.Workflow.AddUserToGroupApiTypes.AddUserToGroupWorfklowImplementation
+
+
+open IdentityAndAcccess.Workflow.RegisterUserApiTypes
+open IdentityAndAcccess.Workflow.RegisterUserApiTypes.RegisterUserToTenancyWorfklowImplementation
 
 
 
-
+open IdentityAndAcccess.Workflow.AssignUserToRoleApiTypes
+open IdentityAndAcccess.Workflow.AssignUserToRoleApiTypes.AssignUserToRoleWorfklowImplementation
+open IdentityAndAcccess.Commamds.Handlers.Command
 [<AutoOpen>]
 module Rest =
 
@@ -87,6 +95,8 @@ module Rest =
         |> System.Text.Encoding.UTF8.GetString 
         |> fromJson<'a>
 
+    
+
 
     let app = choose [
         POST >=> choose [
@@ -109,6 +119,13 @@ module Rest =
                 >=> request (getResourceFromReq<UnvalidatedRegistrationInvitationIdentifier> 
                 >> Command.WithdrawInvitation.toCommand 
                 >> Command.WithdrawInvitation.handle
+                >> workflowResultToHttpReponse
+                >> toJsonWebPart)
+
+            path "/register-users" 
+                >=> request (getResourceFromReq<UnalidatedUserTenancy> 
+                >> Command.RegisterUser.toCommand 
+                >> Command.RegisterUser.handle
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)
 
@@ -140,12 +157,27 @@ module Rest =
                 >> workflowResultToHttpReponse
                 >> toJsonWebPart)
 
-            (* path "/add-user-to-group" 
-                >=> request (getResourceFromReq<UnvalidatedRole> 
-                >> Command.ProvisionRole.toCommand
-                >> Command.ProvisionRole.handle
+
+            path "/assign-user-to-role" 
+                >=> request (getResourceFromReq<UnvalidatedRoleAndUserId> 
+                >> Command.AssignUserToRole.toCommand
+                >> Command.AssignUserToRole.handle
                 >> workflowResultToHttpReponse
-                >> toJsonWebPart)  *)            
+                >> toJsonWebPart)
+
+            path "/assign-group-to-role" 
+                >=> request (getResourceFromReq<UnvalidatedRoleAndGroupIds> 
+                >> Command.AssignGroupToRole.toCommand
+                >> Command.AssignGroupToRole.handle
+                >> workflowResultToHttpReponse
+                >> toJsonWebPart)
+
+            path "/add-user-to-group" 
+                >=> request (getResourceFromReq<UnvalidatedGroupAndUserId> 
+                >> Command.AddUserToGroup.toCommand
+                >> Command.AddUserToGroup.handle
+                >> workflowResultToHttpReponse
+                >> toJsonWebPart)            
                    
             path "/assign-group-to-role" 
                 >=> request (getResourceFromReq<UnvalidatedRoleAndGroupIds> 

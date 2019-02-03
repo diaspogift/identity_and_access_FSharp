@@ -192,8 +192,8 @@ module ProvisionTenantWorflowImplementation =
                     let! adminUsername = "Default Aministrator" |> Username.create' 
                     let! adminUserEnablement = Enablement.fullCreate enablementSartDate enablementEndDate User.EnablementStatus.Enabled
 
-                    let! adminUser = 
-                        registerUserForTenant 
+                    let! adminUser, adminUserDescriptor = 
+                        registerUser
                             tenantWithRegistrationInvitation 
                             offerredInvitation.RegistrationInvitationId 
                             adminUsername  

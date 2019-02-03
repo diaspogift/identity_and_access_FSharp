@@ -21,6 +21,8 @@ open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.DeactivateTenantActivationStatusApiTypes.DeactivateTenantActivationStatusWorflowImplementation
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes
 open IdentityAndAcccess.Workflow.ReactivateTenantActivationStatusApiTypes.ReactivateTenantActivationStatusWorflowImplementation
+open IdentityAndAcccess.Workflow.RegisterUserApiTypes
+open IdentityAndAcccess.Workflow.RegisterUserApiTypes.RegisterUserToTenancyWorfklowImplementation
 
 
 open IdentityAndAcccess.CommonDomainTypes
@@ -81,6 +83,9 @@ type OfferRegistrationInvitationCommand =
 
 type WithdrawRegistrationInvitationCommand =
         Command<UnvalidatedRegistrationInvitationIdentifier> 
+    
+type RegisterUserCommand =
+        Command<UnalidatedUserTenancy> 
 
 
 type ReactivateTenantActivationStatusCommand =
@@ -111,7 +116,19 @@ type AddUserToGroupCommand =
         Command<UnvalidatedGroupAndUserId> 
 
 
-    
+
+type AllCommands = 
+    | ProvisionTenantCommand of string
+    | OfferRegistrationInvitationCommand of string 
+    | WithdrawRegistrationInvitationCommand of string 
+    | RegisterUserCommand of string
+    | ReactivateTenantActivationStatusCommand of string
+    | DeactivateTenantActivationStatusCommand of string
+    | ProvisionGroupCommand of string 
+    | ProvisionRoleCommand of string 
+    | AssignUserToRoleCommand of string 
+    | AssignGroupToRoleCommand of string 
+    | AddUserToGroupCommand of string
 
 
 
@@ -588,6 +605,85 @@ module Command =
             workflowResult
             
 
+    module RegisterUser = 
+
+
+        let toCommand (urt:UnalidatedUserTenancy) : RegisterUserCommand =
+            let commd : RegisterUserCommand = {
+                Data = urt
+                TimeStamp = DateTime.Now
+                UserId = "Felicien"
+                }
+            commd
+
+        let handle (aCommad:RegisterUserCommand) = 
+
+
+            let workflowResult = result {
+
+                let! loadInputs = result {
+
+                    let aCommandData = aCommad.Data
+
+                    let unvalidatedUserTenancy:UnalidatedUserTenancy = {
+                        TenantId = aCommandData.TenantId
+                        RegistrationInvitationId = aCommandData.RegistrationInvitationId
+                        Username = aCommandData.Username
+                        Password = aCommandData.Password
+                        Email = aCommandData.Email
+                        Address = aCommandData.Address
+                        PrimPhone = aCommandData.PrimPhone
+                        SecondPhone = aCommandData.SecondPhone
+                        FirstName = aCommandData.FirstName
+                        MiddleName = aCommandData.MiddleName
+                        LastName = aCommandData.LastName
+                        }
+
+                    let strTenantId =  unvalidatedUserTenancy.TenantId |> toTenantStreamId 
+                    
+                    let!  tenantAggregate = strTenantId |> loadTenantWithId |> Result.mapError RegisterUserToTenancyError.DbError
+
+                    let tenantStreamId = tenantAggregate.StreamId
+                    let  dtoTenant = tenantAggregate.Data
+                    let tenantAggrLastEventNum = tenantAggregate.LastEventNum 
+
+
+                    let! domainTenant = dtoTenant |> Tenant.toDomain |> Result.mapError RegisterUserToTenancyError.ValidationError
+
+                    return (tenantStreamId, domainTenant, tenantAggrLastEventNum, unvalidatedUserTenancy)
+                    }
+
+                let _,
+                    domainTenant, 
+                    _,
+                    unvalidatedUserTenancy = loadInputs
+
+                let! rsWorkflowCall = result {
+                    let! rs = unvalidatedUserTenancy |> registerUserToTenancyWorkflow domainTenant 
+                    return rs
+                    }
+
+               
+
+                let! persistedWorflowEvents = result {
+                    
+                        
+                    let eventDto = rsWorkflowCall .RegisteredUser
+                    let userStreamId = eventDto.UserId |> toUserStreamId
+                    let event = eventDto |> UserStreamEvent.UserRegistered
+                    let eventList =  event |> toSequence |> Array.singleton
+                    
+                    recursivePersistEventsStream userStreamId -1L eventList 
+
+                    return eventDto
+                    }
+
+                return persistedWorflowEvents
+                }
+
+            workflowResult
+
+
     module DeactivateTenant = 
 
 
@@ -861,18 +957,18 @@ module Command =
                 }
 
             workflowResult
-            
-
-
-
-
-
-
-
-
+           
 
     module AssignUserToRole = 
 
+
+        let toCommand (autr:UnvalidatedRoleAndUserId) : AssignUserToRoleCommand =
+                    let command : AssignUserToRoleCommand = {
+                        Data = autr
+                        TimeStamp = DateTime.Now
+                        UserId = "Felicien"
+                        }
+                    command
 
 
 
@@ -942,71 +1038,6 @@ module Command =
 
             workflowResult   
                
-
-    module AddUserToGroup = 
-
-
-
-
-
-        let handle (aCommad:AddUserToGroupCommand) = 
-
-            let aCommandData = aCommad.Data
-                
-            let workflowResult = result {  
-
-                let! loadInputs = result {
-
-                    let groupStreamId =  aCommandData.GroupId |> toGroupStreamId 
-                    let userStreamId =  aCommandData.UserId |> toUserStreamId
-
-                    let! dtoGroupAggregate = groupStreamId |> loadGroupWithId |> Result.mapError AddUserToGroupError.DbError
-                    let! dtoUserAggregate = userStreamId |> loadUserWithId |> Result.mapError AddUserToGroupError.DbError
-
-                    let dtGroup = dtoGroupAggregate.Data
-                    let dtoUser = dtoUserAggregate.Data
-
-                    let! domainGroup = dtGroup |> Group.toDomain |> Result.mapError AddUserToGroupError.ValidationError
-                    let! domainUser = dtoUser |> User.toDomain |> Result.mapError AddUserToGroupError.ValidationError
-                    
-                    return (groupStreamId, domainGroup, dtoGroupAggregate.LastEventNum, userStreamId, domainUser, dtoUserAggregate.LastEventNum)
-                    }
-                 
-
-                let groupStreamId,
-                    domainGroup, 
-                    groupAggrLastEventNum, 
-                    _,
-                    domainUser, 
-                    _ = loadInputs
-
-                let! rsAddUserToGroup = result {  
-                    return! addUserToGroupWorkflow domainGroup domainUser 
-                    }  
-
-
-                let! persisteWorflowEvents = result {  
-
-                    let eventDto:Dto.UserAddedToGroupEvent = {
-                        GroupId = rsAddUserToGroup.GroupId
-                        TenantId = rsAddUserToGroup.TenantId
-                        UserId = rsAddUserToGroup.AddedUser.UserDescriptorId 
-                        AddedUser = rsAddUserToGroup.AddedUser
-                        }
-
-                    let event = eventDto |> GroupStreamEvent.UserAddedToGroup
-                    let eventList =  event |> toSequence |> Array.singleton
-                    
-                    recursivePersistEventsStream groupStreamId groupAggrLastEventNum eventList
-
-                    return eventDto
-                    } 
-                return persisteWorflowEvents
-
-                }
-
-            workflowResult
-
             
     module AssignGroupToRole = 
 
@@ -1085,4 +1116,72 @@ module Command =
             workflowResult
                 
            
-            
+    module AddUserToGroup = 
+
+        let toCommand (autr:UnvalidatedGroupAndUserId) : AddUserToGroupCommand =
+                    let command : AddUserToGroupCommand = {
+                        Data = autr
+                        TimeStamp = DateTime.Now
+                        UserId = "Felicien"
+                        }
+                    command
+
+
+
+        let handle (aCommad:AddUserToGroupCommand) = 
+
+            let aCommandData = aCommad.Data
+                
+            let workflowResult = result {  
+
+                let! loadInputs = result {
+
+                    let groupStreamId =  aCommandData.GroupId |> toGroupStreamId 
+                    let userStreamId =  aCommandData.UserId |> toUserStreamId
+
+                    let! dtoGroupAggregate = groupStreamId |> loadGroupWithId |> Result.mapError AddUserToGroupError.DbError
+                    let! dtoUserAggregate = userStreamId |> loadUserWithId |> Result.mapError AddUserToGroupError.DbError
+
+                    let dtGroup = dtoGroupAggregate.Data
+                    let dtoUser = dtoUserAggregate.Data
+
+                    let! domainGroup = dtGroup |> Group.toDomain |> Result.mapError AddUserToGroupError.ValidationError
+                    let! domainUser = dtoUser |> User.toDomain |> Result.mapError AddUserToGroupError.ValidationError
+                    
+                    return (groupStreamId, domainGroup, dtoGroupAggregate.LastEventNum, userStreamId, domainUser, dtoUserAggregate.LastEventNum)
+                    }
+                 
+
+                let groupStreamId,
+                    domainGroup, 
+                    groupAggrLastEventNum, 
+                    _,
+                    domainUser, 
+                    _ = loadInputs
+
+                let! rsAddUserToGroup = result {  
+                    return! addUserToGroupWorkflow domainGroup domainUser 
+                    }  
+
+
+                let! persisteWorflowEvents = result {  
+
+                    let eventDto:Dto.UserAddedToGroupEvent = {
+                        GroupId = rsAddUserToGroup.GroupId
+                        TenantId = rsAddUserToGroup.TenantId
+                        UserId = rsAddUserToGroup.AddedUser.UserDescriptorId 
+                        AddedUser = rsAddUserToGroup.AddedUser
+                        }
+
+                    let event = eventDto |> GroupStreamEvent.UserAddedToGroup
+                    let eventList =  event |> toSequence |> Array.singleton
+                    
+                    recursivePersistEventsStream groupStreamId groupAggrLastEventNum eventList
+
+                    return eventDto
+                    } 
+                return persisteWorflowEvents
+
+                }
+
+            workflowResult

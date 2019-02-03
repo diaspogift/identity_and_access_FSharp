@@ -42,6 +42,7 @@ open IdentityAndAcccess.CommonDomainTypes
 
 
 
+
 /// To be moved to common the namespace
 
 let preppend  firstR restR = 
@@ -446,358 +447,14 @@ module ContactInformation =
 
 
 
-module Tenant = 
-
-
-
-
-
-
-
-
-    let create id name description = 
-        
-        result {
-
-            let! ids = TenantId.create "tenant id: " id
-            let! names = TenantName.create "tenant name: " name
-            let! descriptions = TenantDescription.create "tenant description: " description
-            
-            return {
-                TenantId = ids
-                Name = names
-                Description = descriptions
-                RegistrationInvitations = []
-                ActivationStatus = ActivationStatus.Activated
-                }
-            }
-
-
-
-
-    let createFullActivatedTenant (name:TenantName) (description:TenantDescription) : Result<Tenant,string> = 
-        
-        result {
-
-            let strTenantId = generateNoEscapeId()
-
-            let! tenantId = TenantId.create' strTenantId
-            
-            return {
-                TenantId = tenantId
-                Name = name
-                Description = description
-                RegistrationInvitations = []
-                ActivationStatus = ActivationStatus.Activated
-                }
-        }
-
-
-
-
-
-    let isRegistrationInvitationAvailableThrough (aTenant : Tenant) (aRegistrationInvitationId : RegistrationInvitationId) : Boolean =
-        
-        match aTenant.ActivationStatus with 
-        | Activated -> 
-            let result = RegistrationInvitations.invitation aRegistrationInvitationId aTenant.RegistrationInvitations
-            match result with  
-            | Some _ -> true
-            | None -> false
-        | Deactivated -> false
-        
-
-
-
-
-    let offerRegistrationInvitation (aTenant : Tenant) (aDescription : RegistrationInvitationDescription) : Result<Tenant*RegistrationInvitation, string> =
-        
-          
-        if aTenant.ActivationStatus = ActivationStatus.Activated then 
-            
-            result {
-
-                    let id = generateNoEscapeId()
-
-                    let! registrationInvitationId = 
-                        id 
-                        |> RegistrationInvitationId.create' 
-
-                    let registrationInvitation : RegistrationInvitation = {
-                            Description = aDescription
-                            RegistrationInvitationId = registrationInvitationId
-                            StartingOn = DateTime.Now
-                            TenantId = aTenant.TenantId
-                            Until = DateTime.Now
-                            }
-
-                    let tenantWithNewRegistrationInvitation = { aTenant with RegistrationInvitations = [registrationInvitation]@aTenant.RegistrationInvitations}
-
-                    return (tenantWithNewRegistrationInvitation, registrationInvitation)
-                }
-        else 
-            let msg =  "Tenant activation status is deactivated" 
-            Error  msg
-
-
-
-
-
-    let provisionGroup (aTenant : Tenant.Tenant)(aGroupName :GroupName) (aGroupDescription: GroupDescription) : Result<Group.Group, string> =
-
-        let id = generateNoEscapeId();
-
-        if aTenant.ActivationStatus = ActivationStatus.Activated then
-
-            let group = result {
-
-                let! groupId = GroupId.create' id
-
-                let group:Group.Group = {
-                    GroupId = groupId 
-                    TenantId = aTenant.TenantId
-                    Name = aGroupName
-                    Description = aGroupDescription
-                    UsersAddedToMe = []
-                    GroupsAddedToMe = []
-                    GroupsIamAddedTo = []
-                    RolesIPlay = []
-                }
-
-                return group
-            }
-
-            match group with 
-            | Ok g -> Ok g
-            | Error error -> Error error
-
-
-        else
-            let msg = "Cannot provision"
-            Error msg
-  
-        
-             
-       
-
-
-
-    let provisionRole (aTenant : Tenant)(aRoleName :RoleName) (aRoleDescription: RoleDescription) : Result<Role, string> =
-
-
-            if aTenant.ActivationStatus = ActivationStatus.Activated then
-
-
-                let role = result {
-
-                    let! roleId = generateNoEscapeId() |> RoleId.create' 
-
-                    ///TODO MAKE THIS CONSTRUT PRIVATE
-                    let role : Role = {
-                        RoleId = roleId 
-                        TenantId = aTenant.TenantId
-                        Name = aRoleName
-                        Description = aRoleDescription
-                        SupportNesting = SupportNestingStatus.Support
-                        GroupsThatPlayMe = []
-                        UsersThatPlayMe = []
-                        }
-                    return role
-                    }
-                role
-
-            else Error "Tenant activation status deactivated" 
-
-
-
-
-
-
-
-    let getAllAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
-
-        match aTenant.ActivationStatus with 
-        | ActivationStatus.Activated -> 
-            aTenant.RegistrationInvitations
-            |> List.filter RegistrationInvitations.isAvailableWithBakedDateTimeParam
-        | Deactivated -> []
-
-
-
-
-
-
-    let getAllUnAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
-
-        match aTenant.ActivationStatus with 
-        | ActivationStatus.Activated -> 
-            aTenant.RegistrationInvitations
-            |> List.filter RegistrationInvitations.isNotAvailableWithBakedDateTimeParam
-        | Deactivated -> []
-
-
-
-            
-
-
-    let redfineRegistrationInvintationTimeSpan 
-        (aTenant:Tenant)
-        (aRegistrationInvitationId:RegistrationInvitationId)
-        (aStartDate:DateTime)
-        (anEndDate:DateTime)
-        :Result<Tenant, string> =
-        
-         match aTenant.ActivationStatus with 
-         | ActivationStatus.Activated ->
-
-            let concernedRegistrationInvitation = 
-                aTenant.RegistrationInvitations
-                |> List.filter 
-                    (fun nextRegistrationInvitation -> 
-                        nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId
-                        )
-                |> List.first
-
-            match concernedRegistrationInvitation with 
-            | Some invitation -> 
-
-                let remainingRegistrationInvitations = 
-                    aTenant.RegistrationInvitations 
-                    |> List.filter 
-                        (fun nextRegistrationInvitation -> 
-                            nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId
-                            ) 
-                let newInvitation = {invitation with StartingOn = aStartDate; Until = anEndDate}
-                    
-                Ok {aTenant with RegistrationInvitations = remainingRegistrationInvitations@[newInvitation]}
-            | None   -> 
-                let msg = sprintf "Registration invitation with id %A not found" aRegistrationInvitationId
-                Error msg
-         | Deactivated -> 
-               let error = sprintf "Tenant is deactivated"
-               Error error
-
-
-
-
-
-
-    let registerUserForTenant (aTenant:Tenant) (anInvitationId:RegistrationInvitationId) (aUSerName:Username) (aPassword:Password)
-        (anEnablement:Enablement) (anEmailAddress:EmailAddress) (aPostalAddress:PostalAddress) (aPrimaryTel:Telephone) 
-        (aSecondaryTel:Telephone) (aFirstName:FirstName) (aMiddleNAme:MiddleName)(aLastName:LastName) :Result<User,string> =
-
-        match aTenant.ActivationStatus with 
-        | Activated ->
-            
-            match (isRegistrationInvitationAvailableThrough aTenant anInvitationId) with 
-            | true ->
-
-                let rsCreateUser = result{
-                    let contactInfo = ContactInformation.fullCreate anEmailAddress aPostalAddress aPrimaryTel aSecondaryTel
-                    let strUseId = generateNoEscapeId()
-                    let! userId = UserId.create' strUseId
-                    let fullName = {First = aFirstName; Middle =  aMiddleNAme; Last = aLastName}
-                    let person = {Contact = contactInfo; Name = fullName; Tenant = aTenant.TenantId; User = userId}
-                    ///TODO make sure I build a constructor in the way that they will always be consistency between the userid in user and person
-                    let user:User = {
-                        UserId = userId 
-                        TenantId = aTenant.TenantId 
-                        Username = aUSerName 
-                        Password = aPassword 
-                        Enablement = anEnablement
-                        Person = person
-                        RolesIPlay = []
-                        GroupsIAmIn = []
-                        }
-                    return user
-                    }
-                match rsCreateUser with 
-                | Ok user -> 
-                    Ok user
-                | Error error -> 
-                    Error error
-            | false ->
-                let msg = sprintf "Registration expired/notavailable "
-                Error msg   
-        | Deactivated ->
-            let msg = sprintf "Tenant deactivated"
-            Error msg
-
-
-
-
-
-    let withdrawRegistrationInvitation (aTenant:Tenant) (invitation:RegistrationInvitationId) :Result<Tenant * RegistrationInvitation, string> =
-
-        let optionalInvitationToWithdraw = 
-            aTenant.RegistrationInvitations 
-            |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId = invitation )
-            |> List.first
-
-
-        match optionalInvitationToWithdraw with 
-        | Some reg -> 
-
-            let otherInvitations = 
-                aTenant.RegistrationInvitations 
-                |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId <> invitation )
-                    
-            Ok ({aTenant with RegistrationInvitations = otherInvitations }, reg)
-
-        | None ->
-            let msg = sprintf "No registration invitation found for identifier: %A" invitation
-            Error msg
-
-
-
-
-
-
-
-    let activateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =   
-        match aTenant.ActivationStatus with  
-        | Deactivated ->
-            Ok ({ aTenant with ActivationStatus = ActivationStatus.Activated }, aReason)
-        | Activated -> 
-            Error "Tenant already has its activation status set to Activated" 
-
-
-
-
-
-
-    let deactivateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =
-        match aTenant.ActivationStatus with  
-        | Deactivated ->
-            Error "Tenant already has its activation status set to Deactivated"
-        | Activated -> 
-            Ok ({ aTenant with ActivationStatus = Deactivated }, aReason) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 module User = 
 
-    
+
+
+
+
+
+
     let toDescriptor (aUser:User.User) : UserDescriptor =
         {
             UserId = aUser.UserId
@@ -817,18 +474,9 @@ module User =
             Ok {aUser with Password = aNewGivenPassword} 
 
 
-
-
-
-
-
     let changePersonalContactInformation (aUser:User) (aContactInformation:ContactInformation) = 
         let personWithNewContact = {aUser.Person with Contact = aContactInformation}
         {aUser with Person = personWithNewContact}
-
-
-
-
 
 
     let changePersonalName (aUser:User) (aFullName:FullName) = 
@@ -836,17 +484,9 @@ module User =
         {aUser with Person = personWithNewName}
 
 
-
-
-
-
     let defineEnablement (aUser:User) anEnablement = 
         let userWithNewEnablement = {aUser with Enablement = anEnablement}
         userWithNewEnablement
-
-
-
-
 
 
     let isEnabled (aUser:User)  = 
@@ -855,16 +495,10 @@ module User =
         | Disabled -> false
 
 
-
-
-
-
     let isDisabled (aUser:User)   = 
         match aUser.Enablement.EnablementStatus with  
         | Enabled -> false
         | Disabled -> true
-
-
 
 
 
@@ -905,6 +539,312 @@ module User =
             FirstName = aUser.Person.Name.First 
             LastName = aUser.Person.Name.Last 
         }
+
+
+
+
+
+
+
+
+module Tenant = 
+
+
+
+
+
+
+
+
+    let create id name description = 
+        
+        result {
+
+            let! ids = TenantId.create "tenant id: " id
+            let! names = TenantName.create "tenant name: " name
+            let! descriptions = TenantDescription.create "tenant description: " description
+            
+            return {
+                TenantId = ids
+                Name = names
+                Description = descriptions
+                RegistrationInvitations = []
+                ActivationStatus = ActivationStatus.Activated
+                }
+            }
+
+
+    let createFullActivatedTenant (name:TenantName) (description:TenantDescription) : Result<Tenant,string> = 
+        
+        result {
+
+            let strTenantId = generateNoEscapeId()
+
+            let! tenantId = TenantId.create' strTenantId
+            
+            return {
+                TenantId = tenantId
+                Name = name
+                Description = description
+                RegistrationInvitations = []
+                ActivationStatus = ActivationStatus.Activated
+                }
+        }
+
+
+    let isRegistrationInvitationAvailableThrough (aTenant : Tenant) (aRegistrationInvitationId : RegistrationInvitationId) : Boolean =
+        
+        match aTenant.ActivationStatus with 
+        | Activated -> 
+            let result = RegistrationInvitations.invitation aRegistrationInvitationId aTenant.RegistrationInvitations
+            match result with  
+            | Some _ -> true
+            | None -> false
+        | Deactivated -> false
+        
+
+    let offerRegistrationInvitation (aTenant : Tenant) (aDescription : RegistrationInvitationDescription) : Result<Tenant*RegistrationInvitation, string> =
+        
+          
+        if aTenant.ActivationStatus = ActivationStatus.Activated then 
+            
+            result {
+
+                    let id = generateNoEscapeId()
+
+                    let! registrationInvitationId = 
+                        id 
+                        |> RegistrationInvitationId.create' 
+
+                    let registrationInvitation : RegistrationInvitation = {
+                            Description = aDescription
+                            RegistrationInvitationId = registrationInvitationId
+                            StartingOn = DateTime.Now
+                            TenantId = aTenant.TenantId
+                            Until = DateTime.Now
+                            }
+
+                    let tenantWithNewRegistrationInvitation = { aTenant with RegistrationInvitations = [registrationInvitation]@aTenant.RegistrationInvitations}
+
+                    return (tenantWithNewRegistrationInvitation, registrationInvitation)
+                }
+        else 
+            let msg =  "Tenant activation status is deactivated" 
+            Error  msg
+
+
+    let provisionGroup (aTenant : Tenant.Tenant)(aGroupName :GroupName) (aGroupDescription: GroupDescription) : Result<Group.Group, string> =
+
+        let id = generateNoEscapeId();
+
+        if aTenant.ActivationStatus = ActivationStatus.Activated then
+
+            let group = result {
+
+                let! groupId = GroupId.create' id
+
+                let group:Group.Group = {
+                    GroupId = groupId 
+                    TenantId = aTenant.TenantId
+                    Name = aGroupName
+                    Description = aGroupDescription
+                    UsersAddedToMe = []
+                    GroupsAddedToMe = []
+                    GroupsIamAddedTo = []
+                    RolesIPlay = []
+                }
+
+                return group
+            }
+
+            match group with 
+            | Ok g -> Ok g
+            | Error error -> Error error
+
+
+        else
+            let msg = "Cannot provision"
+            Error msg
+  
+                        
+    let provisionRole (aTenant : Tenant)(aRoleName :RoleName) (aRoleDescription: RoleDescription) : Result<Role, string> =
+
+
+            if aTenant.ActivationStatus = ActivationStatus.Activated then
+
+
+                let role = result {
+
+                    let! roleId = generateNoEscapeId() |> RoleId.create' 
+
+                    ///TODO MAKE THIS CONSTRUT PRIVATE
+                    let role : Role = {
+                        RoleId = roleId 
+                        TenantId = aTenant.TenantId
+                        Name = aRoleName
+                        Description = aRoleDescription
+                        SupportNesting = SupportNestingStatus.Support
+                        GroupsThatPlayMe = []
+                        UsersThatPlayMe = []
+                        }
+                    return role
+                    }
+                role
+
+            else Error "Tenant activation status deactivated" 
+
+
+    let getAllAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
+
+        match aTenant.ActivationStatus with 
+        | ActivationStatus.Activated -> 
+            aTenant.RegistrationInvitations
+            |> List.filter RegistrationInvitations.isAvailableWithBakedDateTimeParam
+        | Deactivated -> []
+
+
+    let getAllUnAvailableRegistrationInvitation(aTenant:Tenant) : RegistrationInvitation list =
+
+        match aTenant.ActivationStatus with 
+        | ActivationStatus.Activated -> 
+            aTenant.RegistrationInvitations
+            |> List.filter RegistrationInvitations.isNotAvailableWithBakedDateTimeParam
+        | Deactivated -> []
+
+          
+    let redfineRegistrationInvintationTimeSpan 
+        (aTenant:Tenant)
+        (aRegistrationInvitationId:RegistrationInvitationId)
+        (aStartDate:DateTime)
+        (anEndDate:DateTime)
+        :Result<Tenant, string> =
+        
+         match aTenant.ActivationStatus with 
+         | ActivationStatus.Activated ->
+
+            let concernedRegistrationInvitation = 
+                aTenant.RegistrationInvitations
+                |> List.filter 
+                    (fun nextRegistrationInvitation -> 
+                        nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId
+                        )
+                |> List.first
+
+            match concernedRegistrationInvitation with 
+            | Some invitation -> 
+
+                let remainingRegistrationInvitations = 
+                    aTenant.RegistrationInvitations 
+                    |> List.filter 
+                        (fun nextRegistrationInvitation -> 
+                            nextRegistrationInvitation.RegistrationInvitationId = aRegistrationInvitationId
+                            ) 
+                let newInvitation = {invitation with StartingOn = aStartDate; Until = anEndDate}
+                    
+                Ok {aTenant with RegistrationInvitations = remainingRegistrationInvitations@[newInvitation]}
+            | None   -> 
+                let msg = sprintf "Registration invitation with id %A not found" aRegistrationInvitationId
+                Error msg
+         | Deactivated -> 
+               let error = sprintf "Tenant is deactivated"
+               Error error
+
+
+    let registerUser 
+        (aTenant:Tenant) (anInvitationId:RegistrationInvitationId) (aUSerName:Username) (aPassword:Password)
+        (anEnablement:Enablement) (anEmailAddress:EmailAddress) (aPostalAddress:PostalAddress) (aPrimaryTel:Telephone) 
+        (aSecondaryTel:Telephone) (aFirstName:FirstName) (aMiddleNAme:MiddleName)(aLastName:LastName) :Result<User.User*User.UserDescriptor,string> =
+
+        match aTenant.ActivationStatus with 
+        | Activated ->
+            
+            match (isRegistrationInvitationAvailableThrough aTenant anInvitationId) with 
+            | true ->
+
+                let rsCreateUser = result{
+                    let contactInfo = ContactInformation.fullCreate anEmailAddress aPostalAddress aPrimaryTel aSecondaryTel
+                    let strUseId = generateNoEscapeId()
+                    let! userId = UserId.create' strUseId
+                    let fullName = {First = aFirstName; Middle =  aMiddleNAme; Last = aLastName}
+                    let person = {Contact = contactInfo; Name = fullName; Tenant = aTenant.TenantId; User = userId}
+                    ///TODO make sure I build a constructor in the way that they will always be consistency between the userid in user and person
+                    let user:User = {
+                        UserId = userId 
+                        TenantId = aTenant.TenantId 
+                        Username = aUSerName 
+                        Password = aPassword 
+                        Enablement = anEnablement
+                        Person = person
+                        RolesIPlay = []
+                        GroupsIAmIn = []
+                        }
+                    return user
+                    }
+                match rsCreateUser with 
+                | Ok user -> 
+                    let userDesc:User.UserDescriptor = user |> User.toDescriptor 
+                    Ok (user, userDesc)
+                | Error error -> 
+                    Error error
+            | false ->
+                let msg = sprintf "Registration expired/notavailable "
+                Error msg   
+        | Deactivated ->
+            let msg = sprintf "Tenant deactivated"
+            Error msg
+
+
+    let withdrawRegistrationInvitation (aTenant:Tenant) (invitation:RegistrationInvitationId) :Result<Tenant * RegistrationInvitation, string> =
+
+        let optionalInvitationToWithdraw = 
+            aTenant.RegistrationInvitations 
+            |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId = invitation )
+            |> List.first
+
+
+        match optionalInvitationToWithdraw with 
+        | Some reg -> 
+
+            let otherInvitations = 
+                aTenant.RegistrationInvitations 
+                |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId <> invitation )
+                    
+            Ok ({aTenant with RegistrationInvitations = otherInvitations }, reg)
+
+        | None ->
+            let msg = sprintf "No registration invitation found for identifier: %A" invitation
+            Error msg
+
+
+    let activateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =   
+        match aTenant.ActivationStatus with  
+        | Deactivated ->
+            Ok ({ aTenant with ActivationStatus = ActivationStatus.Activated }, aReason)
+        | Activated -> 
+            Error "Tenant already has its activation status set to Activated" 
+
+
+    let deactivateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =
+        match aTenant.ActivationStatus with  
+        | Deactivated ->
+            Error "Tenant already has its activation status set to Deactivated"
+        | Activated -> 
+            Ok ({ aTenant with ActivationStatus = Deactivated }, aReason) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1070,7 +1010,6 @@ module Group =
 
  
 
-    open ServiceInterfaces
 
 
 
@@ -1101,16 +1040,12 @@ module Group =
         
 
 
-
     let checkNotSame (aGroup1:Group.Group) (aGroup2:Group.Group) = 
          aGroup1 <> aGroup2
     
+
     let checkSameTenancy (aTenantId1:TenantId) (aTenantId2:TenantId) = 
          aTenantId1 = aTenantId2
-
-
-    
-
 
 
     let addUserToGroup (aGroupToAddTo:Group.Group) (aUserToAdd:User.User) : Result<Group.Group*UserDescriptor, string>   =
@@ -1129,9 +1064,6 @@ module Group =
        else 
             Error "Wrong tenant consistency"
 
-            
-
-            
 
     let removeUser (aGroupToRemoveFrom:Group) (aUserToRemove:User) : Result<Group, string> =
 
@@ -1183,8 +1115,7 @@ module Role =
 
 
 
-    open ServiceInterfaces
-    open Group
+
 
 
 
@@ -1222,15 +1153,6 @@ module Role =
         roleConstruct
 
 
-
-
-
-
-
-
-
-
-
     let assignGroup (aRole:Role.Role) (aGroup:Group.Group) =
 
 
@@ -1248,12 +1170,29 @@ module Role =
                 Ok ({ aRole with GroupsThatPlayMe = newGroupsPlayingRoles }, aGroupDesc)
        
        else Error "Wrong tenancy consistency"
-        
 
 
+    let unassignGroup (aRole:Role.Role) (aGroup:Group.Group) =
 
 
+       if(aRole.TenantId |> isSameTenancy aGroup.TenantId) then  
 
+            let aGroupDesc = aGroup |> Group.toDescriptor
+
+            let rsFind = aRole.GroupsThatPlayMe |> List.exists (fun gd -> aGroupDesc = gd)
+
+            if rsFind then 
+
+                let newGroupsPlayingRoles = 
+                    aRole.GroupsThatPlayMe
+                    |> List.filter (fun gd -> gd <> aGroupDesc) 
+                Ok ({ aRole with GroupsThatPlayMe = newGroupsPlayingRoles }, aGroupDesc) 
+
+            else Error "Group does not play role"
+
+                
+       
+       else Error "Wrong tenancy consistency"   
 
 
     let assignUser (aRole:Role) (aUser:User) =
@@ -1275,12 +1214,28 @@ module Role =
        else Error "Wrong tenancy consistency"
 
 
- 
+    let unassignUser (aRole:Role) (aUser:User) =
 
 
 
+       if(aRole.TenantId |> isSameTenancy aUser.TenantId) then  
 
+            let aUserDesc = aUser |> User.toDescriptor
+            let rsFind = aRole.UsersThatPlayMe |> List.exists (fun ud -> aUserDesc = ud)
 
+            if rsFind then 
+
+                let newUsersPlayingRoles = 
+                    aRole.UsersThatPlayMe
+                    |> List.filter (fun ud -> ud <> aUserDesc)
+
+                Ok ({ aRole with UsersThatPlayMe = newUsersPlayingRoles }, aUserDesc)
+
+            else Error "User does not play role"
+
+                
+       
+       else Error "Wrong tenancy consistency"
 
 
     let isInRole (aRole:Role.Role) (aUser:User.User)  =

@@ -18,6 +18,7 @@
     <Compile Include="Workflow.WithdrawRegistrationInvitation.Implementation.fs" />
     <Compile Include="Workflow.DeactivateTenantActivationStatus.Implementation.fs" />
     <Compile Include="Workflow.ReactivateTenantActivationStatus.Implementation.fs" />
+    <Compile Include="Workflow.RegisterUser.Implementation.fs" />
     <Compile Include="Infrastructure.NewtonSoftJsonImplForEventStore.Serialization.fs" />
     <Compile Include="Infrastructure.GreyYoungEventStore.Implementation.fs" />
     <Compile Include="Infrastructure.IdentityAndAccess.Command.Handlers.fs" />

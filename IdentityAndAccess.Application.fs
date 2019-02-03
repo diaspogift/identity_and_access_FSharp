@@ -55,6 +55,7 @@ open IdentityAndAcccess.ReastApi
 
 
 
+
 let printSeparatorLine(count) = 
         
         let countArray = List.init count (fun x -> x )
@@ -268,6 +269,139 @@ match  seniorDeveloperGroup |> ProvisionGroup.handle  with
 
 
 printEmptySeparatorLine(2)
+
+
+///ADD JUNIOR_DEVELOPER GROUP TO THE DEVELOPER GROUP 
+
+(* let  juniorToDeveloperGroup:AddGroupToGroupCommand = {
+        Data = { GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup; GroupIdToAdd = diaspoGiftGroupIdForJuniorDeveloperGroup }
+        TimeStamp = DateTime.Now
+        UserId = diaspoGiftAdminUserId
+        } 
+
+
+match  juniorToDeveloperGroup |> AddGroupToGroup.handle  with  
+| Ok rs -> 
+    printEmptySeparatorLine(2)
+    printfn " JUNIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP"
+    printfn " %A" rs
+    printEmptySeparatorLine(2)
+| Error error -> printfn " %A" error 
+
+
+printEmptySeparatorLine(2)
+
+
+
+///ADD MID_DEVELOPER GROUP TO THE DEVELOPER GROUP
+let midToDeveloperGroup:AddGroupToGroupCommand = {   
+        Data = { GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup; GroupIdToAdd = diaspoGiftGroupIdForMidDeveloperGroup }
+        TimeStamp = DateTime.Now
+        UserId = diaspoGiftAdminUserId
+        }
+
+match  midToDeveloperGroup |> AddGroupToGroup.handle  with  
+| Ok rs -> 
+    printEmptySeparatorLine(2)
+    printfn " JUNIOR DEVELOPER GROUP ADDED TO ANY DEVELOPER GROUP"
+    printfn " %A" rs
+    printEmptySeparatorLine(2)
+| Error error -> printfn " %A" error 
+
+
+
+printEmptySeparatorLine(1)
+
+
+
+
+///ADD SENIOR_DEVELOPER GROUP TO THE DEVELOPER GROUP
+
+let seniorToDeveloper:AddGroupToGroupCommand = {   
+        Data = {  GroupIdToAddTo = diaspoGiftGroupIdForDeveloperGroup; GroupIdToAdd = diaspoGiftGroupIdForSeniorDeveloperGroup }
+        TimeStamp = DateTime.Now
+        UserId = diaspoGiftAdminUserId
+        } 
+match seniorToDeveloper |> AddGroupToGroup.handle  with  
+| Ok rs -> 
+    printEmptySeparatorLine(2)
+    printfn " SENIOR DEVELOPER GROUP ADDED TO  DEVELOPER GROUP"
+    printfn " %A" rs
+    printEmptySeparatorLine(2)
+| Error error -> printfn " %A" error 
+
+
+
+
+
+printEmptySeparatorLine(1)  *)
+
+
+
+
+
+[<EntryPoint>]
+let main argv =
+
+   //Queue.loop 0
+   startWebServer defaultConfig Rest.app
+   0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
