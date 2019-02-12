@@ -664,7 +664,6 @@ module Command =
                     }
 
                
-
                 let! persistedWorflowEvents = result {
                     
                         
@@ -679,6 +678,7 @@ module Command =
                     }
 
                 return persistedWorflowEvents
+                
                 }
 
             workflowResult

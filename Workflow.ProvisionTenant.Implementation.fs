@@ -224,6 +224,7 @@ module ProvisionTenantWorflowImplementation =
                         AdminRole = adminRole
                         OfferredInvitation = offerredInvitation  
                         WithdrawnInvitation = withdrawnInvitation
+                        AssignedUser = adminUserDescriptor
                         }
                     
                         

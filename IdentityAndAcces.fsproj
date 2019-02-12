@@ -26,6 +26,7 @@
     <Compile Include="Domain.Services.Implementation.fs" />
     <Compile Include="Infrastrure.Services.Implementation.fs" />
     <Compile Include="Infrastructure.RabbitMq.Implementation.fs" />
+    <Compile Include="MailboxAgentPlayGround.fsx" />
     <Compile Include="IdentityAndAccess.Application.fs" />
   </ItemGroup>
   <ItemGroup>

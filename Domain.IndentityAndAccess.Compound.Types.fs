@@ -569,6 +569,7 @@ module Tenant =
         AdminRole : Role 
         OfferredInvitation : RegistrationInvitation  
         WithdrawnInvitation : RegistrationInvitation
+        AssignedUser : User.UserDescriptor
         }
 
 
