@@ -98,7 +98,8 @@ module Rest =
     
 
 
-    let app = choose [
+    let appRouter = choose [
+
         POST >=> choose [
 
             path "/tenant-provisions" 

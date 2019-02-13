@@ -344,7 +344,7 @@ printEmptySeparatorLine(1)  *)
 let main argv =
 
    //Queue.loop 0
-   startWebServer defaultConfig Rest.app
+   startWebServer defaultConfig Rest.appRouter
    0
 
 
