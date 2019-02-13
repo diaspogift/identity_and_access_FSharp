@@ -19,18 +19,18 @@ open IdentityAndAcccess.DomainTypes.Functions
 
 
 type ProvisionTenantService = 
-       StrongPasswordGeneratorService
-        -> PasswordEncryptionService
-        -> TenantName 
-        -> TenantDescription 
-        -> FirstName 
-        -> MiddleName 
-        -> LastName 
-        -> EmailAddress 
-        -> PostalAddress 
-        -> Telephone 
-        -> Telephone
-        ->  Result<TenantProvision,string>
+   StrongPasswordGeneratorService
+    -> PasswordEncryptionService
+    -> TenantName 
+    -> TenantDescription 
+    -> FirstName 
+    -> MiddleName 
+    -> LastName 
+    -> EmailAddress 
+    -> PostalAddress 
+    -> Telephone 
+    -> Telephone
+    ->  Result<TenantProvision,string>
 
 
 
@@ -52,9 +52,9 @@ type ProvisionTenantService =
 
 
 type  UnvalidatedTenant = {
-        Name : string
-        Description : string
-        }
+    Name : string
+    Description : string
+    }
 
 type  TenantAdministrator = {
     FirstName : string
@@ -232,8 +232,6 @@ module ProvisionTenantWorflowImplementation =
                     AssignedUser = adminUserDescriptor
                     }
                 
-                    
-
                 return provision
             }
                   //(tenantToProvision, adminUser, resultAssignUserToSuperAdminRole, tenantWithRegistrationInvitation.RegistrationInvitations)
@@ -256,38 +254,47 @@ module ProvisionTenantWorflowImplementation =
         fun unvalidatedTenantProvision ->
             //printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
             result {
+
                 let! name = 
                     unvalidatedTenantProvision.TenantInfo.Name 
                     |> TenantName.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
+
                 let! description = 
                     unvalidatedTenantProvision.TenantInfo.Description 
                     |> TenantDescription.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
+
                 let! first = 
                     unvalidatedTenantProvision.AdminUserInfo.FirstName 
                     |> FirstName.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
+
                 let! middle = 
                     unvalidatedTenantProvision.AdminUserInfo.MiddleName 
                     |> MiddleName.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
+
                 let! last = 
                     unvalidatedTenantProvision.AdminUserInfo.LastName 
                     |> LastName.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
+
                 let! email = 
                     unvalidatedTenantProvision.AdminUserInfo.Email 
                     |> EmailAddress.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
+
                 let! address = 
                     unvalidatedTenantProvision.AdminUserInfo.Address 
                     |> PostalAddress.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
+
                 let! primePhone = 
                     unvalidatedTenantProvision.AdminUserInfo.PrimPhone 
                     |> Telephone.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
+                    
                 let! secondPhone = 
                     unvalidatedTenantProvision.AdminUserInfo.SecondPhone 
                     |> Telephone.create' 
