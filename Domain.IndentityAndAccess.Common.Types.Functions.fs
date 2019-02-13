@@ -19,7 +19,7 @@ module ConstrainedType =
 
     let createString fieldName ctor maxLen str = 
             
-        if String.IsNullOrEmpty(str) then
+        if str |> String.IsNullOrEmpty then
             let msg = sprintf "%s must not be null or empty" fieldName 
             Error msg
         elif str.Length > maxLen then
