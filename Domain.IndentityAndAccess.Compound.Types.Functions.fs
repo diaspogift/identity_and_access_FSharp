@@ -110,7 +110,7 @@ type IsGroupMemberService =  Group -> Group  -> Result<Boolean,string>
 
 let rec remove i l =
     match (i, l) with
-    | 0, x::xs -> xs
+    | 0, _::xs -> xs
     | i, x::xs -> x::remove (i - 1) xs
     | i, [] -> failwith "index out of range"
 
@@ -258,18 +258,18 @@ module ServiceInterfaces =
 
 
     type ProvisionTenantService = 
-               StrongPasswordGeneratorService
-                -> PasswordEncryptionService
-                -> TenantName 
-                -> TenantDescription 
-                -> FirstName 
-                -> MiddleName 
-                -> LastName 
-                -> EmailAddress 
-                -> PostalAddress 
-                -> Telephone 
-                -> Telephone
-                ->  Result<TenantProvision,string>
+       StrongPasswordGeneratorService
+        -> PasswordEncryptionService
+        -> TenantName 
+        -> TenantDescription 
+        -> FirstName 
+        -> MiddleName 
+        -> LastName 
+        -> EmailAddress 
+        -> PostalAddress 
+        -> Telephone 
+        -> Telephone
+        ->  Result<TenantProvision,string>
 
 
 
@@ -277,15 +277,14 @@ module ServiceInterfaces =
 
 
     type ProvisionTenantService' = 
-            TenantName 
-                -> TenantDescription 
-                -> FullName 
-                -> EmailAddress 
-                -> PostalAddress 
-                -> Telephone 
-                -> Telephone 
-                -> Result<Tenant,string>
-
+        TenantName 
+            -> TenantDescription 
+            -> FullName 
+            -> EmailAddress 
+            -> PostalAddress 
+            -> Telephone 
+            -> Telephone 
+            -> Result<Tenant,string>
 
 
 
@@ -293,14 +292,11 @@ module ServiceInterfaces =
 
 
     type GroupMemberServices = {
-
         TimeServiceWasCalled: DateTime
         CallerCredentials: CallerCredential
 
         isGroupMember: IsGroupMemberService
         isUserInNestedGroup : IsUserInNestedGroupService
-  
-
     }
 
 
@@ -314,12 +310,12 @@ module ServiceInterfaces =
             
 
     type AuthenticationService = 
-            PasswordsMatcherService
-                -> IsUserInRoleService
-                -> User
-                -> Tenant 
-                -> Password 
-                -> Result<UserDescriptor,string>
+        PasswordsMatcherService
+            -> IsUserInRoleService
+            -> User
+            -> Tenant 
+            -> Password 
+            -> Result<UserDescriptor,string>
 
 
 
@@ -560,14 +556,14 @@ module Tenant =
         
         result {
 
-            let! ids = TenantId.create "tenant id: " id
-            let! names = TenantName.create "tenant name: " name
-            let! descriptions = TenantDescription.create "tenant description: " description
+            let! tenantId = id |> TenantId.create'  
+            let! tenantName = name |> TenantName.create'
+            let! tenantDescription = description |> TenantDescription.create'
             
             return {
-                TenantId = ids
-                Name = names
-                Description = descriptions
+                TenantId = tenantId
+                Name = tenantName
+                Description = tenantDescription
                 RegistrationInvitations = []
                 ActivationStatus = ActivationStatus.Activated
                 }
@@ -579,7 +575,6 @@ module Tenant =
         result {
 
             let strTenantId = generateNoEscapeId()
-
             let! tenantId = TenantId.create' strTenantId
             
             return {
@@ -719,8 +714,8 @@ module Tenant =
         (anEndDate:DateTime)
         :Result<Tenant, string> =
         
-         match aTenant.ActivationStatus with 
-         | ActivationStatus.Activated ->
+        match aTenant.ActivationStatus with 
+        | ActivationStatus.Activated ->
 
             let concernedRegistrationInvitation = 
                 aTenant.RegistrationInvitations
@@ -745,9 +740,9 @@ module Tenant =
             | None   -> 
                 let msg = sprintf "Registration invitation with id %A not found" aRegistrationInvitationId
                 Error msg
-         | Deactivated -> 
-               let error = sprintf "Tenant is deactivated"
-               Error error
+        | Deactivated -> 
+            let error = sprintf "Tenant is deactivated"
+            Error error
 
 
     let registerUser 
