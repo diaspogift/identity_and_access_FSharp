@@ -252,7 +252,7 @@ module ProvisionTenantWorflowImplementation =
     let validate : ValidateTenantProvision =
 
         fun unvalidatedTenantProvision ->
-            //printfn "THE COMMAND ============================== %A" aUnvalidatedTenantProvision
+
             result {
 
                 let! name = 
@@ -294,7 +294,7 @@ module ProvisionTenantWorflowImplementation =
                     unvalidatedTenantProvision.AdminUserInfo.PrimPhone 
                     |> Telephone.create' 
                     |> Result.mapError ProvisionTenantError.ValidationError
-                    
+
                 let! secondPhone = 
                     unvalidatedTenantProvision.AdminUserInfo.SecondPhone 
                     |> Telephone.create' 
@@ -311,6 +311,7 @@ module ProvisionTenantWorflowImplementation =
                     AdministratorPrimTel = primePhone
                     AdministratorSecondTel = secondPhone
                     }
+                    
                 return validTenantProvision
                 }
 
