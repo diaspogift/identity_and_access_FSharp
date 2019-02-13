@@ -19,18 +19,18 @@ open IdentityAndAcccess.DomainTypes.Functions
 
 
 type ProvisionTenantService = 
-               StrongPasswordGeneratorService
-                -> PasswordEncryptionService
-                -> TenantName 
-                -> TenantDescription 
-                -> FirstName 
-                -> MiddleName 
-                -> LastName 
-                -> EmailAddress 
-                -> PostalAddress 
-                -> Telephone 
-                -> Telephone
-                ->  Result<TenantProvision,string>
+       StrongPasswordGeneratorService
+        -> PasswordEncryptionService
+        -> TenantName 
+        -> TenantDescription 
+        -> FirstName 
+        -> MiddleName 
+        -> LastName 
+        -> EmailAddress 
+        -> PostalAddress 
+        -> Telephone 
+        -> Telephone
+        ->  Result<TenantProvision,string>
 
 
 
@@ -49,23 +49,28 @@ type ProvisionTenantService =
 //Types for Step 1 - validation 
 
 
+
+
+type  UnvalidatedTenant = {
+        Name : string
+        Description : string
+        }
+
+type  TenantAdministrator = {
+    FirstName : string
+    MiddleName : string
+    LastName : string
+    Email : string
+    Address : string
+    PrimPhone : string 
+    SecondPhone : string
+    }
+
 type UnvalidatedTenantProvision = {
     TenantInfo : UnvalidatedTenant
     AdminUserInfo : TenantAdministrator
     }
-    and  UnvalidatedTenant = {
-        Name : string
-        Description : string
-        }
-    and TenantAdministrator = {
-        FirstName : string
-        MiddleName : string
-        LastName : string
-        Email : string
-        Address : string
-        PrimPhone : string 
-        SecondPhone : string
-        }
+    
 
 
 type ValidatedTenantProvision = {
@@ -100,8 +105,8 @@ type InvitationOffered = {
 
 
 type ProvisionAcknowledgementSent = {
-        TenantId : TenantId
-        Email : EmailAddress
+    TenantId : TenantId
+    Email : EmailAddress
 }
 
 
@@ -163,74 +168,74 @@ module ProvisionTenantWorflowImplementation =
 
     let provisionTenantServiceLocal : ProvisionTenantService =
                                          
-            fun strongPasswordService 
-                passwordEncryptionService 
-                aTenantName aTenantDescription 
-                anAdministorFirstName 
-                anAdministorMiddleName 
-                anAdministorLastName
-                anEmailAddress 
-                aPostalAddress 
-                aPrimaryTelephone 
-                aSecondaryTelephone ->
+        fun strongPasswordService 
+            passwordEncryptionService 
+            aTenantName aTenantDescription 
+            anAdministorFirstName 
+            anAdministorMiddleName 
+            anAdministorLastName
+            anEmailAddress 
+            aPostalAddress 
+            aPrimaryTelephone 
+            aSecondaryTelephone ->
+            
+            result {
+
+                let enablementSartDate = DateTime.Now
+                let enablementEndDate = enablementSartDate.AddDays(365.0)
+                let! invitationDescription = "Invitation for User TODDDDDOOOOOOOO ..."  |> RegistrationInvitationDescription.create' 
+
+                let! tenantToProvision = Tenant.createFullActivatedTenant aTenantName aTenantDescription
+
+                let! tenantWithRegistrationInvitation, 
+                     offerredInvitation =  Tenant.offerRegistrationInvitation  tenantToProvision  invitationDescription
+
+                let! password = "123456" |> Password.create' 
+                let!  strongPassword = password |> strongPasswordService
+                let! encryptedPassword = strongPassword |> passwordEncryptionService
+                let! unwrappedEncryptedPassword = encryptedPassword |> EncrytedPassword.value |> Password.create'
+                let! adminUsername = "Default Aministrator" |> Username.create' 
+                let! adminUserEnablement = Enablement.fullCreate enablementSartDate enablementEndDate User.EnablementStatus.Enabled
+
+                let! adminUser, adminUserDescriptor = 
+                    registerUser
+                        tenantWithRegistrationInvitation 
+                        offerredInvitation.RegistrationInvitationId 
+                        adminUsername  
+                        unwrappedEncryptedPassword
+                        adminUserEnablement anEmailAddress
+                        aPostalAddress aPrimaryTelephone 
+                        aSecondaryTelephone anAdministorFirstName
+                        anAdministorMiddleName anAdministorLastName 
+                                            
+                let! rstenant, withdrawnInvitation = 
+                    withdrawRegistrationInvitation 
+                        tenantWithRegistrationInvitation 
+                        offerredInvitation.RegistrationInvitationId
+
+
+                let! adminRoleName = "SUPER_ADMINISTRATOR" |> RoleName.create'
+                let! adminRoleDescription = "SUPER_ADMINISTRATOR is a role that have access to all tenant'rsources" |> RoleDescription.create'
+
+                let! adminRole = Tenant.provisionRole rstenant adminRoleName adminRoleDescription
+
+                let! resultAssignUserToSuperAdminRole = Role.assignUser adminRole adminUser
+          
+                //IO operation kept and the end ????
+
+                let provision:TenantProvision = {
+                    Tenant = tenantToProvision
+                    AdminUser = adminUser
+                    AdminRole = adminRole
+                    OfferredInvitation = offerredInvitation  
+                    WithdrawnInvitation = withdrawnInvitation
+                    AssignedUser = adminUserDescriptor
+                    }
                 
-                result {
-
-                    let enablementSartDate = DateTime.Now
-                    let enablementEndDate = enablementSartDate.AddDays(365.0)
-                    let! invitationDescription = "Invitation for User TODDDDDOOOOOOOO ..."  |> RegistrationInvitationDescription.create' 
-
-                    let! tenantToProvision = Tenant.createFullActivatedTenant aTenantName aTenantDescription
-
-                    let! tenantWithRegistrationInvitation, 
-                         offerredInvitation =  Tenant.offerRegistrationInvitation  tenantToProvision  invitationDescription
-
-                    let! password = "123456" |> Password.create' 
-                    let!  strongPassword = password |> strongPasswordService
-                    let! encryptedPassword = strongPassword |> passwordEncryptionService
-                    let! unwrappedEncryptedPassword = encryptedPassword |> EncrytedPassword.value |> Password.create'
-                    let! adminUsername = "Default Aministrator" |> Username.create' 
-                    let! adminUserEnablement = Enablement.fullCreate enablementSartDate enablementEndDate User.EnablementStatus.Enabled
-
-                    let! adminUser, adminUserDescriptor = 
-                        registerUser
-                            tenantWithRegistrationInvitation 
-                            offerredInvitation.RegistrationInvitationId 
-                            adminUsername  
-                            unwrappedEncryptedPassword
-                            adminUserEnablement anEmailAddress
-                            aPostalAddress aPrimaryTelephone 
-                            aSecondaryTelephone anAdministorFirstName
-                            anAdministorMiddleName anAdministorLastName 
-                                                
-                    let! rstenant, withdrawnInvitation = 
-                        withdrawRegistrationInvitation 
-                            tenantWithRegistrationInvitation 
-                            offerredInvitation.RegistrationInvitationId
-
-
-                    let! adminRoleName = "SUPER_ADMINISTRATOR" |> RoleName.create'
-                    let! adminRoleDescription = "SUPER_ADMINISTRATOR is a role that have access to all tenant'rsources" |> RoleDescription.create'
-
-                    let! adminRole = Tenant.provisionRole rstenant adminRoleName adminRoleDescription
-
-                    let! resultAssignUserToSuperAdminRole = Role.assignUser adminRole adminUser
-              
-                    //IO operation kept and the end ????
-
-                    let provision:TenantProvision = {
-                        Tenant = tenantToProvision
-                        AdminUser = adminUser
-                        AdminRole = adminRole
-                        OfferredInvitation = offerredInvitation  
-                        WithdrawnInvitation = withdrawnInvitation
-                        AssignedUser = adminUserDescriptor
-                        }
                     
-                        
 
-                    return provision
-                }
+                return provision
+            }
                   //(tenantToProvision, adminUser, resultAssignUserToSuperAdminRole, tenantWithRegistrationInvitation.RegistrationInvitations)
 
     //Partial application right there
@@ -360,6 +365,8 @@ module ProvisionTenantWorflowImplementation =
                 AssignedUser = userDesc |> UserDescriptor.fromDomain
                 }
 
+            
+
             let tenantProvisionedEvent = tenantProvisionCreatedEvent |> TenantProvisionedEvent.TenantProvisionCreated |> List.singleton
             let listOfOfferedRegInv = ioff |> TenantProvisionedEvent.InvitationOffered |> List.singleton
             let listOfWithdrawnRegInv = iowi |> TenantProvisionedEvent.InvitationWithdrawn |> List.singleton
@@ -397,6 +404,7 @@ module ProvisionTenantWorflowImplementation =
 
             let provision = Result.bind provision
             let createEvents = Result.map createEvents
+            let a = Result.lift3
 
 
             

@@ -846,6 +846,7 @@ module AsyncResult =
 module AsyncResultComputationExpression = 
 
     type AsyncResultBuilder() = 
+
         member __.Return(x) = AsyncResult.retn x
         member __.Bind(x, f) = AsyncResult.bind f x
 
@@ -863,7 +864,8 @@ module AsyncResultComputationExpression =
 
         member this.TryWith(body, handler) =
             try this.ReturnFrom(body())
-            with e -> handler e
+            with 
+            | e -> handler e
 
         member this.TryFinally(body, compensation) =
             try this.ReturnFrom(body())
@@ -873,13 +875,12 @@ module AsyncResultComputationExpression =
             let body' = fun () -> body disposable
             this.TryFinally(body', fun () -> 
                 match disposable with 
-                    | null -> () 
-                    | disp -> disp.Dispose())
+                | null -> () 
+                | disp -> disp.Dispose())
 
         member this.For(sequence:seq<_>, body) =
             this.Using(sequence.GetEnumerator(), fun enum -> 
-                this.While(enum.MoveNext, 
-                    this.Delay(fun () -> body enum.Current)))
+                this.While(enum.MoveNext, this.Delay(fun () -> body enum.Current)))
 
         member this.Combine (a,b) = 
             this.Bind(a, fun () -> b())
