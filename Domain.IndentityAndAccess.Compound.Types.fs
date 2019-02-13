@@ -360,9 +360,7 @@ module Role =
 
     ///Role related types
     /// 
-    /// 
-    /// 
-    /// 
+    ///  
     type SupportNestingStatus = 
         | Support
         | Oppose
