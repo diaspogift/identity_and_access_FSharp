@@ -182,6 +182,9 @@ module OffertRegistrationInvitationWorflowImplementation =
             let offerRegistrationInvitation = Result.bind offerRegistrationInvitation
             let createEvents = Result.map createEvents
 
+
+            
+
             anUnvalidatedRegistrationInvitationDescription
             |> validateRegistrationInvitationDescription
             |> offerRegistrationInvitation
