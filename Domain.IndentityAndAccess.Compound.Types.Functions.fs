@@ -52,16 +52,15 @@ let preppend  firstR restR =
     | Ok _, Error error2 -> Error error2  
     | Error error1, Error _ -> Error error1
 
+
 let ResultOfSequenceTemp aListOfResults =
     let initialValue = Ok List.empty
     List.foldBack preppend aListOfResults initialValue
 
 
-
 let generateNoEscapeId () =   
     let objectId = ObjectId.GenerateNewId()
     objectId.ToString().ToUpper()
-
 
 
 let isSameTenancy (tid1:TenantId) (tid2:TenantId)  = tid1 = tid2
@@ -72,12 +71,6 @@ let passThroughLocal errorMessage f x y grpMember  =
         Ok grpMember 
     else 
        Error errorMessage
-
-//let passThrough = passThroughLocal "Wrong tenant consistency!" 
-
-
-
-
 
 
 let userNotPlayingRoleCheck (aRole:Role.Role) (aUser:User.User) :(Result<bool, string>) =
@@ -91,6 +84,7 @@ let userNotPlayingRoleCheck (aRole:Role.Role) (aUser:User.User) :(Result<bool, s
              ) 
     resultCheck
 
+
 let passThroughLocal1 errorMessage f x y grpMember  = 
     match (f x y) with 
     | Ok true -> Error errorMessage
@@ -98,14 +92,7 @@ let passThroughLocal1 errorMessage f x y grpMember  =
     | Error error -> Error error
        
 
-//let passThrough1 = passThroughLocal1 "User already playing the role !" 
-
-//let memberPlaysRoleChecked = passThrough1  
-
-
 type IsGroupMemberService =  Group -> Group  -> Result<Boolean,string>
-
-
 
 
 let rec remove i l =
@@ -114,24 +101,12 @@ let rec remove i l =
     | i, x::xs -> x::remove (i - 1) xs
     | i, [] -> failwith "index out of range"
 
-///Helper functionsssss
-/// 
-/// 
-/// 
-/// 
-/// 
-/// 
+
 
 
 ///Services that act on domain types
 /// 
 /// 
-/// 
-/// 
-/// 
-/// 
-/// 
-
 module ServiceInterfaces =
 
 
@@ -803,8 +778,10 @@ module Tenant =
             let otherInvitations = 
                 aTenant.RegistrationInvitations 
                 |> List.filter (fun nextInvitation -> nextInvitation.RegistrationInvitationId <> invitation )
+
+            let tuple = ({aTenant with RegistrationInvitations = otherInvitations }, reg)
                     
-            Ok ({aTenant with RegistrationInvitations = otherInvitations }, reg)
+            Ok tuple
 
         | None ->
             let msg = sprintf "No registration invitation found for identifier: %A" invitation
@@ -816,7 +793,8 @@ module Tenant =
         | Deactivated ->
             Ok ({ aTenant with ActivationStatus = ActivationStatus.Activated }, aReason)
         | Activated -> 
-            Error "Tenant already has its activation status set to Activated" 
+            let msg  = sprintf "Tenant already has its activation status set to Activated"
+            Error msg
 
 
     let deactivateTenant (aTenant : Tenant) (aReason : Reason) : Result<Tenant*Reason, string> =
@@ -916,10 +894,10 @@ module Enablement =
                 EnablementStatus = anEnablementStatus
                 StartDate = dateSpan.Start
                 EndDate = dateSpan.End
-            }
+                }
 
             return enablement
-        }
+            }
 
         rsEnablement
         
