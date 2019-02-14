@@ -17,8 +17,7 @@ module ConstrainedType =
 
 
 
-    let createString fieldName ctor maxLen str = 
-            
+    let createString fieldName ctor maxLen str =  
         if str |> String.IsNullOrEmpty then
             let msg = sprintf "%s must not be null or empty" fieldName 
             Error msg
@@ -33,8 +32,7 @@ module ConstrainedType =
 
 
 
-    let createStringControlledLength fieldName ctor minLen maxLen str = 
-            
+    let createStringControlledLength fieldName ctor minLen maxLen str =       
         if String.IsNullOrEmpty(str) then
             let msg = sprintf "%s must not be null or empty" fieldName 
             Error msg
@@ -105,18 +103,14 @@ module ConstrainedType =
 
 
 
+
+
     let createDatetimeSpan (fieldName:string)  (startDate:DateTime) (endDate:DateTime) =
-
         if DateTime.Compare (startDate, endDate) <=  0 then
-
             let dateTimeSpan:DateTimeSpan  = { Start =  startDate; End =  endDate} 
-
             Ok { Start =  startDate; End =  endDate}
-
         else
-
             let msg = sprintf "%s: Start date must be inferior to end date" fieldName
-
             Error msg  
            
 
@@ -126,10 +120,6 @@ module ConstrainedType =
 
         
          
-
-
-
-
 
 module String50 =
 
