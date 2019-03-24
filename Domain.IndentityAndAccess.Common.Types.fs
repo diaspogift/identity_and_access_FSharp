@@ -4,23 +4,15 @@ namespace IdentityAndAcccess.CommonDomainTypes
 
 open System
 
-///Time related
-/// 
-/// 
-
-///Should be a common domain type 
-type DateTimeSpan =  {
-    Start: DateTime
-    End: DateTime
-} 
 
 
 
 
 
-///Tenant related types definition
-/// 
-/// 
+
+/// ========================================================================================
+/// Tenant related types definition
+/// ========================================================================================
 type TenantId = private TenantId of string
 type TenantName = private TenantName of string
 type TenantDescription = private TenantDescription of string
@@ -28,9 +20,9 @@ type RegistrationInvitationId = private RegistrationInvitationId of string
 type RegistrationInvitationDescription = private RegistrationInvitationDescription of string
 
 
-///User related types definition
-/// 
-/// 
+/// ========================================================================================
+/// User related types definition 
+/// ========================================================================================
 type UserId = private UserId of string
 type Username = private Username of string
 type Password = private Password of string
@@ -45,17 +37,17 @@ type Telephone = private Telephone of string
 type UserDescriptorId = private UserDescriptorId of string
 
 
-///Role related types definition
-/// 
-/// 
+/// ========================================================================================
+/// Role related types definition
+/// ========================================================================================
 type RoleId = private RoleId of string
 type RoleName = private RoleName of string
 type RoleDescription = private RoleDescription of string
 
 
-///Group related types definition
-/// 
-/// 
+/// ========================================================================================
+/// Group related types definition
+/// ========================================================================================
 type GroupId = private GroupId of string
 type GroupName = private GroupName of string
 type GroupDescription = private GroupDescription of string
@@ -64,18 +56,13 @@ type GroupMemberName = private GroupMemberName of string
 
 
 
-///-----------------------------------------------------------------------------------------------------------------------
-
-
-
-
-///Others
-/// 
-/// 
+/// ========================================================================================
+/// Misceleneaus related types definition
+/// ========================================================================================
 type String50 = private String50 of string
-
 type Reason = private Reason of string
-
 type DateTimeWrapped = private DateTimeWrapped of DateTime
-
-
+type DateTimeSpan =  {
+    Start: DateTime
+    End: DateTime
+    } 

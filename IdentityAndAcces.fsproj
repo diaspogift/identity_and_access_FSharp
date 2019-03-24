@@ -27,12 +27,15 @@
     <Compile Include="Infrastrure.Services.Implementation.fs" />
     <Compile Include="Infrastructure.RabbitMq.Implementation.fs" />
     <Compile Include="MailboxAgentPlayGround.fsx" />
+    <Compile Include="BitcoinLibs.fs" />
+    <Compile Include="New.fsx" />
     <Compile Include="IdentityAndAccess.Application.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.2" />
+    <PackageReference Include="NBitcoin" Version="4.1.1.81" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
     <PackageReference Include="SQLProvider" Version="1.1.55" />

@@ -60,15 +60,7 @@ module User =
 
 
 
-
-
-
-    ///User related types
-    /// 
-    /// 
-    /// 
-    /// 
-    /// 
+ 
     type FullName = {
         First: FirstName
         Middle: MiddleName 
@@ -204,11 +196,6 @@ module User =
 
 
 
-
-    
-
-
-
     type UserPasswordChanged = 
 
             Event<UserPasswordChangedEventData>
@@ -220,10 +207,6 @@ module User =
         Username: string
         }
 
-
-    
-    
- 
 
 
     type UserRegistered = 
@@ -238,6 +221,9 @@ module User =
         FirstName: string
         LastName: string
         }
+
+
+
 open User
 
 
@@ -257,12 +243,6 @@ module Group =
 
 
 
-    ///Group related types
-    /// 
-    /// 
-    /// 
-    /// 
-    /// 
     type GroupMemberType = 
         | UserGroupMember
         | GroupGroupMember
@@ -541,12 +521,6 @@ module Tenant =
         temporaryPassword : string
         Username : string
         }
-
-
-
-
-
-
 
 
 

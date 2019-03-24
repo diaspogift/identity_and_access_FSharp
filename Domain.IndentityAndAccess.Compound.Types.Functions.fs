@@ -102,8 +102,6 @@ let rec remove i l =
     | i, [] -> failwith "index out of range"
 
 
-
-
 ///Services that act on domain types
 /// 
 /// 
@@ -313,31 +311,6 @@ module ServiceInterfaces =
 
 
 
-
-
-  
-
-
-
-    
-
-    
-    
-             
-
- 
-
-
-
-
-
-
-
-
-
-///Function that act on Domain types
-
-
 module RegistrationInvitations =
 
     
@@ -384,10 +357,6 @@ module RegistrationInvitations =
 
 
 
-
-
-
-
 module ContactInformation =
 
 
@@ -408,15 +377,6 @@ module ContactInformation =
         {aContactInformation with SecondaryTel = aSecondaryTel}    
 
     
- 
-
-
-
-
-
-
-
-
 
 module User = 
 
@@ -510,11 +470,6 @@ module User =
             FirstName = aUser.Person.Name.First 
             LastName = aUser.Person.Name.Last 
         }
-
-
-
-
-
 
 
 
@@ -806,61 +761,6 @@ module Tenant =
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-         
-
-
-
-
-
-
-
-
-
-
-
-
-
 module DateTimeSpan =
 
 
@@ -874,11 +774,6 @@ module DateTimeSpan =
 
     let startDate aDateTimeSpan = aDateTimeSpan.Start
     let endDate aDateTimeSpan = aDateTimeSpan.End
-
-
-
-
-
 
 
 

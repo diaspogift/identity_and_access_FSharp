@@ -6,7 +6,6 @@ open IdentityAndAcccess.CommonDomainTypes
 
 
 
-type FieldNameCreationMessage = FieldNameCreationMessage of string 
 
 
 
@@ -113,13 +112,7 @@ module ConstrainedType =
             let msg = sprintf "%s: Start date must be inferior to end date" fieldName
             Error msg  
            
-
-        
-        
-        
-
-        
-         
+      
 
 module String50 =
 
@@ -150,7 +143,6 @@ module RoleId =
 
 
 
-
 module  RoleName =
 
 
@@ -161,8 +153,6 @@ module  RoleName =
         ConstrainedType.createString fieldName RoleName 50 str
 
     let create' = create  "RoleName : "
-
-
 
 
 
@@ -181,7 +171,6 @@ module RoleDescription =
 
 
 
-
 module TenantId =
 
 
@@ -191,9 +180,6 @@ module TenantId =
         ConstrainedType.createString fieldName TenantId 36 str
 
     let create' = create  "TenantId : "
-
-
-
 
 
 
@@ -211,9 +197,6 @@ module  TenantName =
 
 
 
-
-
-
 module TenantDescription =
 
 
@@ -223,10 +206,6 @@ module TenantDescription =
         ConstrainedType.createString fieldName TenantDescription 1000 str
 
     let create' = create   "TenantDescription : "
-
-
-
-
 
 
 
@@ -243,9 +222,6 @@ module UserId =
 
 
 
-
-
-
 module UserDescriptorId =
 
     let value (UserDescriptorId str) = str
@@ -254,8 +230,6 @@ module UserDescriptorId =
         ConstrainedType.createString fieldName UserDescriptorId 36 str
 
     let create' = create  "UserId :"
-
-
 
 
 
@@ -271,10 +245,6 @@ module Username =
 
 
 
-
-
-
-
 module Password =
 
     let value (Password str) = str
@@ -286,8 +256,6 @@ module Password =
 
 
 
-
-
 module StrongPassword =
 
     let value (StrongPassword str) = str
@@ -296,13 +264,6 @@ module StrongPassword =
         ConstrainedType.createStringControlledLength fieldName StrongPassword 6 50 str
 
     let create' = create  "Strong Password :"
-
-
-
-
-
-
-
 
 
 
@@ -318,12 +279,6 @@ module EncrytedPassword =
 
 
 
-
-
-
-
-
-
 module FirstName =
 
     let value (FirstName str) = str
@@ -335,9 +290,6 @@ module FirstName =
         
 
 
-
-
-
 module MiddleName =
 
     let value (MiddleName str) = str
@@ -346,10 +298,6 @@ module MiddleName =
         ConstrainedType.createString fieldName MiddleName 50 str
 
     let create' = create  "MiddleName :"
-
-
-
-
 
 
 
@@ -364,8 +312,6 @@ module LastName =
 
 
 
-
-
 module RegistrationInvitationId =
 
     let value (RegistrationInvitationId str) = str
@@ -374,9 +320,6 @@ module RegistrationInvitationId =
         ConstrainedType.createString fieldName RegistrationInvitationId 36 str
 
     let create' = create  "RegistrationInvitationId :"
-
-
-
 
 
 
@@ -391,9 +334,6 @@ module RegistrationInvitationDescription =
 
 
 
-
-
-
 module GroupId =
 
     let value (GroupId str) = str
@@ -402,8 +342,6 @@ module GroupId =
         ConstrainedType.createString fieldName GroupId 36 str
 
     let create' = create  "GroupId :"
-
-
 
 
 
@@ -418,9 +356,6 @@ module GroupName =
 
 
 
-
-
-
 module GroupDescription =
 
     let value (GroupDescription str) = str
@@ -429,9 +364,6 @@ module GroupDescription =
         ConstrainedType.createString fieldName GroupDescription 1000 str
 
     let create' = create  "GroupDescription : "
-
-
-
 
 
 
@@ -446,10 +378,6 @@ module GroupMemberId =
 
 
 
-
-        
-
-
 module GroupMemberName =
 
     let value (GroupMemberName str) = str
@@ -458,10 +386,6 @@ module GroupMemberName =
         ConstrainedType.createString fieldName GroupMemberName 150 str
     
     let create' = create  "GroupMemberName : "
-
-
-
-
 
 
 
@@ -477,9 +401,6 @@ module EmailAddress =
 
 
 
-
-
-
 module PostalAddress =
 
     let value (PostalAddress str) = str
@@ -488,9 +409,6 @@ module PostalAddress =
         ConstrainedType.createString fieldName PostalAddress 1000 str
     
     let create' = create  "PostalAddress : "
-
-
-
 
 
 
@@ -505,8 +423,6 @@ module Telephone =
 
 
 
-
-
 module Reason = 
 
     let value (Reason str) = str
@@ -518,19 +434,15 @@ module Reason =
 
 
 
-
-
 module DateTimeWrapped =
 
     let value (DateTimeWrapped dateTime) = dateTime
 
- 
 
 
-
-
-
-
+///==============================================
+/// Result and AsyncResult computations expressions functions
+///==============================================
 
 
 [<AutoOpen>]
@@ -596,25 +508,7 @@ module ResultComputationExpression =
 
  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//==============================================
-// Async utilities
-//==============================================
-
-[<RequireQualifiedAccess>]  // RequireQualifiedAccess forces the `Async.xxx` prefix to be used
+[<RequireQualifiedAccess>]  
 module Async =
 
     /// Lift a function to Async
@@ -642,30 +536,7 @@ module Async =
         }
 
     /// Apply a monadic function to an Async value  
-    let bind f xA = async.Bind(xA,f)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    let bind f xA = async.Bind(xA, f)
 
 //==============================================
 // The `Validation` type is the same as the `Result` type but with a *list* for failures
@@ -676,8 +547,8 @@ module Async =
 type Validation<'Success,'Failure> = 
     Result<'Success,'Failure list>
 
-/// Functions for the `Validation` type (mostly applicative)
-[<RequireQualifiedAccess>]  // RequireQualifiedAccess forces the `Validation.xxx` prefix to be used
+
+[<RequireQualifiedAccess>]  
 module Validation =
 
     /// Apply a Validation<fn> to a Validation<x> applicatively
@@ -710,14 +581,11 @@ module Validation =
         xV
 
 
-//==============================================
-// AsyncResult
-//==============================================
-
 type AsyncResult<'Success,'Failure> = 
     Async<Result<'Success,'Failure>>
 
-[<RequireQualifiedAccess>]  // RequireQualifiedAccess forces the `AsyncResult.xxx` prefix to be used
+
+[<RequireQualifiedAccess>] 
 module AsyncResult =
 
     /// Lift a function to AsyncResult
@@ -822,16 +690,6 @@ module AsyncResult =
 
 
 
-
-
-
-
-
-
-
-
-
-/// The `asyncResult` computation expression is available globally without qualification
 [<AutoOpen>]
 module AsyncResultComputationExpression = 
 
