@@ -58,7 +58,7 @@ open IdentityAndAcccess.ReastApi
 
 let printSeparatorLine(count) = 
         
-        let countArray = List.init count (fun x -> x )
+        let countArray = List.init count id
         countArray
         |> List.iter (fun x -> 
         
@@ -69,7 +69,7 @@ let printSeparatorLine(count) =
 
 let printEmptySeparatorLine(count) = 
         
-        let countArray = List.init count (fun x -> x)
+        let countArray = List.init count id
         countArray
         |> List.iter (fun x -> 
         

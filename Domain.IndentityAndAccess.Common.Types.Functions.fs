@@ -504,7 +504,7 @@ module ResultComputationExpression =
             List.foldBack  __.Preppend  aListOfResults initialValue
 
 
-    let result = new ResultBuilder()
+    let result =  ResultBuilder()
 
  
 
