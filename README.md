@@ -44,7 +44,7 @@ The following pieces of software need to be install and configured in order to d
     
 * Clone the repo
 
-    * git clone https://github.com/diaspogift/identity_and_access_FSharp
+    * git clone https://github.com/diaspogift/identity_and_access_FSharp.git
     
 * In your terminal, navigate to the identity_and_access_FSharp folder and run dotnet and run the following commands:
     
