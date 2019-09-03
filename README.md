@@ -12,7 +12,7 @@ Identity and access management system is a back end service that allows allow to
 * Assign/Unassign them to/from roles
 * Handle their accesses statuses 
 
-This my first attempt to translate the original IAM DDD_Sample developed by Von Vernon in his book : Implementing Domain Driven Design into a serie of functional languages. I picked F# because it was the most accessible but I plan to follow up with a Haskell version in the upcomming months. 
+This my first attempt to translate the original IAM DDD_Sample developed by Von Vernon in his book : Implementing Domain Driven Design into a serie of functional languages. I picked F# because it was the most accessible but I plan to follow up with a Haskell version in the upcomming months. The project use the CQRS pattern and Grey Young event store for its persitence layer. 
 
 
 ## Getting Started
@@ -24,24 +24,42 @@ These instructions will get you a copy of the project up and running on your loc
 What things you need to install the software and how to install them
 The following pieces of software need to be install and configured in order to deply/test the project. 
 
-* mono version >= 5.16.0
-* dotnet
-* Grey young Event Sourcing
-* Postman 
+* mono: version >= 5.16.0
+* dotnet: version 2.2.401
+* EventStore: 5.0.2.0
+* Postman: Latest version
+* Operation System: Ubuntu 18.04
 
-```
-Give examples
-```
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
 
-Say what the step will be
-* Install Grey You Event Sourcing DB
+* Install Grey Young's Event Store DB
+
+    1- curl -s https://packagecloud.io/install/repositories/EventStore/EventStore-OSS/script.deb.sh | sudo bash
+    2- sudo apt-get install eventstore-oss=5.0.2-1
+    3- sudo systemctl start eventstore
+    
 * Clone the repo
-* navigate to src and run dotnet and run the command: dotnet run
-* Install postman or any other rest API client
+
+    1- git clone https://github.com/diaspogift/identity_and_access_FSharp
+    
+* In your terminal, navigate to the identity_and_access_FSharp folder and run dotnet and run the following commands:
+    
+    1- dotnet build
+    2- dotnet restore
+    3- dotnet run (This will start a local server on port 8080)
+    
+* Install postman or any other rest API client and try running these
+    
+    1- Provision a Tenant
+      Url:      http://localhost:8080/tenant-provisions
+      Method:   post
+      Data:     {
+                  "TenantInfo" : {"Name":"Clinic le Poitier", "Description":"Hopital de reference"},
+                   "AdminUserInfo" : {"FirstName" : "Felicien", "MiddleName" :  "N/A", "LastName" :  "Fotio", "Email" :  "felicien@gmail.com", "Address" :  "Douala, Cameroun", "PrimPhone" :  "669262690" ,"SecondPhone" : "669262691"}
+}
+    
 
 
 End with an example of getting some data out of the system or using it for a little demo
@@ -61,6 +79,7 @@ Add additional notes about how to deploy this on a live system
 * [F#](https://fsharp.org) - The language
 * [Fake](https://fake.build/) - Dependency Management
 * [Suave](https://suave.io/) - Used as API server
+* [EventStore](https://eventstore.org) Used as the event store
 
 ## Contributing
 
