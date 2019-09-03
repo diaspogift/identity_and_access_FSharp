@@ -69,7 +69,6 @@ Fire up postman and try the following use cases:
         * Method:   post
         * Data: 
         ```javascript 
-        
             {
                   "TenantInfo" : { "Name":"Clinic le Poitier", "Description":"Hopital de reference"},
                    "AdminUserInfo" : { "FirstName" : "Felicien", 
@@ -81,7 +80,6 @@ Fire up postman and try the following use cases:
                                        "SecondPhone" : "669262691"
                                        }
             }
-            
          ```
 
    * Reactivate a Tenant
@@ -89,14 +87,12 @@ Fire up postman and try the following use cases:
         * Method: post
         * Data: 
         ```javascript 
-        
             { 
                 "TenantId" : "5C570B52644AA37772E26671",
                 "ActivationStatus" : true,
                 "Reason" : "I do like youuuuuuu"
             }
-           
-          ```
+         ```
     
    * Deactivate a Tenant
         * Url: http://localhost:8080/deactivate-tenant
