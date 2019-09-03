@@ -52,14 +52,26 @@ The following pieces of software need to be install and configured in order to d
     
 * Install postman or any other rest API client and try running these
     
-    * Provision a Tenant
+    * Follow the instruction on this link: https://suave.io
+               
+               
+               
+## Running basic tests through Postman.
+
+Fire up postman and try the following use cases: 
+
+
+
+
+
+   * Provision a Tenant
         * Url:      http://localhost:8080/tenant-provisions
         * Method:   post
         * Data:    {
                   "TenantInfo" : {"Name":"Clinic le Poitier", "Description":"Hopital de reference"},
                    "AdminUserInfo" : {"FirstName" : "Felicien", "MiddleName" :  "N/A", "LastName" :  "Fotio", "Email" :  "felicien@gmail.com", "Address" :  "Douala, Cameroun", "PrimPhone" :  "669262690" ,"SecondPhone" : "669262691"}}
 
-    * Reactivate a Tenant
+   * Reactivate a Tenant
         * Url: http://localhost:8080/activate-tenant
         * Method: post
         * Data: { "TenantId" : "5C570B52644AA37772E26671",
@@ -67,7 +79,7 @@ The following pieces of software need to be install and configured in order to d
                   "Reason" : "I do like youuuuuuu"}
 
     
-    * Deactivate a Tenant
+   * Deactivate a Tenant
         * Url: http://localhost:8080/deactivate-tenant
         * Method: post
         * Data: { "TenantId" : "5C570B52644AA37772E26671",
@@ -76,7 +88,7 @@ The following pieces of software need to be install and configured in order to d
 
 
     
-    * Offert Registration Invitation
+   * Offert Registration Invitation
         * Url: http://localhost:8080/offert-invitations
         * Method: post
         * Data: { "TenantId" : "5C5752B0D389C32384152311",
@@ -84,14 +96,14 @@ The following pieces of software need to be install and configured in order to d
                   
                   
     
-    * Withdraw Registration Invitation 
+   * Withdraw Registration Invitation 
         * Url: http://localhost:8080/withdraw-invitations
         * Method: post
         * Data: { "TenantId" : "5C538067026E46460ED95CC9",
                  "RegistrationInvitationId": "5C5387BD026E46460ED95D25"}
 
 
-    * Register an Invited User
+   * Register an Invited User
         * Url: http://localhost:8080/register-users
         * Method: post
         * Data: { "TenantId" : "5C5752B0D389C32384152311",
@@ -108,7 +120,7 @@ The following pieces of software need to be install and configured in order to d
                     
                     
                     
-    * Provision a Group
+   * Provision a Group
         * Url: http://localhost:8080/provision-group
         * Method: post
         * Data: {   "TenantId" : "5c4f7527f8b9103cf82944bb",
@@ -118,7 +130,7 @@ The following pieces of software need to be install and configured in order to d
                
  
 
-    * Provision a Role
+   * Provision a Role
         * Url: http://localhost:8080/provision-role
         * Method: post
         * Data: {   "TenantId" : "5c4f7527f8b9103cf82944bb",
@@ -127,34 +139,24 @@ The following pieces of software need to be install and configured in order to d
                
                
                
-     * Assign User to Role
+   * Assign User to Role
         * Url: http://localhost:8080/assign-user-to-role
         * Method: post
         * Data: { "RoleId" : "5C538067026E46460ED95CC9",
                   "UserId": "5C5387BD026E46460ED95D25"}
                
-     * Assign Group to Role
+   * Assign Group to Role
         * Url: http://localhost:8080/assign-group-to-role
         * Method: post
         * Data: { "GroupId" : "5C538067026E46460ED95CC9",
                   "RoleId": "5C5387BD026E46460ED95D25"}
                              
             
-     * Add User to Group
+   * Add User to Group
         * Url: http://localhost:8080/withdraw-invitations
         * Method: post
         * Data: { "GroupId" : "5C538067026E46460ED95CC9",
                  "UserID": "5C5387BD026E46460ED95D25"}
-               
-               
-               
-               
-               
-               
-               
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
 
 
 N/A
