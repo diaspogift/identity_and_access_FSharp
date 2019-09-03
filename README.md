@@ -57,18 +57,14 @@ The following pieces of software need to be install and configured in order to d
         * Method:   post
         * Data:    {
                   "TenantInfo" : {"Name":"Clinic le Poitier", "Description":"Hopital de reference"},
-                   "AdminUserInfo" : {"FirstName" : "Felicien", "MiddleName" :  "N/A", "LastName" :  "Fotio", "Email" :  "felicien@gmail.com", "Address" :  "Douala, Cameroun", "PrimPhone" :  "669262690" ,"SecondPhone" : "669262691"}
-}
+                   "AdminUserInfo" : {"FirstName" : "Felicien", "MiddleName" :  "N/A", "LastName" :  "Fotio", "Email" :  "felicien@gmail.com", "Address" :  "Douala, Cameroun", "PrimPhone" :  "669262690" ,"SecondPhone" : "669262691"}}
 
     * Deactivate Tenant
         * Url: http://localhost:8080/activate-tenant
         * Method: post
-        * Data {
-    
-    "TenantId" : "5C570B52644AA37772E26671",
-    "ActivationStatus" : true,
-    "Reason" : "I do not like youuuuuuu"
-}
+        * Data { "TenantId" : "5C570B52644AA37772E26671",
+                 "ActivationStatus" : true,
+                  "Reason" : "I do not like youuuuuuu"}
 
     
 
