@@ -68,11 +68,11 @@ The following pieces of software need to be install and configured in order to d
 
     
     * Deactivate Tenant
-            * Url: http://localhost:8080/deactivate-tenant
-            * Method: post
-            * Data { "TenantId" : "5C570B52644AA37772E26671",
-                     "ActivationStatus" : false,
-                      "Reason" : "I do not like youuuuuuu"}
+        * Url: http://localhost:8080/deactivate-tenant
+        * Method: post
+        * Data { "TenantId" : "5C570B52644AA37772E26671",
+                 "ActivationStatus" : false,
+                  "Reason" : "I do not like youuuuuuu"}
 
 
 End with an example of getting some data out of the system or using it for a little demo
