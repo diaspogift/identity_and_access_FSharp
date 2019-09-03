@@ -233,7 +233,7 @@ N/A
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+N/A
 
 ## Built With
 
@@ -241,6 +241,8 @@ Add additional notes about how to deploy this on a live system
 * [Fake](https://fake.build/) - Dependency Management
 * [Suave](https://suave.io/) - Used as API server
 * [EventStore](https://eventstore.org) Used as the event store
+* [Functional Domain Driven Design]
+* [CQRS] 
 
 ## Contributing
 
@@ -248,13 +250,13 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+N/A
 
 ## Authors
 
-* **Felicien FOTIO MANFO** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Felicien FOTIO MANFO** 
+* **Junior Didier NKALLA EHAWE** 
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
@@ -262,6 +264,10 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* To Vaun Vernon for its Implementing DDD book
+* To Eric even for the DDD Philosophie and Book
+* To Scott Wlashin for his book Domain Modeling made functional
+* To Brian'O Sulivan for Real word haskell 
+* To ----- for Progrmaing in Haskell
+* To ----- for Learn you a great Haskell
+* To Grey young for the CQRS and Event sourcing tools
