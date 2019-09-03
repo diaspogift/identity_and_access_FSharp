@@ -90,7 +90,21 @@ The following pieces of software need to be install and configured in order to d
         * Data: { "TenantId" : "5C538067026E46460ED95CC9",
                  "RegistrationInvitationId": "5C5387BD026E46460ED95D25"}
 
-http://localhost:8080/offert-invitations
+
+    * Register an Invited User
+        * Url: http://localhost:8080/register-users
+        * Method: post
+        * Data: { "TenantId" : "5C5752B0D389C32384152311",
+                    "RegistrationInvitationId" : "5C575304D389C32384152319",
+                    "Username" : "meg",
+                    "Password" : "123456",
+                    "Email" : "meg@gmail.com",
+                    "Address" : "Denever, Co",
+                    "PrimPhone" : "669373782",
+                    "SecondPhone" : "669987645", 
+                    "FirstName" : "Megan",
+                    "MiddleName" : "Amanda",
+                    "LastName" : "Hess"}
 
 End with an example of getting some data out of the system or using it for a little demo
 
