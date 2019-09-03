@@ -40,7 +40,7 @@ The following pieces of software need to be install and configured in order to d
       * sudo apt-get install eventstore-oss=5.0.2-1
       * sudo systemctl start eventstore
       * eventstored --version 
-    * navigate to http://127.0.0.1:2113/web/index.html#/dashboard and click on the **Stream Browser** menu. If promtep to login, enter user the following credentials: **username: admin, password: changeit**. You can see the stream of events relative to the **User, Group, Role** aggregates beeing created as you play with the API through Postman. 
+    * navigate to http://127.0.0.1:2113/web/index.html#/dashboard and click on the **Stream Browser** menu. If promtep to login, enter user the following credentials: **username: admin, password: changeit**. You can see the stream of events relative to the **Tenant, User, Group, and Role** aggregates beeing created as you play with the API through Postman. 
     
 * Clone the repo
 
