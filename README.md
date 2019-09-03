@@ -67,9 +67,11 @@ Fire up postman and try the following use cases:
    * Provision a Tenant
         * Url:      http://localhost:8080/tenant-provisions
         * Method:   post
+        ```javascript
         * Data:    {
                   "TenantInfo" : {"Name":"Clinic le Poitier", "Description":"Hopital de reference"},
                    "AdminUserInfo" : {"FirstName" : "Felicien", "MiddleName" :  "N/A", "LastName" :  "Fotio", "Email" :  "felicien@gmail.com", "Address" :  "Douala, Cameroun", "PrimPhone" :  "669262690" ,"SecondPhone" : "669262691"}}
+         ```
 
    * Reactivate a Tenant
         * Url: http://localhost:8080/activate-tenant
