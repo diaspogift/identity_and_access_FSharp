@@ -62,7 +62,7 @@ The following pieces of software need to be install and configured in order to d
     * Reactivate Tenant
         * Url: http://localhost:8080/activate-tenant
         * Method: post
-        * Data { "TenantId" : "5C570B52644AA37772E26671",
+        * Data: { "TenantId" : "5C570B52644AA37772E26671",
                  "ActivationStatus" : true,
                   "Reason" : "I do like youuuuuuu"}
 
@@ -70,10 +70,27 @@ The following pieces of software need to be install and configured in order to d
     * Deactivate Tenant
         * Url: http://localhost:8080/deactivate-tenant
         * Method: post
-        * Data { "TenantId" : "5C570B52644AA37772E26671",
+        * Data: { "TenantId" : "5C570B52644AA37772E26671",
                  "ActivationStatus" : false,
                   "Reason" : "I do not like youuuuuuu"}
 
+
+    
+    * Offert Invitation
+        * Url: http://localhost:8080/offert-invitations
+        * Method: post
+        * Data: { "TenantId" : "5C5752B0D389C32384152311",
+                 "Description" : "Invitation for Megan"}
+                  
+                  
+    
+    * Withdraw Invitation
+        * Url: http://localhost:8080/withdraw-invitations
+        * Method: post
+        * Data: { "TenantId" : "5C538067026E46460ED95CC9",
+                 "RegistrationInvitationId": "5C5387BD026E46460ED95D25"}
+
+http://localhost:8080/offert-invitations
 
 End with an example of getting some data out of the system or using it for a little demo
 
