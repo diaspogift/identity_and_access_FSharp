@@ -34,15 +34,15 @@ The following pieces of software need to be install and configured in order to d
 ### Installing
 
 
-* Install Grey Young's Event Store DB
+* Install Grey Young's Event Store DB and start it
 
-    1- curl -s https://packagecloud.io/install/repositories/EventStore/EventStore-OSS/script.deb.sh | sudo bash
-    2- sudo apt-get install eventstore-oss=5.0.2-1
-    3- sudo systemctl start eventstore
+    * curl -s https://packagecloud.io/install/repositories/EventStore/EventStore-OSS/script.deb.sh | sudo bash
+    * sudo apt-get install eventstore-oss=5.0.2-1
+    * sudo systemctl start eventstore
     
 * Clone the repo
 
-    1- git clone https://github.com/diaspogift/identity_and_access_FSharp
+    * git clone https://github.com/diaspogift/identity_and_access_FSharp
     
 * In your terminal, navigate to the identity_and_access_FSharp folder and run dotnet and run the following commands:
     
@@ -241,8 +241,8 @@ N/A
 * [Fake](https://fake.build/) - Dependency Management
 * [Suave](https://suave.io/) - Used as API server
 * [EventStore](https://eventstore.org) Used as the event store
-* [Functional Domain Driven Design]
-* [CQRS] 
+* [Functional Domain Driven Design](https://eventstore.org) Used as an example for production ready code 
+* [CQRS](https://eventstore.org) Used for the persistence layer
 
 ## Contributing
 
