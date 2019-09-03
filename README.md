@@ -24,6 +24,7 @@ These instructions will get you a copy of the project up and running on your loc
 What things you need to install the software and how to install them
 The following pieces of software need to be install and configured in order to deply/test the project. 
 
+* mono version >= 5.16.0
 * dotnet
 * Grey young Event Sourcing
 * Postman 
