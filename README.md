@@ -7,6 +7,8 @@ Identity and access management system is a back end service that allows allow to
 * Assign/Unassign them to/from roles
 * Handle their accesses statuses 
 
+The project is an attempt to translate the original IAM DDD_Sample developed by Von Vernon in his book : Implementing Domain Driven Design. 
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
@@ -14,6 +16,11 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 What things you need to install the software and how to install them
+The following pieces of software need to be install and configured in order to deply/test the project. 
+
+* dotnet
+* Grey young Event Sourcing
+* Postman 
 
 ```
 Give examples
@@ -24,6 +31,10 @@ Give examples
 A step by step series of examples that tell you how to get a development env running
 
 Say what the step will be
+* Install Grey You Event Sourcing DB
+* Clone the repo
+* navigate to src and run dotnet and run the command: dotnet run
+* Install postman or any other rest API client
 
 ```
 Give the example
@@ -41,6 +52,8 @@ End with an example of getting some data out of the system or using it for a lit
 
 Explain how to run the automated tests for this system
 
+N/A
+
 ### Break down into end to end tests
 
 Explain what these tests test and why
@@ -48,6 +61,7 @@ Explain what these tests test and why
 ```
 Give an example
 ```
+N/A
 
 ### And coding style tests
 
@@ -55,6 +69,8 @@ Explain what these tests test and why
 
 ```
 Give an example
+
+N/A
 ```
 
 ## Deployment
@@ -63,9 +79,9 @@ Add additional notes about how to deploy this on a live system
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [F#](https://fsharp.org) - The language
+* [Fake](https://fake.build/) - Dependency Management
+* [Suave](https://suave.io/) - Used as API server
 
 ## Contributing
 
@@ -77,7 +93,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Felicien FOTIO MANFO** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
