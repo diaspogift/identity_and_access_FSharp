@@ -59,7 +59,7 @@ The following pieces of software need to be install and configured in order to d
                   "TenantInfo" : {"Name":"Clinic le Poitier", "Description":"Hopital de reference"},
                    "AdminUserInfo" : {"FirstName" : "Felicien", "MiddleName" :  "N/A", "LastName" :  "Fotio", "Email" :  "felicien@gmail.com", "Address" :  "Douala, Cameroun", "PrimPhone" :  "669262690" ,"SecondPhone" : "669262691"}}
 
-    * Reactivate Tenant
+    * Reactivate a Tenant
         * Url: http://localhost:8080/activate-tenant
         * Method: post
         * Data: { "TenantId" : "5C570B52644AA37772E26671",
@@ -67,7 +67,7 @@ The following pieces of software need to be install and configured in order to d
                   "Reason" : "I do like youuuuuuu"}
 
     
-    * Deactivate Tenant
+    * Deactivate a Tenant
         * Url: http://localhost:8080/deactivate-tenant
         * Method: post
         * Data: { "TenantId" : "5C570B52644AA37772E26671",
@@ -76,7 +76,7 @@ The following pieces of software need to be install and configured in order to d
 
 
     
-    * Offert Invitation
+    * Offert Registration Invitation
         * Url: http://localhost:8080/offert-invitations
         * Method: post
         * Data: { "TenantId" : "5C5752B0D389C32384152311",
@@ -84,7 +84,7 @@ The following pieces of software need to be install and configured in order to d
                   
                   
     
-    * Withdraw Invitation
+    * Withdraw Registration Invitation 
         * Url: http://localhost:8080/withdraw-invitations
         * Method: post
         * Data: { "TenantId" : "5C538067026E46460ED95CC9",
@@ -105,7 +105,53 @@ The following pieces of software need to be install and configured in order to d
                     "FirstName" : "Megan",
                     "MiddleName" : "Amanda",
                     "LastName" : "Hess"}
+                    
+                    
+                    
+    * Provision a Group
+        * Url: http://localhost:8080/provision-group
+        * Method: post
+        * Data: {   "TenantId" : "5c4f7527f8b9103cf82944bb",
+                    "Name" : "LEAD_DEVELOPER",
+                    "Description" : "Ils s occupent des developerus lideurs dans la boite",
+                     "Members" : []}
+               
+ 
 
+    * Provision a Role
+        * Url: http://localhost:8080/provision-role
+        * Method: post
+        * Data: {   "TenantId" : "5c4f7527f8b9103cf82944bb",
+                    "Name" : "Tester",
+                    "Description" : "Ils s occupent des developerus lideurs dans la boite"}
+               
+               
+               
+     * Assign User to Role
+        * Url: http://localhost:8080/assign-user-to-role
+        * Method: post
+        * Data: { "RoleId" : "5C538067026E46460ED95CC9",
+                  "UserId": "5C5387BD026E46460ED95D25"}
+               
+     * Assign Group to Role
+        * Url: http://localhost:8080/assign-group-to-role
+        * Method: post
+        * Data: { "GroupId" : "5C538067026E46460ED95CC9",
+                  "RoleId": "5C5387BD026E46460ED95D25"}
+                             
+            
+     * Add User to Group
+        * Url: http://localhost:8080/withdraw-invitations
+        * Method: post
+        * Data: { "GroupId" : "5C538067026E46460ED95CC9",
+                 "UserID": "5C5387BD026E46460ED95D25"}
+               
+               
+               
+               
+               
+               
+               
 End with an example of getting some data out of the system or using it for a little demo
 
 ## Running the tests
