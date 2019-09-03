@@ -35,10 +35,11 @@ The following pieces of software need to be install and configured in order to d
 
 
 * Install Grey Young's Event Store DB and start it
-
-    * curl -s https://packagecloud.io/install/repositories/EventStore/EventStore-OSS/script.deb.sh | sudo bash
-    * sudo apt-get install eventstore-oss=5.0.2-1
-    * sudo systemctl start eventstore
+   * Run the follwing three commands from your terminal
+      * curl -s https://packagecloud.io/install/repositories/EventStore/EventStore-OSS/script.deb.sh | sudo bash
+      * sudo apt-get install eventstore-oss=5.0.2-1
+      * sudo systemctl start eventstore
+      * eventstored --version 
     * navigate to http://127.0.0.1:2113/web/index.html#/dashboard and click on the **Stream Browser** menu. If promtep to login, enter user the following credentials: **username: admin, password: changeit**. You can see the stream of events relative to the **User, Group, Role aggregates beeing created as you play with the API through Postman**. 
     
 * Clone the repo
