@@ -1,3 +1,8 @@
+# Context
+
+When I came accross DDD a couple of years ago, first I thought it was the biggest revelation in my carreer. I then discover functional programing and it almost stop me brething as I could not stop wondering why the OOP is so mainstrain. It took several months year to transition from the OOP to FFP. One of my concrete realisation is converting the DDD_Sample from Von Vernon into a Functional F# Project. It's in this context that I set out to write this piece of software. 
+
+
 # Indentities and Accesses Management System
 
 Identity and access management system is a back end service that allows allow to:
@@ -7,7 +12,8 @@ Identity and access management system is a back end service that allows allow to
 * Assign/Unassign them to/from roles
 * Handle their accesses statuses 
 
-The project is an attempt to translate the original IAM DDD_Sample developed by Von Vernon in his book : Implementing Domain Driven Design. 
+This my first attempt to translate the original IAM DDD_Sample developed by Von Vernon in his book : Implementing Domain Driven Design into a serie of functional languages. I picked F# because it was the most accessible but I plan to follow up with a Haskell version in the upcomming months. 
+
 
 ## Getting Started
 
@@ -36,42 +42,14 @@ Say what the step will be
 * navigate to src and run dotnet and run the command: dotnet run
 * Install postman or any other rest API client
 
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
 
 End with an example of getting some data out of the system or using it for a little demo
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
 
 N/A
 
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-N/A
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-
-N/A
-```
 
 ## Deployment
 
