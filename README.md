@@ -1,6 +1,11 @@
-# Indetity and Access Management System
+# Indentities and Accesses Management System
 
-One Paragraph of project description goes here
+Identity and access management system is a back end service that allows allow to:
+* Register tenants with their defaults adminitrators users
+* Invite and register users under a given tenancy
+* Group them base on certain affinities
+* Assign/Unassign them to/from roles
+* Handle their accesses statuses 
 
 ## Getting Started
 
