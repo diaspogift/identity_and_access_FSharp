@@ -1,16 +1,16 @@
 # Context
 
-When I came accross Domain Driven Design (DDD) a couple of years ago, it was the biggest revelation in my software development carreer. I could relate what I had been doing previously to a **Big Ball of Mud** as Eric Evans put it so well. After a lot of hard work pushing myself to learn DDD, I re-developped the IAM used by Vaun Vernnon in his book from scratch using Java 8. I then discovered functional programing and it completely changed my outlook on programming, and I could not stop wondering why the OOP is so mainstrain. It took me several months to transition from the OOP to FFP. One of my biggest projects was converting an  [IAM System](https://github.com/diaspogift/identity-and-access) that I previously implemented in Java (using DDD) into a Functional F# Project. It's in this context that I set out to write this piece of software. This is an initial version that I Intend to improve in the comming months. I am currently working up to it's haskell version and in parallel using Elm to replace the [Angular UI](https://github.com/diaspogift/identity-and-access-ui) that was implemented for the initial Java IAM
+When I came accross Domain Driven Design (DDD) a couple of years ago, it was the biggest revelation in my software development carreer. I could relate what I had been doing previously to a **Big Ball of Mud** as Eric Evans coined it so well. After a lot of hard work pushing myself to learn DDD, I re-developped the IAM used by Vaun Vernnon in his book from scratch using Java 8. I then discovered functional programing and it completely changed my outlook on programming, and I could not stop wondering why the OOP is so mainstrain. It took me several months to transition from the OOP to FFP. One of my biggest projects was converting an  [IAM System](https://github.com/diaspogift/identity-and-access) that I previously implemented in Java (using DDD) into a F# Project using the Funtional Progrmming Paragdim. It's in this context that I set out to write this piece of software. This is an initial version that I intend to improve in the comming months. I am currently working up to it's haskell version and in parallel using Elm to replace the [Angular UI](https://github.com/diaspogift/identity-and-access-ui) that was implemented for the initial Java IAM. I would appreciate any feeback or construtive critics from anyone willing to help. 
 
 
 # Indentities and Accesses Management System
 
-Identity and access management system is a back end service that allows allow to:
-* Register tenants with their defaults adminitrators users
+Identity and access management system is a back end service that allows to:
+* Register tenants with their default adminitrator user accounts
 * Invite and register users under a given tenancy
-* Group them base on certain affinities
+* Group users based on certain affinities
 * Assign/Unassign them to/from roles
-* Handle their accesses statuses 
+* Handle both users' and tenants' access statuses 
 
 This my first attempt to translate the original IAM DDD_Sample developed by Von Vernon in his book : Implementing Domain Driven Design into a serie of functional languages. I picked F# because it was the most accessible but I plan to follow up with a Haskell version in the upcomming months. The project use the CQRS pattern and Grey Young event store for its persitence layer. 
 
