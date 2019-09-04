@@ -17,7 +17,7 @@ This my first attempt to translate the original IAM DDD_Sample developed by Vaug
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
@@ -48,19 +48,20 @@ The following pieces of software need to be install and configured in order to d
     
 * In your terminal, navigate to the identity_and_access_FSharp folder and run dotnet and run the following commands:
     
-    * dotnet build
     * dotnet restore
+    * dotnet build
     * dotnet run (This will start a local server on port 8080)
     
 * Install postman or any other rest API client and try running these
     
-    * Follow the instruction on this link: https://suave.io
+    * Follow the instructions on this link: https://www.getpostman.com/downloads/
                
                
                
 ## Running basic tests through Postman.
 
 Fire up postman and try the following use cases: 
+For some use cases, you will have to use the data returned by prevoius ones such as GroupId, TenantId ..etc
 
 
 
@@ -90,7 +91,7 @@ Fire up postman and try the following use cases:
         * Data: 
 ```javascript 
             { 
-                "TenantId" : "5C570B52644AA37772E26671",
+                "TenantId" : "<copy from the previously created tenant from the hptt response in Postman>",
                 "ActivationStatus" : true,
                 "Reason" : "I do like youuuuuuu"
             }
@@ -103,7 +104,7 @@ Fire up postman and try the following use cases:
 ```javascript 
          
              { 
-                "TenantId" : "5C570B52644AA37772E26671",
+                "TenantId" : "<copy from the previously created tenant from the hptt response in Postman>",
                 "ActivationStatus" : false,
                 "Reason" : "I do not like youuuuuuu"
               }
@@ -119,7 +120,7 @@ Fire up postman and try the following use cases:
 ```javascript 
          
             { 
-                "TenantId" : "5C5752B0D389C32384152311",
+                "TenantId" : "<copy from the previously created tenant from the hptt response in Postman>",
                 "Description" : "Invitation for Megan"
             }
 ```
@@ -135,8 +136,8 @@ Fire up postman and try the following use cases:
 ```javascript 
 
             { 
-                "TenantId" : "5C538067026E46460ED95CC9",
-                 "RegistrationInvitationId": "5C5387BD026E46460ED95D25"
+                "TenantId" : "<copy from the previously created tenant from the hptt response in Postman>",
+                 "RegistrationInvitationId": "<copy from the previously created invitation from the hptt response in Postman>"
             }
 ```
 
@@ -148,8 +149,8 @@ Fire up postman and try the following use cases:
 ```javascript 
 
                 { 
-                    "TenantId" : "5C5752B0D389C32384152311",
-                    "RegistrationInvitationId" : "5C575304D389C32384152319",
+                    "TenantId" : "<copy from the previously created tenant from the hptt response in Postman>",
+                    "RegistrationInvitationId" : "<copy from the previously created invitation from the hptt response in  Postman>"",
                     "Username" : "meg",
                     "Password" : "123456",
                     "Email" : "meg@gmail.com",
@@ -169,7 +170,7 @@ Fire up postman and try the following use cases:
         * Data: 
 ```javascript 
 
-            {   "TenantId" : "5c4f7527f8b9103cf82944bb",
+            {   "TenantId" : "<copy from the previously created tenant from the hptt response in Postman>",
                 "Name" : "LEAD_DEVELOPER",
                 "Description" : "Ils s occupent des developerus lideurs dans la boite",
                 "Members" : []
@@ -185,7 +186,7 @@ Fire up postman and try the following use cases:
 ```javascript 
 
             {   
-                "TenantId" : "5c4f7527f8b9103cf82944bb",
+                "TenantId" : "<copy from the previously created tenant from the hptt response in Postman>",
                 "Name" : "Tester",
                 "Description" : "Ils s occupent des developerus lideurs dans la boite"
             }
@@ -198,8 +199,8 @@ Fire up postman and try the following use cases:
 ```javascript 
          
             { 
-                "RoleId" : "5C538067026E46460ED95CC9",
-                 "UserId": "5C5387BD026E46460ED95D25"
+                "RoleId" : "<copy from the previously provisioned role from the hptt response in Postman>",
+                 "UserId": "<copy from the previously registered user from the hptt response in Postman>"
             }
 ``` 
 
@@ -212,8 +213,8 @@ Fire up postman and try the following use cases:
 ```javascript 
         
             {   
-                "GroupId" : "5C538067026E46460ED95CC9",
-                "RoleId": "5C5387BD026E46460ED95D25"
+                "GroupId" : "<copy from the previously provisioned group from the hptt response in Postman>",
+                "RoleId": "<copy from the previously provisioned role from the hptt response in Postman>"
             }
 ``` 
             
@@ -224,8 +225,8 @@ Fire up postman and try the following use cases:
 ```javascript 
 
             { 
-                "GroupId" : "5C538067026E46460ED95CC9",
-                "UserID": "5C5387BD026E46460ED95D25"
+                "GroupId" : "<copy from the previously provisioned group from the hptt response in Postman>",
+                "UserID": "<copy from the previously registered user from the hptt response in Postman>"
             }
 ``` 
 
@@ -242,13 +243,13 @@ N/A
 * [F#](https://fsharp.org) - The language
 * [Fake](https://fake.build/) - Dependency Management
 * [Suave](https://suave.io/) - Used as API server
-* [EventStore](https://eventstore.org) Used as the event store
-* [Functional Domain Driven Design](https://eventstore.org) Used as an example for production ready code 
-* [CQRS](https://eventstore.org) Used for the persistence layer
+* [EventStore](https://eventstore.org) Used as the event store for the persistence layer
+* [Domain Modeling Made Functional](https://fsharpforfunandprofit.com/books/) Used as an example for production ready code 
+* [CQRS](https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf) Used for the persistence layer
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+TO BE DEFINED
 
 ## Versioning
 
@@ -266,10 +267,10 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* To Vaun Vernon for its Implementing DDD book
-* To Eric even for the DDD Philosophie and Book
-* To Scott Wlashin for his book Domain Modeling made functional
-* To Brian'O Sulivan for Real word haskell 
-* To ----- for Progrmaing in Haskell
-* To ----- for Learn you a great Haskell
+* To Vaughn Vernon for its book [Implementing Domain Driven Design]
+* To Eric even for the DDD Philosophie and his book [Domain Driven Design]
+* To Scott Wlashin for his book [Domain Modeling made functional]
+* To Bryan O'Sullivan, Don Stewart, and John Goerzen for their book [Real word haskell] 
+* To Graham Hutton for his book [Progrmaing in Haskell]
+* To Miran Lipovača for his book [Learn you a great Haskell]
 * To Grey young for the CQRS and Event sourcing tools
