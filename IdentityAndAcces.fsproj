@@ -49,7 +49,7 @@
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
     <PackageReference Include="SQLProvider" Version="1.1.55" />
     <PackageReference Include="Suave" Version="2.5.3" />
